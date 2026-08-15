@@ -1,11 +1,13 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 
+const LOCAL_STORAGE_SESSION_KEY = "afrokernel_current_user_v2";
+
 const LOCAL_ADMIN_USER = {
-  id: "00000000-0000-4000-8000-000000000001",
+  id: "master-admin-001",
   email: "admin@ak.com",
   app_metadata: {},
-  user_metadata: { display_name: "Admin" },
+  user_metadata: { display_name: "Master Administrator" },
   aud: "authenticated",
   created_at: new Date().toISOString(),
 };
@@ -13,23 +15,46 @@ const LOCAL_ADMIN_USER = {
 export const Route = createFileRoute("/_authenticated")({
   ssr: false,
   beforeLoad: async ({ location }) => {
-    const { data, error } = await supabase.auth.getUser();
-    if (!error && data.user) {
-      return { user: data.user };
+    // 1. Check Supabase authenticated user session
+    try {
+      const { data, error } = await supabase.auth.getUser();
+      if (!error && data?.user) {
+        return { user: data.user };
+      }
+    } catch {
+      // Supabase network unreachable or in local mode
     }
 
-    // Allow master admin local unlock (admin@ak.com / admin1234) without Supabase session
+    // 2. Check local authenticated user session in localStorage / sessionStorage
     if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem(LOCAL_STORAGE_SESSION_KEY);
+        if (stored) {
+          const localUser = JSON.parse(stored);
+          if (localUser && (localUser.id || localUser.email)) {
+            return { user: localUser };
+          }
+        }
+      } catch {
+        /* ignore parsing errors */
+      }
+
+      // 3. Check master admin local unlock
       const unlocked =
         sessionStorage.getItem("afrokernel-admin-unlocked") === "true" ||
         sessionStorage.getItem("afrokernel-local-admin") === "true";
-      const path = location.pathname || "";
-      if (unlocked && (path.startsWith("/admin") || path === "/dashboard" || path.startsWith("/profile"))) {
+      if (unlocked) {
         return { user: LOCAL_ADMIN_USER as never };
       }
     }
 
-    throw redirect({ to: "/auth" });
+    // Not authenticated -> redirect to auth with return path
+    throw redirect({
+      to: "/auth",
+      search: {
+        redirect: location.pathname || "/dashboard",
+      },
+    });
   },
   component: () => <Outlet />,
 });
