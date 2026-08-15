@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { useAuth, LearnerRecord } from "@/lib/AuthContext";
 import { CATALOG_COURSES } from "@/lib/courses-catalog-data";
 import { HeaderNav } from "@/components/HeaderNav";
@@ -45,8 +45,8 @@ import {
   Link2,
   Eye,
   Mail,
-  Twitter,
-  Linkedin,
+  X,
+  LayoutDashboard,
 } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -98,18 +98,37 @@ function ProfilePage() {
   const [isEditingAvatar, setIsEditingAvatar] = useState(false);
 
   // Edit form state
-  const [displayName, setDisplayName] = useState(learnerProfile?.displayName || user?.email?.split("@")[0] || "Learner");
-  const [headline, setHeadline] = useState(learnerProfile?.headline || "Linux & DevOps Practitioner");
-  const [bio, setBio] = useState(learnerProfile?.bio || "Practicing Linux systems administration, cloud infrastructure, and shell automation.");
-  const [preferredDistro, setPreferredDistro] = useState(learnerProfile?.preferredDistro || "Ubuntu Linux");
-  const [learningGoal, setLearningGoal] = useState(learnerProfile?.learningGoal || "Master Linux Kernel & Enterprise DevOps");
-  const [location, setLocation] = useState(learnerProfile?.location || "Global / Remote");
-  const [githubUrl, setGithubUrl] = useState(learnerProfile?.githubUrl || "");
-  const [website, setWebsite] = useState(learnerProfile?.website || "");
+  const [displayName, setDisplayName] = useState("");
+  const [headline, setHeadline] = useState("Linux & DevOps Practitioner");
+  const [bio, setBio] = useState("Practicing Linux systems administration, cloud infrastructure, and shell automation.");
+  const [preferredDistro, setPreferredDistro] = useState("Ubuntu Linux");
+  const [learningGoal, setLearningGoal] = useState("Master Linux Kernel & Enterprise DevOps");
+  const [location, setLocation] = useState("Global / Remote");
+  const [githubUrl, setGithubUrl] = useState("");
+  const [website, setWebsite] = useState("");
 
-  const xp = stats.xp || learnerProfile?.xp || 150;
-  const level = stats.level || learnerProfile?.level || 1;
-  const streak = stats.streak_days || learnerProfile?.streak || 1;
+  // Sync profile data when learnerProfile or user loads
+  useEffect(() => {
+    if (learnerProfile) {
+      if (learnerProfile.displayName) setDisplayName(learnerProfile.displayName);
+      if (learnerProfile.headline) setHeadline(learnerProfile.headline);
+      if (learnerProfile.bio) setBio(learnerProfile.bio);
+      if (learnerProfile.preferredDistro) setPreferredDistro(learnerProfile.preferredDistro);
+      if (learnerProfile.learningGoal) setLearningGoal(learnerProfile.learningGoal);
+      if (learnerProfile.location) setLocation(learnerProfile.location);
+      if (learnerProfile.githubUrl) setGithubUrl(learnerProfile.githubUrl);
+      if (learnerProfile.website) setWebsite(learnerProfile.website);
+      if (learnerProfile.avatarUrl) setSelectedAvatarPreset(learnerProfile.avatarUrl);
+    } else if (user) {
+      const fallbackName = (user.user_metadata as any)?.display_name || user.email?.split("@")[0] || "Learner";
+      setDisplayName((prev) => prev || fallbackName);
+    }
+  }, [learnerProfile, user]);
+
+  const effectiveDisplayName = displayName || learnerProfile?.displayName || user?.email?.split("@")[0] || "Learner";
+  const xp = stats?.xp || learnerProfile?.xp || 150;
+  const level = stats?.level || learnerProfile?.level || 1;
+  const streak = stats?.streak_days || learnerProfile?.streak || 1;
   const xpCurrentLevelFloor = (level - 1) * 250;
   const levelProgressPct = Math.min(100, Math.round(((xp - xpCurrentLevelFloor) / 250) * 100));
   const badgesEarned = BADGES.slice(0, Math.min(BADGES.length, Math.max(1, Math.floor(xp / 200))));
@@ -132,7 +151,17 @@ function ProfilePage() {
 
   function handleSaveProfile(e: React.FormEvent) {
     e.preventDefault();
-    updateLearnerProfile({ displayName, headline, bio, preferredDistro, learningGoal, location, githubUrl, website });
+    updateLearnerProfile({
+      displayName: effectiveDisplayName,
+      headline,
+      bio,
+      preferredDistro,
+      learningGoal,
+      location,
+      githubUrl,
+      website,
+      avatarUrl: selectedAvatarPreset,
+    });
     setSaveToast(true);
     setTimeout(() => setSaveToast(false), 3000);
     setActiveTab("overview");
@@ -144,6 +173,14 @@ function ProfilePage() {
       setCopiedLink(true);
       setTimeout(() => setCopiedLink(false), 2500);
     }
+  }
+
+  function selectPresetAndSave(presetId: string) {
+    setSelectedAvatarPreset(presetId);
+    updateLearnerProfile({ avatarUrl: presetId });
+    setIsEditingAvatar(false);
+    setSaveToast(true);
+    setTimeout(() => setSaveToast(false), 3000);
   }
 
   const tabs: { id: ProfileTab; label: string; icon: any }[] = [
@@ -230,15 +267,16 @@ function ProfilePage() {
                   </div>
                   <button
                     onClick={() => setIsEditingAvatar(true)}
-                    className="absolute -bottom-2 -right-2 h-8 w-8 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg opacity-0 group-hover:opacity-100 transition"
+                    className="absolute -bottom-2 -right-2 h-9 w-9 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg transition hover:scale-110"
+                    title="Change Avatar"
                   >
-                    <Camera className="w-3.5 h-3.5" />
+                    <Camera className="w-4 h-4" />
                   </button>
                 </div>
 
                 <div className="space-y-1.5 pb-1">
                   <div className="flex flex-wrap items-center gap-2">
-                    <h1 className="text-2xl sm:text-3xl font-display font-black text-foreground">{displayName}</h1>
+                    <h1 className="text-2xl sm:text-3xl font-display font-black text-foreground">{effectiveDisplayName}</h1>
                     <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                       <Shield className="h-3 w-3" /> Certified Practitioner
                     </span>
@@ -298,7 +336,7 @@ function ProfilePage() {
               onClick={() => setActiveTab(id)}
               className={`flex items-center gap-1.5 px-4 py-2.5 text-xs font-semibold border-b-2 transition -mb-px ${
                 activeTab === id
-                  ? "border-primary text-primary"
+                  ? "border-primary text-primary font-bold"
                   : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
@@ -468,7 +506,6 @@ function ProfilePage() {
                     key={badge.id}
                     onClick={() => earned && setSelectedBadge(badge)}
                     className={`text-left rounded-2xl border bg-card p-5 space-y-3 transition ${earned ? "hover:border-primary/40 cursor-pointer" : "opacity-40 cursor-default"}`}
-                    style={{ borderColor: earned ? "" : "" }}
                   >
                     <div className="flex items-start justify-between">
                       <div className={`text-3xl p-2 rounded-xl bg-gradient-to-br ${badge.color} border`}>{badge.icon}</div>
@@ -561,7 +598,7 @@ function ProfilePage() {
                     onClick={() => setSelectedAvatarPreset(preset.id)}
                     className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-center transition ${
                       selectedAvatarPreset === preset.id
-                        ? "border-primary bg-primary/10"
+                        ? "border-primary bg-primary/10 ring-2 ring-primary/30"
                         : "border-border hover:border-primary/40"
                     }`}
                   >
@@ -578,7 +615,7 @@ function ProfilePage() {
               <div className="grid sm:grid-cols-2 gap-4">
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Display Name</label>
-                  <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+                  <input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} placeholder="Your Name" className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
                 </div>
                 <div>
                   <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Professional Headline</label>
@@ -632,6 +669,44 @@ function ProfilePage() {
         )}
       </main>
 
+      {/* Avatar Selection Modal */}
+      {isEditingAvatar && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 max-w-md w-full space-y-6 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <h3 className="font-bold text-lg text-foreground flex items-center gap-2">
+                <Camera className="w-5 h-5 text-primary" /> Choose Your Avatar
+              </h3>
+              <button onClick={() => setIsEditingAvatar(false)} className="p-1 rounded-lg text-muted-foreground hover:text-foreground">
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+              {AVATAR_PRESETS.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => selectPresetAndSave(preset.id)}
+                  className={`flex flex-col items-center gap-2 p-4 rounded-2xl border text-center transition hover:scale-105 ${
+                    selectedAvatarPreset === preset.id
+                      ? "border-primary bg-primary/10 ring-2 ring-primary"
+                      : "border-border bg-secondary/30 hover:border-primary/40"
+                  }`}
+                >
+                  <span className="text-4xl">{preset.icon}</span>
+                  <span className="text-xs font-bold text-foreground">{preset.label}</span>
+                </button>
+              ))}
+            </div>
+            <button
+              onClick={() => setIsEditingAvatar(false)}
+              className="w-full py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Badge Modal */}
       {selectedBadge && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
@@ -677,7 +752,7 @@ function ProfilePage() {
                 </div>
                 <div>
                   <p className="text-xs text-muted-foreground uppercase tracking-widest">This is to certify that</p>
-                  <h2 className="text-3xl font-display font-black text-foreground mt-2">{displayName}</h2>
+                  <h2 className="text-3xl font-display font-black text-foreground mt-2">{effectiveDisplayName}</h2>
                   <p className="text-xs text-muted-foreground mt-1">{user?.email}</p>
                 </div>
                 <div>

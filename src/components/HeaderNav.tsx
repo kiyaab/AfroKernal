@@ -23,6 +23,7 @@ import {
   ArrowRight,
   Shield,
   Layers,
+  LayoutDashboard,
 } from "lucide-react";
 import { useState } from "react";
 import { GlobalSearchModal } from "@/components/GlobalSearchModal";
@@ -299,9 +300,15 @@ export function HeaderNav() {
               <div className="flex items-center gap-2">
                 <Link
                   to="/dashboard"
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:brightness-110"
+                  className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary transition"
                 >
-                  <User className="h-3.5 w-3.5" /> Dashboard
+                  <LayoutDashboard className="h-3.5 w-3.5" /> Dashboard
+                </Link>
+                <Link
+                  to="/profile"
+                  className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:brightness-110"
+                >
+                  <User className="h-3.5 w-3.5" /> Profile
                 </Link>
                 <button
                   onClick={() => signOut()}
