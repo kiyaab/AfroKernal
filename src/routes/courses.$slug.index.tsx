@@ -1,9 +1,10 @@
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { useAuth } from "@/lib/AuthContext";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
+import { getCourseBySlug, CATALOG_COURSES, CourseData } from "@/lib/courses-catalog-data";
 import {
   ArrowLeft,
   Video,
@@ -11,315 +12,429 @@ import {
   Terminal as TermIcon,
   Loader2,
   Play,
-  FileDown,
   ChevronRight,
-  Layers,
   Award,
   Clock,
   Sparkles,
-  ClipboardList,
   CheckCircle2,
   BookOpen,
+  Lock,
+  Shield,
+  Users,
+  Star,
+  Check,
+  HelpCircle,
+  Share2,
 } from "lucide-react";
+import { useState } from "react";
 
 export const Route = createFileRoute("/courses/$slug/")({
-  validateSearch: (s: Record<string, unknown>) => ({
+  validateSearch: (s: Record<string, unknown>): { start?: boolean } => ({
     start: s.start === true || s.start === "1" || s.start === "true" ? true : undefined,
   }),
   head: ({ params }) => ({
     meta: [
-      { title: `${params.slug} — AfroKernel Course` },
-      { name: "description", content: `Free hands-on Linux course on AfroKernel: ${params.slug}.` },
+      { title: `${params.slug.toUpperCase()} — AfroKernel Course Syllabus` },
+      { name: "description", content: `Complete syllabus, interactive lessons, video lectures, and practice quizzes for the AfroKernel ${params.slug} course.` },
       { property: "og:title", content: `AfroKernel Course — ${params.slug}` },
     ],
   }),
-  component: CoursePage,
+  component: CourseDetailPage,
 });
 
-type Lesson = {
-  id: string;
-  slug: string;
-  title: string;
-  lesson_type: string;
-  xp_reward: number;
-  sort_order: number;
-};
-
-function CoursePage() {
+function CourseDetailPage() {
   const { slug } = Route.useParams();
-  const { start } = Route.useSearch();
   const navigate = useNavigate();
+  const { user, isEnrolled, completedLessons, enrollCourse } = useAuth();
+  const [copied, setCopied] = useState(false);
 
-  const { data: course, isLoading: isCourseLoading } = useQuery({
-    queryKey: ["public-course", slug],
+  // Load database or fallback catalog course
+  const { data: course, isLoading } = useQuery({
+    queryKey: ["public-course-detail", slug],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("slug", slug)
-        .eq("published", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
+      const fallback = getCourseBySlug(slug) || CATALOG_COURSES[0];
+      try {
+        const { data: dbCourse } = await supabase
+          .from("courses")
+          .select("*")
+          .eq("slug", slug)
+          .eq("published", true)
+          .maybeSingle();
+
+        if (!dbCourse) return fallback;
+
+        const { data: dbLessons } = await supabase
+          .from("lessons")
+          .select("*")
+          .eq("course_id", dbCourse.id)
+          .eq("published", true)
+          .order("sort_order", { ascending: true });
+
+        if (dbLessons && dbLessons.length > 0) {
+          return {
+            ...fallback,
+            title: dbCourse.title || fallback.title,
+            description: dbCourse.description || fallback.description,
+            lessons: dbLessons.map((l: any) => ({
+              id: l.id,
+              slug: l.slug,
+              title: l.title,
+              lesson_type: l.lesson_type || "notes",
+              video_url: l.video_url,
+              duration_minutes: 20,
+              xp_reward: l.xp_reward || 25,
+              sort_order: l.sort_order || 1,
+              content: l.content || "",
+            })),
+          };
+        }
+        return fallback;
+      } catch {
+        return fallback;
+      }
     },
   });
 
-  const { data: lessons, isLoading: isLessonsLoading, error: lessonsError } = useQuery({
-    queryKey: ["public-course-lessons", course?.id],
-    enabled: !!course?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("id,slug,title,lesson_type,xp_reward,sort_order")
-        .eq("course_id", course!.id)
-        .eq("published", true)
-        .order("sort_order", { ascending: true });
-      if (error) throw error;
-      return (data ?? []) as Lesson[];
-    },
-  });
+  const c: CourseData = course || getCourseBySlug(slug) || CATALOG_COURSES[0];
+  const enrolled = user && isEnrolled(c.slug);
 
-  const { data: myProgress } = useQuery({
-    queryKey: ["my-progress", course?.id, (lessons ?? []).map((l) => l.id).join(",")],
-    enabled: !!course?.id && (lessons?.length ?? 0) > 0,
-    queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return [];
-      const ids = (lessons ?? []).map((l) => l.id);
-      const { data } = await supabase
-        .from("lesson_progress")
-        .select("lesson_id,completed")
-        .in("lesson_id", ids)
-        .eq("user_id", u.user.id);
-      return data ?? [];
-    },
-  });
+  const completedCount = c.lessons.filter((l) => completedLessons.includes(l.id)).length;
+  const progressPct = c.lessons.length > 0 ? Math.round((completedCount / c.lessons.length) * 100) : 0;
+  const firstUnfinishedLesson = c.lessons.find((l) => !completedLessons.includes(l.id)) || c.lessons[0];
 
-  const list = lessons ?? [];
-  const completed = new Set((myProgress ?? []).filter((p) => p.completed).map((p) => p.lesson_id));
-  const doneCount = completed.size;
-  const totalXp = list.reduce((acc, curr) => acc + (curr.xp_reward || 0), 0);
-  const progressPct = list.length ? Math.round((doneCount / list.length) * 100) : 0;
-  const nextLesson = list.find((l) => !completed.has(l.id)) ?? list[0];
-  const allDone = list.length > 0 && doneCount >= list.length;
-  const firstLesson = list[0];
+  function handleAction(targetLessonSlug?: string) {
+    if (!user) {
+      navigate({
+        to: "/auth",
+        search: { redirect: `/courses/${c.slug}`, mode: "signup" },
+      });
+      return;
+    }
 
-  useEffect(() => {
-    if (!start || !course || !nextLesson) return;
-    void navigate({
+    enrollCourse(c.slug);
+    const destination = targetLessonSlug || firstUnfinishedLesson.slug;
+    navigate({
       to: "/courses/$slug/$lesson",
-      params: { slug: course.slug, lesson: nextLesson.slug },
-      replace: true,
+      params: { slug: c.slug, lesson: destination },
     });
-  }, [start, course?.slug, nextLesson?.slug, navigate]);
+  }
 
-  if (isCourseLoading) {
+  function handleShare() {
+    if (typeof window !== "undefined") {
+      navigator.clipboard.writeText(window.location.href);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    }
+  }
+
+  if (isLoading && !course) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center gap-3 bg-background text-muted-foreground">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="font-mono text-sm tracking-widest uppercase">Loading course…</p>
+      <div className="min-h-screen flex flex-col bg-background">
+        <HeaderNav />
+        <div className="flex-1 flex items-center justify-center text-muted-foreground">
+          <Loader2 className="h-6 w-6 animate-spin mr-2" /> Loading course syllabus...
+        </div>
       </div>
     );
   }
 
-  if (!course) throw notFound();
-
   return (
-    <div className="min-h-screen bg-background pb-24">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-3">
-          <Link to="/courses" className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary">
-            <ArrowLeft className="h-4 w-4" /> All courses
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/">
-              <Logo />
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+
+      <main className="flex-1">
+        {/* ───────── COURSE HERO ───────── */}
+        <section className="border-b border-border/80 bg-gradient-to-b from-card/80 to-background py-10 sm:py-16">
+          <div className="mx-auto max-w-7xl px-6">
+            <Link
+              to="/courses"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-muted-foreground hover:text-foreground mb-6 transition"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" /> Back to All Courses
             </Link>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
 
-      <main className="mx-auto max-w-5xl px-6 py-10">
-        <section className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-10">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-primary">
-            <Sparkles className="h-3.5 w-3.5" />
-            {course.category ?? "Linux"} · Full classroom
-          </div>
-          <h1 className="font-display mt-4 text-4xl font-black tracking-tight md:text-5xl">{course.title}</h1>
-          <p className="mt-3 max-w-2xl text-muted-foreground">
-            {course.description ||
-              "A full learning path with lessons, notes, video, quizzes, and the Linux Lab. Free for every learner."}
-          </p>
+            <div className="grid gap-8 lg:grid-cols-[1fr_380px] items-start">
+              {/* Left Column: Course Info */}
+              <div className="space-y-4">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold border border-primary/20">
+                    {c.category}
+                  </span>
+                  <span className="px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold capitalize">
+                    {c.difficulty} Level
+                  </span>
+                  {c.certificate_available && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 text-xs font-semibold">
+                      <Award className="h-3.5 w-3.5" /> Certificate Included
+                    </span>
+                  )}
+                </div>
 
-          <div className="mt-6 flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <span className="inline-flex items-center gap-1.5">
-              <Layers className="h-4 w-4 text-primary" /> {isLessonsLoading ? "…" : list.length} lessons
-            </span>
-            <span className="inline-flex items-center gap-1.5 capitalize">
-              <BookOpen className="h-4 w-4 text-primary" /> {course.difficulty || "beginner"}
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Award className="h-4 w-4 text-primary" /> {totalXp} XP total
-            </span>
-            <span className="inline-flex items-center gap-1.5">
-              <Clock className="h-4 w-4 text-primary" /> ~{Math.max(30, list.length * 12)} min
-            </span>
-          </div>
+                <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
+                  {c.title}
+                </h1>
+                <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
+                  {c.subtitle || c.description}
+                </p>
 
-          <div className="mt-6">
-            <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-              <span>Your progress</span>
-              <span>
-                {doneCount}/{list.length} · {progressPct}%
-              </span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
-            </div>
-          </div>
+                {/* Rating & Enrollment numbers */}
+                <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground pt-2">
+                  <div className="flex items-center gap-1 text-amber-400 font-bold">
+                    <Star className="h-4 w-4 fill-current" />
+                    <span>{c.rating}</span>
+                    <span className="text-muted-foreground font-normal">({c.review_count} ratings)</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Users className="h-4 w-4 text-primary" />
+                    <span>{c.learner_count.toLocaleString()} learners enrolled</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4 text-primary" />
+                    <span>Approx. {c.duration_hours} hours to complete</span>
+                  </div>
+                </div>
 
-          {lessonsError && (
-            <p className="mt-4 rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
-              Could not load lessons: {(lessonsError as Error).message}
-            </p>
-          )}
+                {/* Skills tags */}
+                <div className="pt-2">
+                  <span className="text-xs font-semibold text-muted-foreground block mb-2">Skills you will gain:</span>
+                  <div className="flex flex-wrap gap-2">
+                    {c.skills.map((skill) => (
+                      <span key={skill} className="px-3 py-1 rounded-xl bg-card border border-border text-xs font-medium text-foreground">
+                        {skill}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
 
-          <div className="mt-8 flex flex-wrap gap-3">
-            {isLessonsLoading ? (
-              <button
-                disabled
-                className="inline-flex items-center gap-2 rounded-full bg-primary/70 px-8 py-3.5 text-base font-bold text-primary-foreground"
-              >
-                <Loader2 className="h-5 w-5 animate-spin" /> Preparing lessons…
-              </button>
-            ) : nextLesson ? (
-              <>
-                <Link
-                  to="/courses/$slug/$lesson"
-                  params={{ slug: course.slug, lesson: nextLesson.slug }}
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-8 py-3.5 text-base font-bold text-primary-foreground shadow-lg hover:brightness-110"
-                >
-                  {allDone ? <CheckCircle2 className="h-5 w-5" /> : <Play className="h-5 w-5 fill-current" />}
-                  {allDone ? "Review course" : doneCount > 0 ? `Continue learning` : "Start learning"}
-                </Link>
-                <Link
-                  to="/courses/$slug/practice"
-                  params={{ slug: course.slug }}
-                  className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/10 px-6 py-3.5 text-base font-bold text-primary hover:bg-primary/15"
-                >
-                  <ClipboardList className="h-5 w-5" /> Practice quiz
-                </Link>
-                {firstLesson && firstLesson.id !== nextLesson.id && (
-                  <Link
-                    to="/courses/$slug/$lesson"
-                    params={{ slug: course.slug, lesson: firstLesson.slug }}
-                    className="inline-flex items-center gap-2 rounded-full border border-border px-5 py-3.5 text-sm font-semibold hover:bg-accent"
-                  >
-                    Start from lesson 1
-                  </Link>
+              {/* Right Column: Sticky Enrollment Box */}
+              <div className="rounded-3xl border border-border bg-card p-6 shadow-xl space-y-6 lg:sticky lg:top-24">
+                <div className="space-y-2">
+                  <div className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    Enrollment Status
+                  </div>
+                  <div className="text-2xl font-display font-black text-primary">
+                    100% Free Forever
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Includes video lectures, browser terminal labs, quizzes, and verifiable credential.
+                  </p>
+                </div>
+
+                {/* If user is enrolled, show progress */}
+                {enrolled && (
+                  <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-2">
+                    <div className="flex justify-between text-xs font-bold">
+                      <span className="text-muted-foreground">Your Progress</span>
+                      <span className="text-primary">{progressPct}% Complete</span>
+                    </div>
+                    <div className="h-2.5 w-full rounded-full bg-background overflow-hidden">
+                      <div
+                        className="h-full bg-primary rounded-full transition-all duration-500"
+                        style={{ width: `${progressPct}%` }}
+                      />
+                    </div>
+                    <div className="text-[11px] text-muted-foreground text-center">
+                      {completedCount} of {c.lessons.length} lessons finished
+                    </div>
+                  </div>
                 )}
-              </>
-            ) : (
-              <p className="rounded-xl border border-dashed border-border px-4 py-3 text-sm text-muted-foreground">
-                No published lessons yet. Check back soon.
-              </p>
-            )}
+
+                <button
+                  onClick={() => handleAction()}
+                  className="w-full py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center justify-center gap-2"
+                >
+                  <Play className="h-4 w-4 fill-current" />
+                  {enrolled ? "Continue Learning" : "Enroll for Free & Start"}
+                </button>
+
+                <div className="space-y-2 pt-2 border-t border-border text-xs text-muted-foreground">
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>Unlimited access to interactive terminal labs</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>Practice quizzes with instant explanations</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Check className="h-4 w-4 text-emerald-500 shrink-0" />
+                    <span>Shareable completion certificate</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={handleShare}
+                  className="w-full py-2.5 rounded-xl border border-border bg-background text-xs font-semibold hover:bg-secondary transition flex items-center justify-center gap-1.5"
+                >
+                  <Share2 className="h-3.5 w-3.5" />
+                  {copied ? "Link Copied to Clipboard!" : "Share Course"}
+                </button>
+              </div>
+            </div>
           </div>
         </section>
 
-        <section className="mt-10">
-          <div className="mb-4 flex items-end justify-between gap-3">
-            <div>
-              <h2 className="font-display text-2xl font-bold">Full course syllabus</h2>
-              <p className="text-sm text-muted-foreground">Each lesson includes video, notes, and a quiz.</p>
+        {/* ───────── LEARNING OUTCOMES & PREREQUISITES ───────── */}
+        <section className="mx-auto max-w-7xl px-6 py-12">
+          <div className="grid md:grid-cols-2 gap-8">
+            {/* What you'll learn */}
+            <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4">
+              <h2 className="text-xl font-display font-bold flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-primary" /> What you will learn
+              </h2>
+              <div className="space-y-3">
+                {c.learning_outcomes.map((item, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-sm text-foreground/90">
+                    <div className="h-5 w-5 rounded-full bg-primary/10 text-primary flex items-center justify-center shrink-0 mt-0.5">
+                      <Check className="h-3.5 w-3.5" />
+                    </div>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Prerequisites */}
+            <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4">
+              <h2 className="text-xl font-display font-bold flex items-center gap-2">
+                <Shield className="h-5 w-5 text-primary" /> Prerequisites & Requirements
+              </h2>
+              <div className="space-y-3">
+                {c.prerequisites.map((req, idx) => (
+                  <div key={idx} className="flex items-start gap-3 text-sm text-foreground/90">
+                    <div className="h-5 w-5 rounded-full bg-secondary text-muted-foreground flex items-center justify-center shrink-0 mt-0.5">
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </div>
+                    <span>{req}</span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
+        </section>
 
-          {isLessonsLoading ? (
-            <div className="flex items-center gap-2 py-10 text-muted-foreground">
-              <Loader2 className="h-4 w-4 animate-spin" /> Loading syllabus…
+        {/* ───────── DETAILED COURSE SYLLABUS ───────── */}
+        <section className="mx-auto max-w-7xl px-6 pb-20">
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-display font-black text-foreground">
+                  Course Syllabus & Curriculum
+                </h2>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {c.lessons.length} structured lessons · Estimated {c.duration_hours} hours total
+                </p>
+              </div>
+
+              <Link
+                to="/courses/$slug/practice"
+                params={{ slug: c.slug }}
+                className="inline-flex items-center gap-1.5 text-xs font-bold px-4 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 hover:bg-primary hover:text-primary-foreground transition"
+              >
+                <HelpCircle className="h-4 w-4" /> Practice Quiz for this Course
+              </Link>
             </div>
-          ) : list.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-border py-16 text-center text-muted-foreground">
-              No lessons published yet.
-            </div>
-          ) : (
-            <ol className="space-y-3">
-              {list.map((l, i) => {
-                const Icon =
-                  l.lesson_type === "video"
-                    ? Video
-                    : l.lesson_type === "practice"
-                      ? TermIcon
-                      : l.lesson_type === "pdf"
-                        ? FileDown
-                        : FileText;
-                const done = completed.has(l.id);
-                const isNext = nextLesson?.id === l.id && !allDone;
+
+            {/* Lessons List */}
+            <div className="space-y-3">
+              {c.lessons.map((lesson, idx) => {
+                const isCompleted = completedLessons.includes(lesson.id);
 
                 return (
-                  <li key={l.id}>
-                    <Link
-                      to="/courses/$slug/$lesson"
-                      params={{ slug: course.slug, lesson: l.slug }}
-                      className={`flex w-full items-center gap-4 rounded-2xl border p-4 text-left transition hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-md ${
-                        isNext
-                          ? "border-primary/40 bg-primary/5"
-                          : done
-                            ? "border-border bg-card/60"
-                            : "border-border bg-card"
-                      }`}
-                    >
+                  <div
+                    key={lesson.id}
+                    className={`rounded-2xl border p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition group ${
+                      isCompleted
+                        ? "border-emerald-500/30 bg-emerald-500/5 hover:border-emerald-500/50"
+                        : "border-border bg-card hover:border-primary/40 hover:bg-secondary/20"
+                    }`}
+                  >
+                    <div className="flex items-start sm:items-center gap-4">
+                      {/* Icon / Status */}
                       <div
-                        className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                          done
-                            ? "bg-primary text-primary-foreground"
-                            : isNext
-                              ? "bg-primary/20 text-primary"
-                              : "bg-muted text-muted-foreground"
+                        className={`h-10 w-10 rounded-2xl flex items-center justify-center shrink-0 border ${
+                          isCompleted
+                            ? "bg-emerald-500 text-white border-emerald-500"
+                            : "bg-primary/10 text-primary border-primary/20"
                         }`}
                       >
-                        {done ? <CheckCircle2 className="h-5 w-5" /> : i + 1}
+                        {isCompleted ? (
+                          <CheckCircle2 className="h-5 w-5" />
+                        ) : lesson.lesson_type === "video" ? (
+                          <Video className="h-5 w-5" />
+                        ) : lesson.lesson_type === "lab" ? (
+                          <TermIcon className="h-5 w-5" />
+                        ) : (
+                          <FileText className="h-5 w-5" />
+                        )}
                       </div>
-                      <div className="min-w-0 flex-1">
-                        <div className="mb-1 flex flex-wrap items-center gap-2">
-                          <span className="inline-flex items-center gap-1 rounded-md bg-muted px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                            <Icon className="h-3 w-3" /> {l.lesson_type}
+
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">
+                            Lesson {idx + 1} · {lesson.lesson_type.toUpperCase()}
                           </span>
-                          <span className="text-[10px] text-muted-foreground">+{l.xp_reward} XP</span>
-                          {isNext && (
-                            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold text-primary-foreground">
-                              Up next
-                            </span>
-                          )}
+                          <span className="text-[11px] font-semibold px-2 py-0.2 rounded-full bg-secondary text-primary">
+                            +{lesson.xp_reward} XP
+                          </span>
                         </div>
-                        <h3 className="truncate font-semibold">{l.title}</h3>
+                        <h3 className="font-bold text-base text-foreground group-hover:text-primary transition">
+                          {lesson.title}
+                        </h3>
+                        <div className="text-xs text-muted-foreground flex items-center gap-3 mt-0.5">
+                          <span>⏱ {lesson.duration_minutes} mins</span>
+                          {lesson.quiz && <span>• Includes Knowledge Check</span>}
+                        </div>
                       </div>
-                      <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary px-3 py-1.5 text-xs font-bold text-primary-foreground">
-                        {done ? "Review" : "Open"} <ChevronRight className="h-3.5 w-3.5" />
-                      </span>
-                    </Link>
-                  </li>
+                    </div>
+
+                    <button
+                      onClick={() => handleAction(lesson.slug)}
+                      className={`px-5 py-2.5 rounded-xl font-bold text-xs transition flex items-center justify-center gap-1.5 shrink-0 ${
+                        isCompleted
+                          ? "border border-emerald-500/40 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white"
+                          : "bg-primary text-primary-foreground hover:brightness-110 shadow-sm"
+                      }`}
+                    >
+                      {isCompleted ? (
+                        <>Review Lesson <ChevronRight className="h-3.5 w-3.5" /></>
+                      ) : (
+                        <>Start Lesson <Play className="h-3 w-3 fill-current" /></>
+                      )}
+                    </button>
+                  </div>
                 );
               })}
-            </ol>
-          )}
+            </div>
+
+            {/* End of Course Practice Exam Callout */}
+            <div className="rounded-3xl border border-primary/30 bg-primary/10 p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6">
+              <div className="space-y-2">
+                <div className="inline-flex items-center gap-2 text-xs font-bold text-primary">
+                  <Award className="h-4 w-4" /> End of Course Assessment
+                </div>
+                <h3 className="text-xl font-bold text-foreground">
+                  Ready to test your knowledge on {c.title}?
+                </h3>
+                <p className="text-xs text-muted-foreground">
+                  Take the course practice quiz with instant grading and explanations.
+                </p>
+              </div>
+
+              <Link
+                to="/courses/$slug/practice"
+                params={{ slug: c.slug }}
+                className="px-6 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2 shrink-0"
+              >
+                Launch Course Practice Quiz <ChevronRight className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
         </section>
       </main>
 
-      {nextLesson && (
-        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 p-3 backdrop-blur md:hidden">
-          <Link
-            to="/courses/$slug/$lesson"
-            params={{ slug: course.slug, lesson: nextLesson.slug }}
-            className="flex w-full items-center justify-center gap-2 rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground"
-          >
-            <Play className="h-4 w-4 fill-current" />
-            {doneCount > 0 ? "Continue learning" : "Start learning"}
-          </Link>
-        </div>
-      )}
+      <FooterNav />
     </div>
   );
 }

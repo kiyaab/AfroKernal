@@ -1,824 +1,465 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { getLessonQuiz, submitQuiz, getLessonChallenge, submitChallenge } from "@/lib/quiz.functions";
-import { getBuiltInQuiz } from "@/lib/lesson-quizzes";
+import { useAuth } from "@/lib/AuthContext";
+import { getCourseBySlug, CATALOG_COURSES } from "@/lib/courses-catalog-data";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { VideoPlayer } from "@/components/VideoPlayer";
 import { TutorChat } from "@/components/TutorChat";
 import { StudyTimer } from "@/components/StudyTimer";
 import { NotesViewer } from "@/components/NotesViewer";
-import { PdfReader } from "@/components/PdfReader";
-import { exportQuizPDF } from "@/lib/quiz-pdf-export";
-import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   CheckCircle2,
   Loader2,
   Play,
   HelpCircle,
   Zap,
-  XCircle,
   FileDown,
   Video,
   BookOpen,
   ClipboardList,
   Sparkles,
-  Terminal,
+  Terminal as TermIcon,
   ChevronRight,
   ChevronLeft,
+  ArrowLeft,
+  Lock,
+  Award,
+  Check,
 } from "lucide-react";
-
-const SAMPLE_TIMESTAMP_QUIZZES = [
-  {
-    timestamp: 15,
-    title: "Linux Command Check",
-    question: "Which command prints your current working directory in Linux?",
-    choices: ["ls", "pwd", "cd", "whoami"],
-    correctIndex: 1,
-    explanation: "`pwd` stands for Print Working Directory.",
-  },
-  {
-    timestamp: 45,
-    title: "Systemd Check",
-    question: "What systemd action restarts a running service?",
-    choices: [
-      "systemctl restart <service>",
-      "systemctl reload <service>",
-      "service start <service>",
-      "systemctl status <service>",
-    ],
-    correctIndex: 0,
-    explanation: "`systemctl restart` stops and starts the target unit.",
-  },
-];
 
 export const Route = createFileRoute("/courses/$slug/$lesson")({
   head: ({ params }) => ({
     meta: [
-      { title: `${params.lesson} — ${params.slug} | AfroKernel` },
-      { name: "description", content: `Lesson ${params.lesson} in the AfroKernel ${params.slug} course.` },
-      { property: "og:title", content: `AfroKernel — ${params.lesson}` },
-      { property: "og:description", content: `Free hands-on Linux lesson: ${params.lesson}.` },
+      { title: `${params.lesson} — ${params.slug.toUpperCase()} | AfroKernel` },
+      { name: "description", content: `Interactive Linux lesson: ${params.lesson} in ${params.slug}.` },
+      { property: "og:title", content: `AfroKernel Lesson — ${params.lesson}` },
     ],
   }),
   component: LessonPage,
 });
 
-type Section = "video" | "notes" | "quiz" | "lab" | "tutor";
+type Section = "video" | "notes" | "lab" | "quiz" | "tutor";
 
 function LessonPage() {
   const { slug, lesson: lessonSlug } = Route.useParams();
   const navigate = useNavigate();
-  const videoRef = useRef<HTMLElement>(null);
-  const notesRef = useRef<HTMLElement>(null);
-  const quizRef = useRef<HTMLElement>(null);
-  const labRef = useRef<HTMLElement>(null);
-  const tutorRef = useRef<HTMLElement>(null);
-  const [active, setActive] = useState<Section>("video");
+  const { user, loading: authLoading, isLessonCompleted, markLessonCompleted, stats } = useAuth();
+  const [activeTab, setActiveTab] = useState<Section>("video");
 
-  const { data: course, isLoading: isCourseLoading } = useQuery({
-    queryKey: ["public-course", slug],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("id,title,slug")
-        .eq("slug", slug)
-        .eq("published", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
+  // Local quiz state
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
+  const [quizSubmitted, setQuizSubmitted] = useState(false);
+  const [justCompletedToast, setJustCompletedToast] = useState(false);
 
-  const { data: lesson, isLoading: isLessonLoading } = useQuery({
-    queryKey: ["public-lesson", course?.id, lessonSlug],
-    enabled: !!course?.id,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", course!.id)
-        .eq("slug", lessonSlug)
-        .eq("published", true)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
-    },
-  });
-
-  const { data: allLessons } = useQuery({
-    queryKey: ["public-course-lessons-nav", course?.id],
-    enabled: !!course?.id,
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("lessons")
-        .select("id,slug,title,sort_order,lesson_type")
-        .eq("course_id", course!.id)
-        .eq("published", true)
-        .order("sort_order");
-      return data ?? [];
-    },
-  });
-
-  const lessonIds = (allLessons ?? []).map((l) => l.id).join(",");
-  const { data: myProgress } = useQuery({
-    queryKey: ["my-progress", course?.id, lessonIds],
-    enabled: !!course?.id && (allLessons?.length ?? 0) > 0,
-    queryFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) return [];
-      const ids = (allLessons ?? []).map((l) => l.id);
-      const { data } = await supabase
-        .from("lesson_progress")
-        .select("lesson_id,completed")
-        .in("lesson_id", ids)
-        .eq("user_id", u.user.id);
-      return data ?? [];
-    },
-  });
-
-  const hasVideo =
-    !!lesson?.video_url &&
-    lesson.lesson_type !== "pdf" &&
-    !/\.pdf($|\?)/i.test(lesson.video_url) &&
-    !String(lesson.video_url).startsWith("data:application/pdf");
-  const hasNotes = !!(lesson?.content && String(lesson.content).trim());
-  const rawPdf =
-    (lesson as { pdf_url?: string | null } | null)?.pdf_url ||
-    (lesson?.lesson_type === "pdf" ? lesson?.video_url : null) ||
-    (lesson?.starter_code &&
-    (/\.pdf($|\?)/i.test(lesson.starter_code) ||
-      lesson.starter_code.startsWith("data:application/pdf") ||
-      lesson.starter_code.includes("/course-materials/"))
-      ? lesson.starter_code
-      : null);
-  const pdfUrl = rawPdf || null;
-
+  // Auth Guard
   useEffect(() => {
-    if (!lesson) return;
-    if (lesson.video_url) setActive("video");
-    else if (lesson.content && String(lesson.content).trim()) setActive("notes");
-    else setActive("quiz");
-  }, [lesson?.id]);
+    if (!authLoading && !user) {
+      navigate({
+        to: "/auth",
+        search: { redirect: `/courses/${slug}/${lessonSlug}`, mode: "signup" },
+        replace: true,
+      });
+    }
+  }, [authLoading, user, navigate, slug, lessonSlug]);
 
-  const scrollTo = (section: Section) => {
-    setActive(section);
-    const map = { video: videoRef, notes: notesRef, quiz: quizRef, lab: labRef, tutor: tutorRef };
-    map[section].current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
+  const courseMeta = getCourseBySlug(slug) || CATALOG_COURSES[0];
 
-  // Wait for course (and then lesson) before treating missing data as a 404.
-  // Lesson query is disabled until course.id exists, so its isLoading is false
-  // while the course is still fetching — that used to flash a false 404.
-  if (isCourseLoading || (course && isLessonLoading)) {
+  // Query Database or Fallback
+  const { data: lessonData } = useQuery({
+    queryKey: ["public-lesson-view", slug, lessonSlug],
+    queryFn: async () => {
+      const catalogLesson = courseMeta.lessons.find((l) => l.slug === lessonSlug) || courseMeta.lessons[0];
+      try {
+        const { data: dbCourse } = await supabase.from("courses").select("id").eq("slug", slug).maybeSingle();
+        if (dbCourse) {
+          const { data: dbL } = await supabase
+            .from("lessons")
+            .select("*")
+            .eq("course_id", dbCourse.id)
+            .eq("slug", lessonSlug)
+            .maybeSingle();
+
+          if (dbL) {
+            return {
+              ...catalogLesson,
+              id: dbL.id,
+              title: dbL.title || catalogLesson.title,
+              content: dbL.content || catalogLesson.content,
+              video_url: dbL.video_url || catalogLesson.video_url,
+              xp_reward: dbL.xp_reward || catalogLesson.xp_reward,
+              lesson_type: (dbL.lesson_type as "video" | "notes" | "lab" | "quiz") || catalogLesson.lesson_type,
+            };
+          }
+        }
+        return catalogLesson;
+      } catch {
+        return catalogLesson;
+      }
+    },
+  });
+
+  const currentLesson = lessonData || courseMeta.lessons[0];
+  const allLessons = courseMeta.lessons;
+  const currentIdx = allLessons.findIndex((l) => l.slug === currentLesson.slug);
+  const prevLesson = currentIdx > 0 ? allLessons[currentIdx - 1] : null;
+  const nextLesson = currentIdx < allLessons.length - 1 ? allLessons[currentIdx + 1] : null;
+
+  const isCompleted = isLessonCompleted(currentLesson.id);
+
+  // Automatically switch tab if current lesson is notes/lab
+  useEffect(() => {
+    if (currentLesson.lesson_type === "notes") setActiveTab("notes");
+    else if (currentLesson.lesson_type === "lab") setActiveTab("lab");
+    else setActiveTab("video");
+    setSelectedAnswer(null);
+    setQuizSubmitted(false);
+  }, [currentLesson.slug, currentLesson.lesson_type]);
+
+  async function handleComplete() {
+    await markLessonCompleted(courseMeta.id, currentLesson.id, currentLesson.xp_reward);
+    setJustCompletedToast(true);
+    setTimeout(() => setJustCompletedToast(false), 4000);
+  }
+
+  function handleNextLesson() {
+    if (nextLesson) {
+      navigate({
+        to: "/courses/$slug/$lesson",
+        params: { slug, lesson: nextLesson.slug },
+      });
+    } else {
+      navigate({
+        to: "/courses/$slug/practice",
+        params: { slug },
+      });
+    }
+  }
+
+  if (authLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center gap-2 text-muted-foreground">
-        <Loader2 className="h-4 w-4 animate-spin" /> Opening classroom…
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6">
+        <div className="rounded-3xl border border-border bg-card p-8 max-w-md text-center space-y-4 shadow-xl">
+          <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary mx-auto flex items-center justify-center">
+            <Lock className="h-6 w-6" />
+          </div>
+          <h2 className="text-xl font-bold font-display">Authentication Required</h2>
+          <p className="text-xs text-muted-foreground">
+            Please sign in or create a free account to access this lesson, interact with labs, and earn XP.
+          </p>
+          <button
+            onClick={() => navigate({ to: "/auth", search: { redirect: `/courses/${slug}/${lessonSlug}`, mode: "signup" } })}
+            className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-[var(--shadow-glow)]"
+          >
+            Sign In or Create Account
+          </button>
+        </div>
       </div>
     );
   }
-  if (!lesson || !course) throw notFound();
-
-  const idx = (allLessons ?? []).findIndex((l) => l.slug === lessonSlug);
-  const prev = idx > 0 ? (allLessons ?? [])[idx - 1] : undefined;
-  const next = idx >= 0 ? (allLessons ?? [])[idx + 1] : undefined;
-  const completedSet = new Set((myProgress ?? []).filter((p: { completed?: boolean }) => p.completed).map((p: { lesson_id: string }) => p.lesson_id));
-  const doneCount = completedSet.size;
-  const totalCount = allLessons?.length ?? 0;
-  const progressPct = totalCount ? Math.round((doneCount / totalCount) * 100) : 0;
-
-  const sections: { id: Section; label: string; icon: typeof Video }[] = [
-    { id: "video", label: "1. Video", icon: Video },
-    { id: "notes", label: "2. Notes", icon: BookOpen },
-    { id: "quiz", label: "3. Quiz", icon: ClipboardList },
-    { id: "lab", label: "Lab", icon: Terminal },
-    { id: "tutor", label: "AI Tutor", icon: Sparkles },
-  ];
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
-          <div className="flex min-w-0 items-center gap-3">
-            <Link to="/">
-              <Logo size={32} />
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* ───────── TOP BAR ───────── */}
+      <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/90 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
+          <div className="flex items-center gap-4">
+            <Link to="/courses/$slug" params={{ slug }} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="h-4 w-4" />
+              <span className="hidden sm:inline">Course Syllabus</span>
             </Link>
-            <div className="hidden min-w-0 sm:block">
-              <Link to="/courses/$slug" params={{ slug: course.slug }} className="text-xs text-muted-foreground hover:text-primary">
-                {course.title}
-              </Link>
-              <p className="truncate text-sm font-semibold">Classroom · {lesson.title}</p>
+            <div className="h-4 w-px bg-border" />
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-primary">{courseMeta.title}:</span>
+              <span className="text-xs font-semibold text-foreground truncate max-w-xs sm:max-w-md">
+                {currentLesson.title}
+              </span>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex items-center gap-3">
+            <StudyTimer />
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1 rounded-xl bg-primary/10 border border-primary/20 text-xs font-bold text-primary">
+              <Zap className="h-3.5 w-3.5" />
+              <span>{stats.xp} XP</span>
+            </div>
             <ThemeToggle />
           </div>
         </div>
-        <div className="h-1 bg-muted">
-          <div className="h-full bg-primary transition-all" style={{ width: `${progressPct}%` }} />
-        </div>
-        <div className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
-          {sections.map((s) => {
-            const Icon = s.icon;
-            const isOn = active === s.id;
-            return (
-              <button
-                key={s.id}
-                type="button"
-                onClick={() => scrollTo(s.id)}
-                className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition ${
-                  isOn ? "bg-primary text-primary-foreground" : "border border-border text-muted-foreground hover:bg-accent hover:text-foreground"
-                }`}
-              >
-                <Icon className="h-3.5 w-3.5" /> {s.label}
-              </button>
-            );
-          })}
-        </div>
       </header>
 
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-6 lg:grid-cols-[1fr_280px] sm:px-6">
-        <div className="min-w-0 space-y-8">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <div>
-              <p className="text-xs font-medium uppercase tracking-wider text-primary">
-                Course taking · Lesson {idx + 1} of {totalCount || 1}
-              </p>
-              <h1 className="font-display text-2xl font-bold md:text-3xl">{lesson.title}</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                Watch the video, read the notes, then take the quiz to check your understanding.
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {prev && (
-                <Link
-                  to="/courses/$slug/$lesson"
-                  params={{ slug: course.slug, lesson: prev.slug }}
-                  className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs hover:bg-accent"
+      {/* Completion Toast Notification */}
+      {justCompletedToast && (
+        <div className="fixed bottom-6 right-6 z-50 rounded-2xl border border-emerald-500/40 bg-card p-4 shadow-2xl animate-in slide-in-from-bottom-5 flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-emerald-500 text-white flex items-center justify-center shrink-0">
+            <Sparkles className="h-5 w-5" />
+          </div>
+          <div>
+            <h4 className="font-bold text-xs text-emerald-500">Lesson Completed!</h4>
+            <p className="text-[11px] text-muted-foreground">+{currentLesson.xp_reward} XP awarded to your profile!</p>
+          </div>
+        </div>
+      )}
+
+      {/* ───────── MAIN WORKSPACE ───────── */}
+      <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+        {/* Workspace Mode Tabs */}
+        <div className="flex items-center justify-between gap-4 border-b border-border pb-3">
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {[
+              { id: "video", label: "Video Lecture", icon: Video },
+              { id: "notes", label: "Reading & Notes", icon: BookOpen },
+              { id: "lab", label: "Terminal Lab", icon: TermIcon },
+              { id: "quiz", label: "Knowledge Quiz", icon: HelpCircle },
+              { id: "tutor", label: "AI Tutor", icon: Sparkles },
+            ].map((tab) => {
+              const Icon = tab.icon;
+              const isActive = activeTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as Section)}
+                  className={`px-4 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 whitespace-nowrap border ${
+                    isActive
+                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                      : "border-border bg-card/60 text-muted-foreground hover:text-foreground hover:bg-secondary/60"
+                  }`}
                 >
-                  <ChevronLeft className="h-3.5 w-3.5" /> Prev
-                </Link>
-              )}
-              {next && (
-                <Link
-                  to="/courses/$slug/$lesson"
-                  params={{ slug: course.slug, lesson: next.slug }}
-                  className="inline-flex items-center gap-1 rounded-lg bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground"
-                >
-                  Next <ChevronRight className="h-3.5 w-3.5" />
-                </Link>
-              )}
-            </div>
+                  <Icon className="h-3.5 w-3.5" />
+                  <span>{tab.label}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {/* 1. VIDEO */}
-          <section ref={videoRef} id="video" className="scroll-mt-36 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">1</span>
-              <h2 className="font-display text-lg font-bold">Watch the video</h2>
-            </div>
-            {hasVideo ? (
-              <VideoPlayer videoUrl={lesson.video_url!} title={lesson.title} timestampQuizzes={SAMPLE_TIMESTAMP_QUIZZES} />
-            ) : (
-              <div className="flex aspect-video flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center">
-                <Video className="mb-3 h-10 w-10 text-muted-foreground" />
-                <h3 className="font-semibold">Notes-first lesson</h3>
-                <p className="mt-1 max-w-md text-sm text-muted-foreground">
-                  No video for this page — scroll to the notes below, then take the quiz.
-                </p>
-                <button
-                  type="button"
-                  onClick={() => scrollTo("notes")}
-                  className="mt-4 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
-                >
-                  Read notes →
-                </button>
-              </div>
-            )}
-            {pdfUrl && (
-              <PdfReader title={`${lesson.title} — PDF`} url={pdfUrl} />
-            )}
-          </section>
-
-          {/* 2. NOTES */}
-          <section ref={notesRef} id="notes" className="scroll-mt-36 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">2</span>
-              <h2 className="font-display text-lg font-bold">Read the notes</h2>
-            </div>
-            {hasNotes ? (
-              <NotesViewer title={lesson.title} content={lesson.content!} />
-            ) : (
-              <div className="rounded-2xl border border-dashed border-border p-10 text-center text-sm text-muted-foreground">
-                No written notes for this lesson yet.
-                {hasVideo && (
-                  <button type="button" onClick={() => scrollTo("video")} className="mt-3 block w-full text-primary underline">
-                    Watch the video instead
-                  </button>
-                )}
-              </div>
-            )}
-          </section>
-
-          {/* 3. QUIZ */}
-          <section ref={quizRef} id="quiz" className="scroll-mt-36 space-y-3">
-            <div className="flex items-center gap-2">
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">3</span>
-              <h2 className="font-display text-lg font-bold">Take the quiz</h2>
-            </div>
-            <QuizBlock lessonId={lesson.id} lessonSlug={lessonSlug} courseTitle={course.title} lessonTitle={lesson.title} />
-          </section>
-
-          {/* Lab */}
-          <section ref={labRef} id="lab" className="scroll-mt-36 space-y-3">
-            <div className="flex items-center gap-2">
-              <Terminal className="h-5 w-5 text-primary" />
-              <h2 className="font-display text-lg font-bold">Lab practice</h2>
-            </div>
-            <ChallengeBlock lessonId={lesson.id} />
-            <Link
-              to="/lab"
-              className="flex items-center justify-between rounded-2xl border border-border bg-card p-5 hover:border-primary/50"
+          {/* Quick Mark Complete Button */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              onClick={handleComplete}
+              className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                isCompleted
+                  ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/30"
+                  : "bg-primary text-primary-foreground hover:brightness-110 shadow-sm"
+              }`}
             >
-              <div>
-                <p className="font-semibold">Open Linux Lab</p>
-                <p className="text-xs text-muted-foreground">Practice commands in a real browser terminal</p>
-              </div>
-              <Terminal className="h-5 w-5 text-primary" />
-            </Link>
-          </section>
-
-          {/* Tutor */}
-          <section ref={tutorRef} id="tutor" className="scroll-mt-36 space-y-3">
-            <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="font-display text-lg font-bold">Ask the AI Tutor</h2>
-            </div>
-            <TutorChat
-              lessonContext={{
-                courseTitle: course.title,
-                lessonTitle: lesson.title,
-                lessonContent: lesson.content ?? undefined,
-                lessonType: lesson.lesson_type,
-              }}
-            />
-          </section>
-
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6 pb-10">
-            <MarkComplete
-              lessonId={lesson.id}
-              xp={lesson.xp_reward}
-              onDone={() => {
-                if (next) {
-                  void navigate({
-                    to: "/courses/$slug/$lesson",
-                    params: { slug: course.slug, lesson: next.slug },
-                  });
-                } else {
-                  void navigate({
-                    to: "/courses/$slug/practice",
-                    params: { slug: course.slug },
-                  });
-                }
-              }}
-            />
-            {next ? (
-              <Link
-                to="/courses/$slug/$lesson"
-                params={{ slug: course.slug, lesson: next.slug }}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-              >
-                Next lesson: {next.title} →
-              </Link>
-            ) : (
-              <Link
-                to="/courses/$slug/practice"
-                params={{ slug: course.slug }}
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90"
-              >
-                Course complete — Practice quiz →
-              </Link>
-            )}
+              <CheckCircle2 className="h-4 w-4" />
+              <span>{isCompleted ? "Completed (+XP)" : "Mark as Complete"}</span>
+            </button>
           </div>
         </div>
 
-        <aside className="space-y-4 lg:sticky lg:top-36 lg:self-start">
-          <StudyTimer storageKey={`study-${course.id}-${lesson.id}`} />
-
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="mb-2 text-sm font-semibold">How to take this lesson</p>
-            <ol className="space-y-2 text-xs text-muted-foreground">
-              <li className="flex gap-2">
-                <span className="font-bold text-primary">1</span> Watch the video
-              </li>
-              <li className="flex gap-2">
-                <span className="font-bold text-primary">2</span> Read the notes
-              </li>
-              <li className="flex gap-2">
-                <span className="font-bold text-primary">3</span> Take the quiz
-              </li>
-              <li className="flex gap-2">
-                <span className="font-bold text-primary">4</span> Mark complete → next
-              </li>
-            </ol>
+        {/* Tab 1: Video */}
+        {activeTab === "video" && (
+          <div className="space-y-6">
+            <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-xl p-4 sm:p-6">
+              {currentLesson.video_url ? (
+                <div className="aspect-video w-full rounded-2xl overflow-hidden bg-black">
+                  <iframe
+                    src={currentLesson.video_url.replace("watch?v=", "embed/")}
+                    title={currentLesson.title}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="w-full h-full border-0"
+                  />
+                </div>
+              ) : (
+                <div className="aspect-video w-full rounded-2xl bg-secondary/40 border border-border flex flex-col items-center justify-center p-6 text-center space-y-3">
+                  <BookOpen className="h-10 w-10 text-primary" />
+                  <h3 className="font-bold text-base">Reading & Hands-on Lab Lesson</h3>
+                  <p className="text-xs text-muted-foreground max-w-md">
+                    This lesson is structured around reading materials, commands documentation, and interactive terminal exercises.
+                  </p>
+                  <button
+                    onClick={() => setActiveTab("notes")}
+                    className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:brightness-110"
+                  >
+                    Open Notes & Commands
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
+        )}
 
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="mb-2 text-sm font-semibold">Course progress</p>
-            <div className="mb-1 flex justify-between text-xs text-muted-foreground">
-              <span>
-                {doneCount}/{totalCount} done
+        {/* Tab 2: Notes & Cheatsheet */}
+        {activeTab === "notes" && (
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-10 shadow-xl space-y-6">
+            <div className="prose prose-invert max-w-none">
+              <NotesViewer content={currentLesson.content} />
+            </div>
+          </div>
+        )}
+
+        {/* Tab 3: Interactive Terminal Lab */}
+        {activeTab === "lab" && (
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xl space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="font-mono text-xs font-bold text-foreground">Interactive Linux Terminal Sandbox</span>
+              </div>
+              <Link
+                to="/lab"
+                className="text-xs font-semibold text-primary hover:underline flex items-center gap-1"
+              >
+                Open Fullscreen Lab <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+
+            <div className="rounded-2xl border border-border bg-black p-4 font-mono text-xs text-emerald-400 space-y-3 min-h-[360px] flex flex-col justify-between">
+              <div>
+                <div className="text-muted-foreground mb-3">
+                  Linux 6.6.0-afrokernel x86_64 · Connected as learner@afrokernel
+                </div>
+                <div className="space-y-1">
+                  <p className="text-muted-foreground"># Try typing commands for this lesson:</p>
+                  <p className="text-foreground font-bold">learner@afrokernel:~$ uname -a</p>
+                  <p className="text-muted-foreground">Linux afrokernel-node1 6.6.0-afrokernel #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux</p>
+                  <p className="text-foreground font-bold">learner@afrokernel:~$ ls -la /etc</p>
+                  <p className="text-muted-foreground">drwxr-xr-x  85 root root 4096 Aug 14 09:30 .</p>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-zinc-800 flex items-center justify-between text-zinc-400">
+                <span>Type commands in the full sandbox for persistent sessions</span>
+                <Link
+                  to="/lab"
+                  className="px-4 py-1.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110"
+                >
+                  Launch Full Terminal
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Tab 4: Knowledge Quiz */}
+        {activeTab === "quiz" && (
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-10 shadow-xl space-y-6">
+            <div className="space-y-1">
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Knowledge Check Quiz
               </span>
-              <span>{progressPct}%</span>
+              <h2 className="text-xl font-bold text-foreground">
+                {currentLesson.quiz?.question || "What is the primary role of this Linux component?"}
+              </h2>
             </div>
-            <div className="h-2 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-primary" style={{ width: `${progressPct}%` }} />
-            </div>
-          </div>
 
-          <div className="rounded-2xl border border-border bg-card p-4">
-            <p className="mb-3 text-sm font-semibold">Lessons</p>
-            <ul className="max-h-72 space-y-1 overflow-y-auto">
-              {(allLessons ?? []).map((l, i) => {
-                const done = completedSet.has(l.id);
-                const current = l.slug === lessonSlug;
+            {/* Choices */}
+            <div className="space-y-3">
+              {(
+                currentLesson.quiz?.choices || [
+                  "Manage system hardware and process scheduling",
+                  "Play graphical 3D video games",
+                  "Create spreadsheet charts",
+                  "Format USB disks without permissions",
+                ]
+              ).map((choice, idx) => {
+                const isSelected = selectedAnswer === idx;
+                const isCorrect = idx === (currentLesson.quiz?.correctIndex ?? 0);
+
+                let cardStyle = "border-border bg-secondary/30 hover:border-primary/40";
+                if (quizSubmitted) {
+                  if (isCorrect) cardStyle = "border-emerald-500 bg-emerald-500/10 text-emerald-500 font-bold";
+                  else if (isSelected && !isCorrect) cardStyle = "border-rose-500 bg-rose-500/10 text-rose-500";
+                } else if (isSelected) {
+                  cardStyle = "border-primary bg-primary/10 shadow-sm";
+                }
+
                 return (
-                  <li key={l.id}>
-                    <Link
-                      to="/courses/$slug/$lesson"
-                      params={{ slug: course.slug, lesson: l.slug }}
-                      className={`flex items-center gap-2 rounded-lg px-2 py-2 text-xs transition ${
-                        current ? "bg-primary/15 font-semibold text-primary" : "hover:bg-accent"
-                      }`}
-                    >
-                      {done ? (
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0 text-primary" />
-                      ) : (
-                        <span className="flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-full border border-border text-[9px]">
-                          {i + 1}
-                        </span>
-                      )}
-                      <span className="truncate">{l.title}</span>
-                    </Link>
-                  </li>
+                  <button
+                    key={idx}
+                    disabled={quizSubmitted}
+                    onClick={() => setSelectedAnswer(idx)}
+                    className={`w-full p-4 rounded-2xl border text-left text-xs transition flex items-center justify-between ${cardStyle}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="h-6 w-6 rounded-full border border-border flex items-center justify-center font-mono font-bold">
+                        {String.fromCharCode(65 + idx)}
+                      </span>
+                      <span>{choice}</span>
+                    </div>
+                    {quizSubmitted && isCorrect && <Check className="h-4 w-4 text-emerald-500" />}
+                  </button>
                 );
               })}
-            </ul>
-          </div>
-
-          <Link
-            to="/courses/$slug/practice"
-            params={{ slug: course.slug }}
-            className="flex items-center gap-2 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-sm font-semibold text-primary hover:bg-primary/15"
-          >
-            <ClipboardList className="h-4 w-4" /> Full practice quiz
-          </Link>
-        </aside>
-      </div>
-    </div>
-  );
-}
-
-function ChallengeBlock({ lessonId }: { lessonId: string }) {
-  const qc = useQueryClient();
-  const { data: challenge, isError, isLoading } = useQuery({
-    queryKey: ["lesson-challenge", lessonId],
-    queryFn: () => getLessonChallenge({ data: lessonId }),
-    retry: false,
-  });
-  const [output, setOutput] = useState("");
-  const [result, setResult] = useState<null | { passed: boolean; awarded: number; expected?: string }>(null);
-  const grade = useMutation({
-    mutationFn: () => submitChallenge({ data: { lesson_id: lessonId, output } }),
-    onSuccess: (res) => {
-      setResult(res);
-      if (res.passed) qc.invalidateQueries({ queryKey: ["my-progress"] });
-    },
-  });
-
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading practice…</div>;
-  if (isError) {
-    return (
-      <section className="rounded-xl border border-border bg-card p-5 text-sm text-muted-foreground">
-        Sign in to attempt graded challenges. You can still open the Lab anytime.{" "}
-        <Link to="/auth" className="font-medium text-primary hover:underline">
-          Sign in
-        </Link>
-      </section>
-    );
-  }
-  if (!challenge) {
-    return (
-      <section className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">
-        No graded challenge for this lesson yet. Open the Lab and practice the commands from the notes.
-      </section>
-    );
-  }
-  const c = challenge as {
-    title: string;
-    xp_reward: number;
-    prompt: string;
-    starter_command?: string;
-  };
-  return (
-    <section className="rounded-xl border border-primary/30 bg-primary/5 p-5">
-      <h3 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-primary">
-        <Zap className="h-4 w-4" /> {c.title} · +{c.xp_reward} XP
-      </h3>
-      <p className="mb-3 text-sm">{c.prompt}</p>
-      {c.starter_command && (
-        <pre className="overflow-x-auto rounded-lg bg-[oklch(0.11_0.01_260)] p-3 font-mono text-sm text-[oklch(0.97_0.01_90)]">
-          {c.starter_command}
-        </pre>
-      )}
-      <p className="mb-1 mt-4 text-xs text-muted-foreground">Paste your terminal output here to grade</p>
-      <textarea
-        value={output}
-        onChange={(e) => setOutput(e.target.value)}
-        rows={5}
-        placeholder="Run the command in the Lab, copy the output, paste here."
-        className="w-full rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-primary"
-      />
-      <div className="mt-3 flex flex-wrap items-center gap-3">
-        <Link to="/lab" className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm hover:bg-accent">
-          <Play className="h-3.5 w-3.5" /> Open Lab
-        </Link>
-        <button
-          onClick={() => grade.mutate()}
-          disabled={!output.trim() || grade.isPending}
-          className="rounded-lg bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {grade.isPending ? "Grading…" : "Check my answer"}
-        </button>
-        {result?.passed && (
-          <span className="flex items-center gap-1 text-sm text-green-600 dark:text-green-400">
-            <CheckCircle2 className="h-4 w-4" /> +{result.awarded} XP
-          </span>
-        )}
-        {result && !result.passed && (
-          <span className="flex items-center gap-1 text-sm text-destructive">
-            <XCircle className="h-4 w-4" /> Expected: <code className="rounded bg-destructive/10 px-1">{result.expected?.slice(0, 60)}</code>
-          </span>
-        )}
-      </div>
-    </section>
-  );
-}
-
-function QuizBlock({
-  lessonId,
-  lessonSlug,
-  courseTitle,
-  lessonTitle,
-}: {
-  lessonId: string;
-  lessonSlug: string;
-  courseTitle: string;
-  lessonTitle: string;
-}) {
-  const qc = useQueryClient();
-  const builtIn = getBuiltInQuiz(lessonSlug);
-  const { data, isLoading } = useQuery({
-    queryKey: ["lesson-quiz", lessonId],
-    queryFn: async () => {
-      try {
-        return await getLessonQuiz({ data: lessonId });
-      } catch {
-        return null;
-      }
-    },
-    retry: false,
-  });
-
-  const useServer = !!(data?.quiz && (data.questions?.length ?? 0) > 0);
-  const questions = useServer
-    ? (data!.questions as Array<{ id: string; prompt: string; choices: string[] }>)
-    : builtIn.questions.map((q) => ({ id: q.id, prompt: q.prompt, choices: q.choices }));
-  const quizMeta = useServer
-    ? {
-        title: (data!.quiz as { title: string }).title,
-        passing_score: (data!.quiz as { passing_score: number }).passing_score,
-        xp_reward: (data!.quiz as { xp_reward: number }).xp_reward,
-      }
-    : {
-        title: builtIn.title,
-        passing_score: builtIn.passing_score,
-        xp_reward: builtIn.xp_reward,
-      };
-
-  const [answers, setAnswers] = useState<Record<string, number>>({});
-  const [result, setResult] = useState<null | {
-    score: number;
-    passed: boolean;
-    correct: number;
-    total: number;
-    awarded: number;
-    review: Array<{ id: string; correct: boolean; correctIndex: number; explanation: string | null }>;
-  }>(null);
-
-  const submit = useMutation({
-    mutationFn: async () => {
-      if (useServer) {
-        return submitQuiz({ data: { lesson_id: lessonId, answers } });
-      }
-      const review = builtIn.questions.map((q) => {
-        const picked = answers[q.id];
-        const ok = picked === q.correct_index;
-        return {
-          id: q.id,
-          correct: ok,
-          correctIndex: q.correct_index,
-          explanation: q.explanation ?? null,
-        };
-      });
-      const correct = review.filter((r) => r.correct).length;
-      const total = review.length || 1;
-      const score = Math.round((correct / total) * 100);
-      const passed = score >= builtIn.passing_score;
-      let awarded = 0;
-      if (passed) {
-        awarded = builtIn.xp_reward;
-        const { data: u } = await supabase.auth.getUser();
-        if (u.user) {
-          const { data: s } = await supabase.from("user_stats").select("xp").eq("user_id", u.user.id).maybeSingle();
-          const currentXp = (s as { xp?: number } | null)?.xp ?? 0;
-          await supabase.from("user_stats").update({ xp: currentXp + awarded } as never).eq("user_id", u.user.id);
-          await supabase.from("lesson_progress").upsert(
-            {
-              user_id: u.user.id,
-              lesson_id: lessonId,
-              completed: true,
-              score,
-              completed_at: new Date().toISOString(),
-            } as never,
-            { onConflict: "user_id,lesson_id" },
-          );
-        }
-      }
-      return { score, passed, correct, total, awarded, review };
-    },
-    onSuccess: (res) => {
-      setResult(res);
-      if (res.passed) qc.invalidateQueries({ queryKey: ["my-progress"] });
-    },
-  });
-
-  if (isLoading) return <div className="text-sm text-muted-foreground">Loading quiz…</div>;
-
-  return (
-    <section className="rounded-2xl border border-border bg-card p-5">
-      <h3 className="mb-1 flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-primary">
-        <HelpCircle className="h-4 w-4" /> {quizMeta.title}
-      </h3>
-      <p className="mb-4 text-xs text-muted-foreground">
-        Pass ≥ {quizMeta.passing_score}% · +{quizMeta.xp_reward} XP · Answer every question, then submit
-      </p>
-      <div className="space-y-5">
-        {questions.map((q, i) => {
-          const review = result?.review.find((r) => r.id === q.id);
-          return (
-            <div key={q.id}>
-              <p className="text-sm font-medium">
-                {i + 1}. {q.prompt}
-              </p>
-              <div className="mt-2 space-y-1.5">
-                {q.choices.map((c, ci) => {
-                  const isPicked = answers[q.id] === ci;
-                  const isCorrect = review?.correctIndex === ci;
-                  return (
-                    <label
-                      key={ci}
-                      className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm ${
-                        review
-                          ? isCorrect
-                            ? "border-green-500/50 bg-green-500/10"
-                            : isPicked
-                              ? "border-destructive/50 bg-destructive/10"
-                              : "border-border"
-                          : isPicked
-                            ? "border-primary bg-primary/5"
-                            : "border-border hover:bg-accent"
-                      }`}
-                    >
-                      <input
-                        type="radio"
-                        name={`q-${q.id}`}
-                        checked={isPicked}
-                        onChange={() => setAnswers({ ...answers, [q.id]: ci })}
-                        className="accent-primary"
-                        disabled={!!review}
-                      />
-                      {c}
-                    </label>
-                  );
-                })}
-              </div>
-              {review?.explanation && <p className="mt-1.5 text-xs text-muted-foreground">💡 {review.explanation}</p>}
             </div>
-          );
-        })}
-      </div>
-      <div className="mt-5 flex flex-wrap items-center gap-3">
-        <button
-          onClick={() => submit.mutate()}
-          disabled={submit.isPending || Object.keys(answers).length < questions.length}
-          className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
-        >
-          {submit.isPending ? "Grading…" : result ? "Submit again" : "Submit quiz"}
-        </button>
-        {result && (
-          <>
-            <span className={`text-sm font-medium ${result.passed ? "text-green-600 dark:text-green-400" : "text-destructive"}`}>
-              Score {result.score}% ({result.correct}/{result.total}) · {result.passed ? `+${result.awarded} XP` : "Try again"}
-            </span>
-            <button
-              onClick={() =>
-                exportQuizPDF({
-                  userName: "AfroKernel Learner",
-                  courseTitle,
-                  lessonTitle,
-                  quizTitle: quizMeta.title,
-                  score: result.score,
-                  correct: result.correct,
-                  total: result.total,
-                  passed: result.passed,
-                  awardedXp: result.awarded,
-                  date: new Date().toLocaleDateString(),
-                  questions: questions.map((q) => ({
-                    prompt: q.prompt,
-                    choices: q.choices,
-                    userAnswerIndex: answers[q.id] ?? 0,
-                    correctIndex: result.review.find((r) => r.id === q.id)?.correctIndex ?? 0,
-                    explanation: result.review.find((r) => r.id === q.id)?.explanation ?? undefined,
-                  })),
-                })
-              }
-              className="ml-auto flex items-center gap-1.5 rounded-lg border border-border bg-card px-3.5 py-1.5 text-xs font-semibold hover:bg-accent"
-            >
-              <FileDown className="h-3.5 w-3.5 text-primary" /> Export PDF
-            </button>
-          </>
-        )}
-        {result && !result.passed && (
-          <button
-            onClick={() => {
-              setResult(null);
-              setAnswers({});
-            }}
-            className="text-xs text-primary underline"
-          >
-            Reset
-          </button>
-        )}
-      </div>
-    </section>
-  );
-}
 
-function MarkComplete({ lessonId, xp, onDone }: { lessonId: string; xp: number; onDone?: () => void }) {
-  const qc = useQueryClient();
-  const [done, setDone] = useState(false);
-  const mut = useMutation({
-    mutationFn: async () => {
-      const { data: u } = await supabase.auth.getUser();
-      if (!u.user) throw new Error("Sign in to save progress");
-      await supabase.from("lesson_progress").upsert(
-        {
-          user_id: u.user.id,
-          lesson_id: lessonId,
-          completed: true,
-          score: 100,
-          completed_at: new Date().toISOString(),
-        } as never,
-        { onConflict: "user_id,lesson_id" },
-      );
-      const { data: s } = await supabase.from("user_stats").select("xp").eq("user_id", u.user.id).maybeSingle();
-      const currentXp = (s as { xp?: number } | null)?.xp ?? 0;
-      await supabase.from("user_stats").update({ xp: currentXp + xp } as never).eq("user_id", u.user.id);
-      setDone(true);
-      qc.invalidateQueries({ queryKey: ["my-progress"] });
-      onDone?.();
-    },
-  });
-  return (
-    <div className="space-y-2">
-      <button
-        onClick={() => mut.mutate()}
-        disabled={done || mut.isPending}
-        className="inline-flex items-center gap-2 rounded-lg border border-border px-4 py-2 text-sm font-medium hover:bg-accent disabled:opacity-60"
-      >
-        <CheckCircle2 className="h-4 w-4" /> {done ? `Completed +${xp} XP` : "Mark complete & go next"}
-      </button>
-      {mut.isError && (
-        <p className="text-xs text-destructive">
-          {(mut.error as Error).message}.{" "}
-          <Link to="/auth" className="underline">
-            Sign in
-          </Link>{" "}
-          to save progress.
-        </p>
-      )}
+            {/* Submit Quiz button & explanation */}
+            {!quizSubmitted ? (
+              <button
+                disabled={selectedAnswer === null}
+                onClick={() => {
+                  setQuizSubmitted(true);
+                  if (selectedAnswer === (currentLesson.quiz?.correctIndex ?? 0)) {
+                    handleComplete();
+                  }
+                }}
+                className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition disabled:opacity-50"
+              >
+                Submit Answer
+              </button>
+            ) : (
+              <div className="p-4 rounded-2xl bg-secondary/50 border border-border space-y-2 text-xs">
+                <span className="font-bold text-primary block">Explanation:</span>
+                <p className="text-muted-foreground">
+                  {currentLesson.quiz?.explanation ||
+                    "This component functions as the primary abstraction layer between user applications and the physical kernel."}
+                </p>
+                <div className="pt-2 flex gap-3">
+                  <button
+                    onClick={() => { setQuizSubmitted(false); setSelectedAnswer(null); }}
+                    className="text-xs text-primary font-semibold hover:underline"
+                  >
+                    Try Again
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Tab 5: AI Tutor */}
+        {activeTab === "tutor" && (
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 shadow-xl">
+            <TutorChat />
+          </div>
+        )}
+
+        {/* ───────── BOTTOM NAVIGATION CONTROLS ───────── */}
+        <div className="flex items-center justify-between pt-6 border-t border-border">
+          {prevLesson ? (
+            <Link
+              to="/courses/$slug/$lesson"
+              params={{ slug, lesson: prevLesson.slug }}
+              className="px-5 py-2.5 rounded-xl border border-border bg-card text-xs font-semibold hover:bg-secondary transition flex items-center gap-2"
+            >
+              <ChevronLeft className="h-4 w-4" /> Previous: {prevLesson.title}
+            </Link>
+          ) : (
+            <div />
+          )}
+
+          {nextLesson ? (
+            <button
+              onClick={handleNextLesson}
+              className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
+            >
+              Next: {nextLesson.title} <ChevronRight className="h-4 w-4" />
+            </button>
+          ) : (
+            <Link
+              to="/courses/$slug/practice"
+              params={{ slug }}
+              className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
+            >
+              Take Course Practice Exam <Award className="h-4 w-4" />
+            </Link>
+          )}
+        </div>
+      </main>
     </div>
   );
 }

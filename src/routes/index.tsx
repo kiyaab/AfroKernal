@@ -1,12 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 import {
   Terminal,
   BookOpen,
   Sparkles,
   Cpu,
   ShieldCheck,
-  Trophy,
+  Award,
   Container,
   Network,
   GitBranch,
@@ -17,7 +19,22 @@ import {
   Check,
   Layers,
   Users,
+  Search,
+  Disc,
+  AppWindow,
+  Gamepad2,
+  Calculator,
+  Clock,
+  ExternalLink,
+  ChevronRight,
+  Flame,
+  CheckCircle2,
 } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/lib/AuthContext";
+import { DISTROS_DATA } from "@/lib/distros-data";
+import { APPS_DATA } from "@/lib/apps-data";
+import { GlobalSearchModal } from "@/components/GlobalSearchModal";
 
 const LOGO_URL = "/afrokernel-logo.png";
 
@@ -26,354 +43,518 @@ export const Route = createFileRoute("/")({
 });
 
 const paths = [
-  { icon: Terminal, title: "Linux Fundamentals", lessons: 42, level: "Beginner" },
-  { icon: Code2, title: "Bash Scripting", lessons: 36, level: "Intermediate" },
-  { icon: Network, title: "Networking & SSH", lessons: 28, level: "Intermediate" },
-  { icon: Server, title: "System Administration", lessons: 54, level: "Advanced" },
-  { icon: Container, title: "Docker & Kubernetes", lessons: 48, level: "Advanced" },
-  { icon: ShieldCheck, title: "Linux Security", lessons: 33, level: "Advanced" },
-  { icon: GitBranch, title: "Git & DevOps", lessons: 40, level: "Intermediate" },
-  { icon: Layers, title: "Cloud & Automation", lessons: 45, level: "Expert" },
+  { slug: "linux", icon: "🐧", title: "Linux Fundamentals 2026", lessons: 38, level: "Beginner", desc: "Command line, files, permissions, networking, and system administration with a certificate.", hasCert: true },
+  { slug: "security", icon: "🔒", title: "Cybersecurity Fundamentals", lessons: 10, level: "Intermediate", desc: "Nmap port scanning, Wireshark traffic analysis, system hardening, and penetration testing.", hasCert: true },
+  { slug: "devops", icon: "⚙️", title: "DevOps & Containers", lessons: 10, level: "Advanced", desc: "Docker, Kubernetes, GitHub Actions CI/CD, and Ansible automation with a certificate.", hasCert: true },
+  { slug: "networking", icon: "🌐", title: "Networking Fundamentals", lessons: 12, level: "Intermediate", desc: "TCP/IP, subnetting, DNS hierarchies, routing tables, and socket analysis.", hasCert: false },
+  { slug: "cloud", icon: "☁️", title: "Cloud & Infrastructure", lessons: 11, level: "Advanced", desc: "AWS, GCP, Azure VMs, cloud-init provisioning, IAM security, and Terraform.", hasCert: false },
+  { slug: "containers", icon: "🐳", title: "Containers & Kubernetes", lessons: 11, level: "Advanced", desc: "Namespaces, cgroups, Pods, Deployments, Services, Helm charts, and Ingress.", hasCert: false },
 ];
-
-const features = [
-  { icon: Terminal, title: "Real Browser Terminals", desc: "Isolated Docker-powered Ubuntu, Fedora, Arch, Rocky & Debian containers. Run real commands, no install." },
-  { icon: Sparkles, title: "AI Linux Mentor", desc: "Personal tutor that explains every command, reviews scripts, diagnoses errors, and builds your study plan." },
-  { icon: BookOpen, title: "W3Schools-Style Docs", desc: "Every command with syntax, examples, output, and Try-It-Yourself — a full Linux reference library." },
-  { icon: Trophy, title: "Gamified Progress", desc: "XP, streaks, badges, challenges & leaderboards. Everything is free — no paywalls, ever." },
-  { icon: Cpu, title: "Hands-On Labs", desc: "VS Code Web, multi-tab terminals, persistent workspaces, and real-world sysadmin projects." },
-  { icon: Users, title: "Community & Certificates", desc: "Discussions, workshops, mock interviews, and free certificates for every completed path." },
-];
-
-import { useAuth } from "@/lib/AuthContext";
-import { User, LogOut } from "lucide-react";
 
 function Landing() {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [terminalCmd, setTerminalCmd] = useState("neofetch");
+  const [terminalOutput, setTerminalOutput] = useState<string>(`       _,met$$$$$gg.          learner@afrokernel
+    ,g$$$$$$$$$$$$$$$P.       ------------------
+  ,g$$P"''       '""Y$$.".    OS: AfroKernel Linux 2026 (x86_64)
+ ,$$P'              '$$$.     Kernel: 6.8.0-afrokernel-generic
+',$$P       ,ggs.     '$$b:   Uptime: 14 days, 3 hours
+'d$$'     ,$P"'   .    $$$    Shell: bash 5.2.21
+ $$P      d$'     ,    $$P    DE: Open Education Cloud
+ $$:      $.   -  ,d$$'       Terminal: Browser Virtual TTY
+ $$;      Y$b._   _,d$P'      CPU: Cloud Virtual CPU (4 cores)
+ Y$$.    '.'"Y$$$$P"'         Memory: 1024MB / 4096MB
+  '$$b      "-.__             Disk (/): 14.2GB / 50GB (ext4)
+   'Y$$                       Status: All-Access Ready (100% Free)`);
+
+  const runTerminalCommand = (cmd: string) => {
+    setTerminalCmd(cmd);
+    const clean = cmd.trim().toLowerCase();
+    if (clean === "neofetch") {
+      setTerminalOutput(`       _,met$$$$$gg.          learner@afrokernel
+    ,g$$$$$$$$$$$$$$$P.       ------------------
+  ,g$$P"''       '""Y$$.".    OS: AfroKernel Linux 2026 (x86_64)
+ ,$$P'              '$$$.     Kernel: 6.8.0-afrokernel-generic
+',$$P       ,ggs.     '$$b:   Uptime: 14 days, 3 hours
+'d$$'     ,$P"'   .    $$$    Shell: bash 5.2.21
+ $$P      d$'     ,    $$P    DE: Open Education Cloud
+ $$:      $.   -  ,d$$'       Terminal: Browser Virtual TTY
+ $$;      Y$b._   _,d$P'      CPU: Cloud Virtual CPU (4 cores)
+ Y$$.    '.'"Y$$$$P"'         Memory: 1024MB / 4096MB
+  '$$b      "-.__             Disk (/): 14.2GB / 50GB (ext4)
+   'Y$$                       Status: All-Access Ready (100% Free)`);
+    } else if (clean.startsWith("chmod")) {
+      setTerminalOutput(`[OK] Changed file permissions to 755 (-rwxr-xr-x) for deploy.sh
+Owner: rwx (read, write, execute)
+Group: r-x (read, execute)
+Others: r-x (read, execute)`);
+    } else if (clean.startsWith("docker")) {
+      setTerminalOutput(`CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS
+7c82a1b9f0e1   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   0.0.0.0:80->80/tcp
+e31c44208a9f   redis:7-alpine "docker-entrypoint.s…"   10 hours ago    Up 10 hours    0.0.0.0:6379->6379/tcp`);
+    } else if (clean.startsWith("nmap")) {
+      setTerminalOutput(`Starting Nmap 7.94 ( https://nmap.org ) at 2026-08-14 12:00 UTC
+Nmap scan report for target.internal (192.168.1.50)
+Host is up (0.00042s latency).
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 9.6p1 Ubuntu
+80/tcp   open  http    nginx/1.24.0
+443/tcp  open  ssl/http nginx/1.24.0
+Nmap done: 1 IP address (1 host up) scanned in 0.48 seconds`);
+    } else {
+      setTerminalOutput(`total 32
+drwxr-xr-x 4 learner learner 4096 Aug 14 12:00 .
+drwxr-xr-x 3 root    root    4096 Aug 14 10:00 ..
+-rwxr-xr-x 1 learner learner  248 Aug 14 11:30 deploy.sh
+-rw-r--r-- 1 learner learner 1420 Aug 14 11:45 nginx.conf
+drwxr-xr-x 2 learner learner 4096 Aug 14 11:15 src
+drwxr-xr-x 2 learner learner 4096 Aug 14 11:20 tests`);
+    }
+  };
+
+  const featuredDistros = DISTROS_DATA.slice(0, 4);
+  const featuredApps = APPS_DATA.slice(0, 3);
 
   return (
-    <div className="min-h-screen text-foreground">
-      {/* NAV */}
-      <header className="sticky top-0 z-50 glass">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
-          <Link to={user ? "/dashboard" : "/"} className="flex items-center gap-2">
-            <span className="inline-flex h-10 w-10 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/40 bg-primary/10 shadow-[0_0_30px_-10px_var(--primary)]">
-              <img src={LOGO_URL} alt="AfroKernel" className="h-full w-full object-cover" />
-            </span>
-            <span className="font-display text-lg font-bold">
-              Afro<span className="text-primary">Kernel</span>
-            </span>
-          </Link>
-          <nav className="hidden items-center gap-8 md:flex">
-            <Link to="/courses" className="text-sm text-muted-foreground transition hover:text-foreground">Courses</Link>
-            <Link to="/docs" className="text-sm text-muted-foreground transition hover:text-foreground">Docs</Link>
-            <Link to="/lab" className="text-sm text-muted-foreground transition hover:text-foreground">Linux Lab</Link>
-            <Link to="/resources" className="text-sm text-muted-foreground transition hover:text-foreground">Resources</Link>
-            <Link to="/chat" className="text-sm text-muted-foreground transition hover:text-foreground">AI Tutor</Link>
-          </nav>
+    <div className="min-h-screen text-foreground flex flex-col bg-background">
+      {/* Mega Navigation Header */}
+      <HeaderNav />
 
-          <div className="flex items-center gap-3">
-            <ThemeToggle />
-            {user ? (
-              <>
-                <Link to="/dashboard" className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:brightness-110">
-                  <User className="h-4 w-4" /> Dashboard
-                </Link>
-                <button
-                  onClick={() => signOut()}
-                  className="p-2 rounded-lg border border-border hover:bg-accent text-muted-foreground hover:text-foreground transition"
-                  title="Sign out"
-                >
-                  <LogOut className="h-4 w-4" />
-                </button>
-              </>
-            ) : (
-              <>
-                <Link to="/auth" search={{ mode: "signin" }} className="hidden text-sm text-muted-foreground transition hover:text-foreground sm:block">Sign in</Link>
-                <Link to="/auth" search={{ redirect: "/courses", mode: "signup" }} className="inline-flex items-center gap-1.5 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition hover:brightness-110">
-                  Start free <ArrowRight className="h-4 w-4" />
-                </Link>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
-
-      {/* HERO */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 grid-bg opacity-40" />
-        <div className="relative mx-auto grid max-w-7xl gap-12 px-6 py-20 lg:grid-cols-[1.1fr_1fr] lg:py-32">
-          <div className="flex flex-col justify-center">
-            <div className="inline-flex w-fit items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-              <span className="h-1.5 w-1.5 rounded-full bg-primary" />
-              100% Free · AI-Powered · Open Education
+      {/* Hero Section */}
+      <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 border-b border-border/60">
+        <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+        <div className="relative mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
+          {/* Hero Left Content */}
+          <div className="space-y-6">
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary shadow-[0_0_15px_-5px_var(--primary)]">
+              <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
+              <span>Your Home to Learn Linux · 100% Free & Open</span>
             </div>
-            <h1 className="mt-6 text-5xl font-bold leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
-              Master Linux with your <span className="text-gradient">AI mentor</span> in a real terminal.
+
+            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[1.05]">
+              Master Linux. <br />
+              <span className="text-gradient">From your first command</span> <br />
+              to certified expert.
             </h1>
-            <p className="mt-6 max-w-xl text-lg text-muted-foreground">
-              AfroKernel is the world's best free Linux Administration platform. Structured lessons, browser-based labs, an AI tutor that explains every command — from <span className="font-mono text-primary">pwd</span> to production Kubernetes.
+
+            <p className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
+              Step-by-step tutorials, interactive tools, app alternatives, distro finders, and verifiable certifications. The complete hands-on Linux learning ecosystem.
             </p>
-            <div className="mt-8 flex flex-wrap items-center gap-3">
-              {user ? (
-                <Link
-                  to="/courses"
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110 glow-yellow"
-                >
-                  <Zap className="h-4 w-4" /> Start learning free
-                </Link>
-              ) : (
-                <Link
-                  to="/auth"
-                  search={{ redirect: "/courses", mode: "signup" }}
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110 glow-yellow"
-                >
-                  <Zap className="h-4 w-4" /> Start learning free
-                </Link>
-              )}
+
+            {/* CTAs */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
-                to="/courses"
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/50 px-5 py-3 text-sm font-semibold transition hover:bg-card"
+                to={user ? "/courses" : "/auth"}
+                search={user ? undefined : { redirect: "/courses", mode: "signup" }}
+                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:brightness-110"
               >
-                Browse all courses
+                <Zap className="h-4 w-4" /> Start Learning Free
+              </Link>
+              <Link
+                to="/distro-finder"
+                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition"
+              >
+                <Sparkles className="h-4 w-4 text-primary" /> Find Your Distro Quiz
               </Link>
             </div>
-            <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
-              {["No credit card", "No ads", "No paywalls", "Forever free"].map((t) => (
-                <div key={t} className="flex items-center gap-1.5">
-                  <Check className="h-4 w-4 text-primary" /> {t}
-                </div>
-              ))}
+
+            {/* Hero Quick Search Trigger */}
+            <button
+              onClick={() => setIsSearchOpen(true)}
+              className="w-full max-w-md flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card/60 text-xs text-muted-foreground hover:border-primary/40 transition group"
+            >
+              <span className="flex items-center gap-2.5">
+                <Search className="h-4 w-4 text-primary" />
+                <span>Search 30+ distros, 60+ commands, app alternatives...</span>
+              </span>
+              <kbd className="rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-[10px]">⌘K</kbd>
+            </button>
+
+            {/* Value checklist */}
+            <div className="flex flex-wrap items-center gap-5 pt-3 text-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> No credit card</div>
+              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> No ads or paywalls</div>
+              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Real browser terminal</div>
+              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Verifiable certificate</div>
             </div>
           </div>
 
-          {/* Hero visual: logo + terminal */}
-          <div className="relative flex flex-col items-center justify-center">
-            <div className="absolute inset-0 -z-10 blur-3xl">
-              <div className="mx-auto h-64 w-64 rounded-full bg-primary/25" />
-            </div>
-            <img
-              src={LOGO_URL}
-              alt="AfroKernel penguin mascot"
-              className="float-anim h-56 w-56 object-contain drop-shadow-[0_20px_50px_oklch(0.86_0.17_92/0.35)]"
-            />
-            <div className="mt-8 w-full max-w-md rounded-xl border border-border bg-card/80 shadow-[var(--shadow-card)] backdrop-blur">
-              <div className="flex items-center gap-2 border-b border-border px-4 py-2.5">
-                <span className="h-2.5 w-2.5 rounded-full bg-destructive/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-primary/70" />
-                <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-                <span className="ml-2 font-mono text-xs text-muted-foreground">learner@afrokernel:~$</span>
-              </div>
-              <div className="px-4 py-4 font-mono text-xs leading-relaxed">
-                <div><span className="text-primary">$</span> sudo systemctl status nginx</div>
-                <pre className="mt-2 whitespace-pre-wrap text-muted-foreground">{`● nginx.service - A high performance web server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)
-     Active: active (running) since Wed 2026-07-22 15:22:04 UTC`}</pre>
-                <div className="mt-3 flex items-center gap-2 rounded-md border border-primary/20 bg-primary/5 p-2 text-[11px] text-primary/90">
-                  <Sparkles className="h-3.5 w-3.5 shrink-0" />
-                  <span>AI: nginx is running fine. Want me to explain <span className="font-semibold">systemctl</span> unit files?</span>
-                </div>
-                <div className="mt-3"><span className="text-primary">$</span> <span className="cursor-blink">▊</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* DISTROS STRIP */}
-      <section className="border-y border-border bg-card/30">
-        <div className="mx-auto max-w-7xl px-6 py-8">
-          <p className="text-center text-xs uppercase tracking-widest text-muted-foreground">
-            Practice on every major distribution
-          </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-x-10 gap-y-3 font-mono text-sm text-muted-foreground">
-            {["Ubuntu", "Debian", "Fedora", "Rocky Linux", "AlmaLinux", "Arch", "CentOS Stream"].map((d) => (
-              <span key={d} className="transition hover:text-primary">{d}</span>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FEATURES */}
-      <section id="features" className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-4xl font-bold sm:text-5xl">Everything you need. <span className="text-gradient">Nothing you pay for.</span></h2>
-          <p className="mt-4 text-muted-foreground">A complete AI-powered ecosystem for learning Linux — from your first command to enterprise sysadmin.</p>
-        </div>
-        <div className="mt-16 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {features.map(({ icon: Icon, title, desc }) => (
-            <div key={title} className="group relative overflow-hidden rounded-2xl border border-border bg-card p-6 transition hover:border-primary/40">
-              <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-primary/10 opacity-0 blur-2xl transition group-hover:opacity-100" />
-              <div className="relative">
-                <div className="inline-flex rounded-lg bg-primary/10 p-2.5 text-primary ring-1 ring-primary/20">
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="mt-4 text-lg font-semibold">{title}</h3>
-                <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* PATHS */}
-      <section id="paths" className="border-t border-border bg-card/30">
-        <div className="mx-auto max-w-7xl px-6 py-24">
-          <div className="flex flex-wrap items-end justify-between gap-6">
-            <div>
-              <h2 className="text-4xl font-bold sm:text-5xl">Structured learning paths</h2>
-              <p className="mt-3 max-w-xl text-muted-foreground">From <span className="font-mono text-primary">ls</span> to Kubernetes. Every path includes lessons, labs, quizzes, projects, and a free certificate.</p>
-            </div>
-            <a href="#" className="inline-flex items-center gap-1.5 text-sm font-semibold text-primary hover:brightness-110">
-              Browse all 30+ paths <ArrowRight className="h-4 w-4" />
-            </a>
-          </div>
-          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {paths.map(({ icon: Icon, title, lessons, level }) => (
-              <div key={title} className="group relative rounded-2xl border border-border bg-background/60 p-5 transition hover:-translate-y-1 hover:border-primary/50 hover:shadow-[var(--shadow-glow)]">
-                <Icon className="h-6 w-6 text-primary" />
-                <h3 className="mt-4 font-semibold">{title}</h3>
-                <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-                  <span>{lessons} lessons</span>
-                  <span className="rounded-full border border-border px-2 py-0.5">{level}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* LAB */}
-      <section id="lab" className="mx-auto max-w-7xl px-6 py-24">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1 text-xs font-medium text-primary">
-              <Terminal className="h-3.5 w-3.5" /> Browser Linux Lab
-            </div>
-            <h2 className="mt-4 text-4xl font-bold sm:text-5xl">A real Linux terminal, one click away.</h2>
-            <p className="mt-4 text-muted-foreground">
-              Every learner gets isolated Docker containers. Multi-tab terminals, integrated file manager, VS Code Web, uploads, persistent workspaces, and reset in a click.
-            </p>
-            <ul className="mt-6 space-y-3">
-              {[
-                "Multi-distro: Ubuntu, Fedora, Arch, Rocky, Debian",
-                "xterm.js + WebSocket for zero-latency I/O",
-                "AI watches your commands & explains outputs",
-                "Snapshots, resets & persistent home directory",
-              ].map((t) => (
-                <li key={t} className="flex items-start gap-2 text-sm">
-                  <Check className="mt-0.5 h-4 w-4 shrink-0 text-primary" /> {t}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="rounded-2xl border border-border bg-card p-1 shadow-[var(--shadow-card)]">
-            <div className="rounded-xl bg-background/80 p-5 font-mono text-xs">
-              <div className="flex gap-2 border-b border-border pb-2 text-muted-foreground">
-                <span className="rounded-md bg-primary/10 px-2 py-0.5 text-primary">ubuntu@lab-01</span>
-                <span className="rounded-md px-2 py-0.5">fedora@lab-02</span>
-                <span className="rounded-md px-2 py-0.5">+ new tab</span>
-              </div>
-              <div className="mt-3 space-y-1.5 leading-relaxed">
-                <div><span className="text-primary">$</span> whoami</div>
-                <div className="text-muted-foreground">learner</div>
-                <div><span className="text-primary">$</span> uname -a</div>
-                <div className="text-muted-foreground">Linux lab-01 6.8.0 #1 SMP x86_64 GNU/Linux</div>
-                <div><span className="text-primary">$</span> ps aux | grep nginx</div>
-                <div className="text-muted-foreground">root  1284  nginx: master process</div>
-                <div><span className="text-primary">$</span> docker run -d -p 80:80 nginx</div>
-                <div className="text-muted-foreground">3f2a...b91c</div>
-                <div><span className="text-primary">$</span> <span className="cursor-blink">▊</span></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* AI */}
-      <section id="ai" className="border-t border-border bg-gradient-to-b from-transparent to-card/40">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-24 lg:grid-cols-2">
-          <div className="order-2 rounded-2xl border border-primary/20 bg-card p-6 lg:order-1">
-            <div className="flex items-center gap-2 text-primary">
-              <Sparkles className="h-5 w-5" />
-              <span className="font-semibold">AI Tutor</span>
-            </div>
-            <div className="mt-4 space-y-3 text-sm">
-              <div className="rounded-lg bg-secondary p-3">
-                <span className="text-xs text-muted-foreground">You</span>
-                <p className="mt-1">What does <span className="font-mono text-primary">chmod 755 script.sh</span> actually do?</p>
-              </div>
-              <div className="rounded-lg border border-primary/20 bg-primary/5 p-3">
-                <span className="text-xs text-primary">AfroKernel AI</span>
-                <p className="mt-1 text-foreground/90">It sets permissions so the <span className="font-semibold">owner</span> can read, write, execute (7), and <span className="font-semibold">group</span> + <span className="font-semibold">others</span> can read & execute (5). Want me to open a lab and try it together?</p>
-              </div>
-            </div>
-          </div>
-          <div className="order-1 lg:order-2">
-            <h2 className="text-4xl font-bold sm:text-5xl">Your personal Linux mentor, <span className="text-gradient">24/7</span>.</h2>
-            <p className="mt-4 text-muted-foreground">Ask questions, review scripts, diagnose errors, generate flashcards, or run a mock certification interview. The AI teaches through guided discovery — never shortcuts.</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
-              {["Command explanations", "Bash script reviews", "Error diagnosis", "Personalized study plans", "Interview prep", "Cert readiness scores"].map((t) => (
-                <div key={t} className="flex items-center gap-2 rounded-lg border border-border bg-card/60 px-3 py-2 text-sm">
-                  <Check className="h-4 w-4 text-primary" /> {t}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* DOCS */}
-      <section id="docs" className="mx-auto max-w-7xl px-6 py-24">
-        <div className="mx-auto max-w-2xl text-center">
-          <h2 className="text-4xl font-bold sm:text-5xl">The complete <span className="text-gradient">Linux reference</span></h2>
-          <p className="mt-4 text-muted-foreground">Every command, every flag, every use case — with Try-It-Yourself and AI explanations.</p>
-        </div>
-        <div className="mt-12 grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {["ls", "grep", "awk", "sed", "chmod", "systemctl", "journalctl", "iptables", "rsync", "tar", "docker", "kubectl"].map((cmd) => (
-            <a key={cmd} href="#" className="group rounded-xl border border-border bg-card p-4 text-center font-mono text-sm transition hover:border-primary/50 hover:bg-primary/5">
-              <span className="text-muted-foreground group-hover:text-primary">$</span> {cmd}
-            </a>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA */}
-      <section className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-gradient-to-br from-card via-card to-primary/10 p-10 text-center sm:p-16">
-          <div className="absolute inset-0 grid-bg opacity-30" />
+          {/* Hero Right: Interactive Mini Terminal Sandbox */}
           <div className="relative">
-            <img src={LOGO_URL} alt="" className="mx-auto h-20 w-20 object-contain float-anim" />
-            <h2 className="mt-6 text-4xl font-bold sm:text-5xl">Learn. Administer. <span className="text-gradient">Master.</span></h2>
-            <p className="mx-auto mt-4 max-w-xl text-muted-foreground">Join thousands learning Linux the modern, free, AI-powered way. Your first terminal is one click away.</p>
-            <div className="mt-8 flex flex-wrap justify-center gap-3">
-              <a href="#" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground transition hover:brightness-110 glow-yellow">
-                Create free account <ArrowRight className="h-4 w-4" />
-              </a>
-              <a href="#paths" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/40 px-6 py-3 text-sm font-semibold transition hover:bg-background/70">
-                Explore lessons
-              </a>
+            <div className="rounded-3xl border border-primary/30 bg-card p-2 shadow-2xl backdrop-blur relative overflow-hidden">
+              <div className="rounded-2xl bg-background p-4 sm:p-6 font-mono text-xs space-y-4">
+                {/* Terminal top header */}
+                <div className="flex items-center justify-between pb-3 border-b border-border">
+                  <div className="flex items-center gap-2">
+                    <span className="h-3 w-3 rounded-full bg-rose-500/80" />
+                    <span className="h-3 w-3 rounded-full bg-amber-500/80" />
+                    <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
+                    <span className="ml-2 text-[11px] text-muted-foreground font-semibold">learner@afrokernel-cloud:~</span>
+                  </div>
+                  <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Interactive Sandbox</span>
+                </div>
+
+                {/* Quick command buttons */}
+                <div className="flex flex-wrap gap-1.5 text-[11px]">
+                  <button
+                    onClick={() => runTerminalCommand("neofetch")}
+                    className={`px-2.5 py-1 rounded-lg border transition ${
+                      terminalCmd === "neofetch" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    neofetch
+                  </button>
+                  <button
+                    onClick={() => runTerminalCommand("ls -la")}
+                    className={`px-2.5 py-1 rounded-lg border transition ${
+                      terminalCmd === "ls -la" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    ls -la
+                  </button>
+                  <button
+                    onClick={() => runTerminalCommand("chmod 755 deploy.sh")}
+                    className={`px-2.5 py-1 rounded-lg border transition ${
+                      terminalCmd.startsWith("chmod") ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    chmod 755
+                  </button>
+                  <button
+                    onClick={() => runTerminalCommand("docker ps")}
+                    className={`px-2.5 py-1 rounded-lg border transition ${
+                      terminalCmd.startsWith("docker") ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    docker ps
+                  </button>
+                  <button
+                    onClick={() => runTerminalCommand("nmap 192.168.1.50")}
+                    className={`px-2.5 py-1 rounded-lg border transition ${
+                      terminalCmd.startsWith("nmap") ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    nmap scan
+                  </button>
+                </div>
+
+                {/* Terminal output display */}
+                <div className="space-y-1">
+                  <div className="text-primary font-bold">
+                    <span>$ </span>
+                    <span className="text-foreground">{terminalCmd}</span>
+                  </div>
+                  <pre className="text-muted-foreground text-[11px] leading-relaxed whitespace-pre-wrap overflow-x-auto p-3 rounded-xl bg-card/60 border border-border/40 max-h-56">
+                    {terminalOutput}
+                  </pre>
+                </div>
+
+                <div className="pt-2 flex items-center justify-between text-[11px] text-muted-foreground border-t border-border">
+                  <span>Type commands or click pills above</span>
+                  <Link to="/lab" className="text-primary font-bold hover:underline flex items-center gap-1">
+                    Open Full Dual Linux Lab <ArrowRight className="h-3 w-3" />
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* FOOTER */}
-      <footer className="border-t border-border">
-        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-6 py-8 sm:flex-row">
-          <div className="flex items-center gap-2">
-            <img src={LOGO_URL} alt="AfroKernel" className="h-7 w-7 object-contain" />
-            <span className="font-display text-sm font-semibold">
-              Afro<span className="text-primary">Kernel</span>
-            </span>
-            <span className="ml-3 text-xs text-muted-foreground">Linux. Simplified.</span>
+      {/* Stats Counter Strip */}
+      <section className="border-b border-border/60 bg-card/20 py-8">
+        <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+          <div className="space-y-1">
+            <div className="font-mono text-3xl font-extrabold text-primary">16+</div>
+            <div className="text-xs text-muted-foreground font-medium">Linux Distributions Profiled</div>
           </div>
-          <div className="flex items-center gap-6 text-xs text-muted-foreground">
-            <Link to="/terms" className="hover:text-primary transition">Terms & Policies</Link>
-            <p>© 2026 AfroKernel · Free & open Linux education for everyone.</p>
+          <div className="space-y-1">
+            <div className="font-mono text-3xl font-extrabold text-primary">60+</div>
+            <div className="text-xs text-muted-foreground font-medium">Windows to Linux App Alternatives</div>
+          </div>
+          <div className="space-y-1">
+            <div className="font-mono text-3xl font-extrabold text-primary">7</div>
+            <div className="text-xs text-muted-foreground font-medium">Structured Learning Tracks</div>
+          </div>
+          <div className="space-y-1">
+            <div className="font-mono text-3xl font-extrabold text-primary">100%</div>
+            <div className="text-xs text-muted-foreground font-medium">Free & Community Governed</div>
           </div>
         </div>
-      </footer>
+      </section>
+
+      {/* Featured Courses Section */}
+      <section className="py-20 border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-6 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">Structured Curriculum</span>
+              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">Featured Learning Tracks</h2>
+              <p className="text-sm text-muted-foreground mt-1">From the bash command line to enterprise cloud infrastructure.</p>
+            </div>
+            <Link
+              to="/tutorials"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline self-start md:self-auto"
+            >
+              Browse All 7 Tracks <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {paths.map((p) => (
+              <div
+                key={p.slug}
+                className="rounded-3xl border border-border bg-card p-6 md:p-8 flex flex-col justify-between hover:border-primary/40 hover:shadow-lg transition group"
+              >
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <span className="text-3xl p-2 rounded-2xl bg-secondary/80">{p.icon}</span>
+                    {p.hasCert && (
+                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
+                        <Award className="h-3 w-3" /> Certificate Included
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition">{p.title}</h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed mb-6">{p.desc}</p>
+                </div>
+
+                <div className="pt-4 border-t border-border/60 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground font-semibold">{p.lessons} Tutorials</span>
+                  <Link
+                    to={user ? "/courses/$slug" : "/auth"}
+                    params={user ? { slug: p.slug } : undefined}
+                    search={user ? undefined : { redirect: `/courses/${p.slug}`, mode: "signup" }}
+                    className="font-bold text-primary flex items-center gap-1 hover:underline"
+                  >
+                    Start Track <ArrowRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Interactive Tools Showcase */}
+      <section className="py-20 border-b border-border/60 bg-card/20">
+        <div className="mx-auto max-w-7xl px-6 space-y-12">
+          <div className="text-center max-w-2xl mx-auto space-y-3">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">Interactive Utility Suite</span>
+            <h2 className="text-3xl sm:text-4xl font-bold font-display">Essential Linux Productivity Tools</h2>
+            <p className="text-sm text-muted-foreground">
+              Powerful calculators, translators, and builders designed to simplify daily Linux workflows.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {/* Distro Finder */}
+            <Link
+              to="/distro-finder"
+              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                  <Sparkles className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Distro Finder Quiz</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  5-question smart quiz to discover your top 3 Linux distribution matches based on hardware and workflow.
+                </p>
+              </div>
+              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
+                Take Quiz <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </Link>
+
+            {/* Permissions Calculator */}
+            <Link
+              to="/tools/permissions-calculator"
+              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                  <Calculator className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Permissions Calculator</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Visual chmod octal & symbolic calculator with SUID/SGID/Sticky bits and security presets.
+                </p>
+              </div>
+              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
+                Calculate chmod <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </Link>
+
+            {/* Cron Builder */}
+            <Link
+              to="/tools/cron-builder"
+              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                  <Clock className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Cron Expression Builder</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Build automated schedules visually with plain English translation and production crontab export.
+                </p>
+              </div>
+              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
+                Build Cron Job <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </Link>
+
+            {/* Command Translator */}
+            <Link
+              to="/tools/command-translator"
+              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
+            >
+              <div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
+                  <Terminal className="h-6 w-6" />
+                </div>
+                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Command Translator</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  Convert Windows CMD & PowerShell commands directly to Linux Bash with detailed argument explanations.
+                </p>
+              </div>
+              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
+                Translate Commands <ArrowRight className="h-3.5 w-3.5" />
+              </div>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* Popular Distros Showcase */}
+      <section className="py-20 border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-6 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">Operating Systems</span>
+              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">Popular Linux Distributions</h2>
+              <p className="text-sm text-muted-foreground mt-1">Discover, compare, and download the finest Linux distributions.</p>
+            </div>
+            <Link
+              to="/distros"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+            >
+              View All 16+ Distros <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+            {featuredDistros.map((d) => (
+              <div key={d.id} className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 transition group">
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-3xl p-1 rounded-xl bg-primary/10">{d.logo}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                      {d.difficulty}
+                    </span>
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition">{d.name}</h3>
+                  <span className="text-xs text-muted-foreground block mb-2">{d.base} base · {d.defaultDesktop}</span>
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{d.tagline}</p>
+                </div>
+
+                <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between">
+                  <span className="font-mono text-xs text-primary font-bold">{d.gamingScore}/10 Gaming</span>
+                  <Link to="/distros" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
+                    Details →
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* App Alternatives Spotlight */}
+      <section className="py-20 border-b border-border/60 bg-card/20">
+        <div className="mx-auto max-w-7xl px-6 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">Switching Software</span>
+              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">Windows to Linux App Alternatives</h2>
+              <p className="text-sm text-muted-foreground mt-1">Replace proprietary software with high-quality open-source tools.</p>
+            </div>
+            <Link
+              to="/apps"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
+            >
+              Explore 60+ App Alternatives <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {featuredApps.map((app) => (
+              <div key={app.id} className="rounded-3xl border border-border bg-card p-6 space-y-4">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl p-2 rounded-2xl bg-secondary">{app.icon}</span>
+                  <div>
+                    <h3 className="font-bold text-base text-foreground">{app.name}</h3>
+                    <span className="text-xs text-muted-foreground">{app.category}</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 pt-2 border-t border-border/60 text-xs">
+                  <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Best Linux Replacements:</span>
+                  {app.alternatives.map((alt) => (
+                    <div key={alt.name} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border">
+                      <span className="font-semibold text-foreground">{alt.name}</span>
+                      <span className="text-[10px] text-emerald-500 font-bold">{alt.license}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Certifications CTA Banner */}
+      <section className="py-20">
+        <div className="mx-auto max-w-7xl px-6">
+          <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-14 shadow-2xl text-center space-y-6">
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 text-primary mx-auto shadow-[0_0_20px_var(--primary)]">
+              <Award className="h-8 w-8" />
+            </div>
+
+            <div className="max-w-2xl mx-auto space-y-2">
+              <h2 className="text-3xl sm:text-4xl font-bold font-display text-foreground">
+                Prove Your Skills with <span className="text-gradient">Official Certifications</span>
+              </h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                Take timed 50-question practice exams across Linux Fundamentals, Cybersecurity, and DevOps. Earn shareable credentials verified on LinkedIn.
+              </p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3 pt-2">
+              <Link
+                to="/exam/practice"
+                className="px-8 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
+              >
+                Start Free Practice Exam <ArrowRight className="h-4 w-4" />
+              </Link>
+              <Link
+                to="/certification"
+                className="px-6 py-3.5 rounded-xl border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted transition"
+              >
+                View Certification Details
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Global Search Modal */}
+      <GlobalSearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* Footer */}
+      <FooterNav />
     </div>
   );
 }

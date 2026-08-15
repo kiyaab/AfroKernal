@@ -14,7 +14,7 @@ export const Route = createFileRoute("/chat")({
       { property: "og:description", content: "Your free 24/7 Linux mentor with cited docs excerpts." },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>) => ({ q: typeof s.q === "string" ? s.q : undefined }),
+  validateSearch: (s: Record<string, unknown>): { q?: string } => ({ q: typeof s.q === "string" ? s.q : undefined }),
   component: ChatPage,
 });
 

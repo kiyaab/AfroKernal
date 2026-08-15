@@ -11,19 +11,33 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AppsRouteImport } from './routes/apps'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CertificationRouteImport } from './routes/certification'
 import { Route as ChatRouteImport } from './routes/chat'
+import { Route as CheatSheetsRouteImport } from './routes/cheat-sheets'
 import { Route as CoursesRouteImport } from './routes/courses'
+import { Route as DistroFinderRouteImport } from './routes/distro-finder'
 import { Route as DocsRouteImport } from './routes/docs'
+import { Route as GamingRouteImport } from './routes/gaming'
 import { Route as LabRouteImport } from './routes/lab'
+import { Route as MigrationGuidesRouteImport } from './routes/migration-guides'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as HardwareCompatibilityRouteImport } from './routes/hardware-compatibility'
+import { Route as VerifyUuidRouteImport } from './routes/verify.$uuid'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
 import { Route as CoursesIndexRouteImport } from './routes/courses.index'
 import { Route as CoursesSlugRouteImport } from './routes/courses.$slug'
+import { Route as DistrosIndexRouteImport } from './routes/distros.index'
 import { Route as DocsCommandRouteImport } from './routes/docs.$command'
+import { Route as ExamPracticeRouteImport } from './routes/exam.practice'
+import { Route as ToolsCommandTranslatorRouteImport } from './routes/tools.command-translator'
+import { Route as ToolsCronBuilderRouteImport } from './routes/tools.cron-builder'
+import { Route as ToolsPermissionsCalculatorRouteImport } from './routes/tools.permissions-calculator'
+import { Route as TutorialsIndexRouteImport } from './routes/tutorials.index'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminCourseIdRouteImport } from './routes/_authenticated/admin.$courseId'
 import { Route as AuthenticatedAdminManageCoursesRouteImport } from './routes/_authenticated/admin.manage-courses'
@@ -40,9 +54,19 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppsRoute = AppsRouteImport.update({
+  id: '/apps',
+  path: '/apps',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertificationRoute = CertificationRouteImport.update({
+  id: '/certification',
+  path: '/certification',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -50,9 +74,19 @@ const ChatRoute = ChatRouteImport.update({
   path: '/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CheatSheetsRoute = CheatSheetsRouteImport.update({
+  id: '/cheat-sheets',
+  path: '/cheat-sheets',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CoursesRoute = CoursesRouteImport.update({
   id: '/courses',
   path: '/courses',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DistroFinderRoute = DistroFinderRouteImport.update({
+  id: '/distro-finder',
+  path: '/distro-finder',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DocsRoute = DocsRouteImport.update({
@@ -60,9 +94,19 @@ const DocsRoute = DocsRouteImport.update({
   path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GamingRoute = GamingRouteImport.update({
+  id: '/gaming',
+  path: '/gaming',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LabRoute = LabRouteImport.update({
   id: '/lab',
   path: '/lab',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MigrationGuidesRoute = MigrationGuidesRouteImport.update({
+  id: '/migration-guides',
+  path: '/migration-guides',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ResourcesRoute = ResourcesRouteImport.update({
@@ -73,6 +117,16 @@ const ResourcesRoute = ResourcesRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HardwareCompatibilityRoute = HardwareCompatibilityRouteImport.update({
+  id: '/hardware-compatibility',
+  path: '/hardware-compatibility',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VerifyUuidRoute = VerifyUuidRouteImport.update({
+  id: '/verify/$uuid',
+  path: '/verify/$uuid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -100,10 +154,41 @@ const CoursesSlugRoute = CoursesSlugRouteImport.update({
   path: '/$slug',
   getParentRoute: () => CoursesRoute,
 } as any)
+const DistrosIndexRoute = DistrosIndexRouteImport.update({
+  id: '/distros/',
+  path: '/distros/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DocsCommandRoute = DocsCommandRouteImport.update({
   id: '/$command',
   path: '/$command',
   getParentRoute: () => DocsRoute,
+} as any)
+const ExamPracticeRoute = ExamPracticeRouteImport.update({
+  id: '/exam/practice',
+  path: '/exam/practice',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsCommandTranslatorRoute = ToolsCommandTranslatorRouteImport.update({
+  id: '/tools/command-translator',
+  path: '/tools/command-translator',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsCronBuilderRoute = ToolsCronBuilderRouteImport.update({
+  id: '/tools/cron-builder',
+  path: '/tools/cron-builder',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ToolsPermissionsCalculatorRoute =
+  ToolsPermissionsCalculatorRouteImport.update({
+    id: '/tools/permissions-calculator',
+    path: '/tools/permissions-calculator',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const TutorialsIndexRoute = TutorialsIndexRouteImport.update({
+  id: '/tutorials/',
+  path: '/tutorials/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
@@ -140,19 +225,33 @@ const CoursesSlugPracticeRoute = CoursesSlugPracticeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/auth': typeof AuthRoute
+  '/certification': typeof CertificationRoute
   '/chat': typeof ChatRoute
+  '/cheat-sheets': typeof CheatSheetsRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/distro-finder': typeof DistroFinderRoute
   '/docs': typeof DocsRouteWithChildren
+  '/gaming': typeof GamingRoute
   '/lab': typeof LabRoute
+  '/migration-guides': typeof MigrationGuidesRoute
   '/resources': typeof ResourcesRoute
   '/terms': typeof TermsRoute
+  '/hardware-compatibility': typeof HardwareCompatibilityRoute
+  '/verify/$uuid': typeof VerifyUuidRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/courses/$slug': typeof CoursesSlugRouteWithChildren
   '/docs/$command': typeof DocsCommandRoute
+  '/exam/practice': typeof ExamPracticeRoute
+  '/tools/command-translator': typeof ToolsCommandTranslatorRoute
+  '/tools/cron-builder': typeof ToolsCronBuilderRoute
+  '/tools/permissions-calculator': typeof ToolsPermissionsCalculatorRoute
   '/courses/': typeof CoursesIndexRoute
+  '/distros/': typeof DistrosIndexRoute
+  '/tutorials/': typeof TutorialsIndexRoute
   '/admin/$courseId': typeof AuthenticatedAdminCourseIdRoute
   '/admin/manage-courses': typeof AuthenticatedAdminManageCoursesRoute
   '/courses/$slug/$lesson': typeof CoursesSlugLessonRoute
@@ -162,16 +261,30 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/apps': typeof AppsRoute
   '/auth': typeof AuthRoute
+  '/certification': typeof CertificationRoute
   '/chat': typeof ChatRoute
+  '/cheat-sheets': typeof CheatSheetsRoute
+  '/distro-finder': typeof DistroFinderRoute
   '/docs': typeof DocsRouteWithChildren
+  '/gaming': typeof GamingRoute
   '/lab': typeof LabRoute
+  '/migration-guides': typeof MigrationGuidesRoute
   '/resources': typeof ResourcesRoute
   '/terms': typeof TermsRoute
+  '/hardware-compatibility': typeof HardwareCompatibilityRoute
+  '/verify/$uuid': typeof VerifyUuidRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/docs/$command': typeof DocsCommandRoute
+  '/exam/practice': typeof ExamPracticeRoute
+  '/tools/command-translator': typeof ToolsCommandTranslatorRoute
+  '/tools/cron-builder': typeof ToolsCronBuilderRoute
+  '/tools/permissions-calculator': typeof ToolsPermissionsCalculatorRoute
   '/courses': typeof CoursesIndexRoute
+  '/distros': typeof DistrosIndexRoute
+  '/tutorials': typeof TutorialsIndexRoute
   '/admin/$courseId': typeof AuthenticatedAdminCourseIdRoute
   '/admin/manage-courses': typeof AuthenticatedAdminManageCoursesRoute
   '/courses/$slug/$lesson': typeof CoursesSlugLessonRoute
@@ -183,19 +296,33 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/apps': typeof AppsRoute
   '/auth': typeof AuthRoute
+  '/certification': typeof CertificationRoute
   '/chat': typeof ChatRoute
+  '/cheat-sheets': typeof CheatSheetsRoute
   '/courses': typeof CoursesRouteWithChildren
+  '/distro-finder': typeof DistroFinderRoute
   '/docs': typeof DocsRouteWithChildren
+  '/gaming': typeof GamingRoute
   '/lab': typeof LabRoute
+  '/migration-guides': typeof MigrationGuidesRoute
   '/resources': typeof ResourcesRoute
   '/terms': typeof TermsRoute
+  '/hardware-compatibility': typeof HardwareCompatibilityRoute
+  '/verify/$uuid': typeof VerifyUuidRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
   '/courses/$slug': typeof CoursesSlugRouteWithChildren
   '/docs/$command': typeof DocsCommandRoute
+  '/exam/practice': typeof ExamPracticeRoute
+  '/tools/command-translator': typeof ToolsCommandTranslatorRoute
+  '/tools/cron-builder': typeof ToolsCronBuilderRoute
+  '/tools/permissions-calculator': typeof ToolsPermissionsCalculatorRoute
   '/courses/': typeof CoursesIndexRoute
+  '/distros/': typeof DistrosIndexRoute
+  '/tutorials/': typeof TutorialsIndexRoute
   '/_authenticated/admin/$courseId': typeof AuthenticatedAdminCourseIdRoute
   '/_authenticated/admin/manage-courses': typeof AuthenticatedAdminManageCoursesRoute
   '/courses/$slug/$lesson': typeof CoursesSlugLessonRoute
@@ -207,19 +334,33 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/apps'
     | '/auth'
+    | '/certification'
     | '/chat'
+    | '/cheat-sheets'
     | '/courses'
+    | '/distro-finder'
     | '/docs'
+    | '/gaming'
     | '/lab'
+    | '/migration-guides'
     | '/resources'
     | '/terms'
+    | '/hardware-compatibility'
+    | '/verify/$uuid'
     | '/admin'
     | '/dashboard'
     | '/profile'
     | '/courses/$slug'
     | '/docs/$command'
+    | '/exam/practice'
+    | '/tools/command-translator'
+    | '/tools/cron-builder'
+    | '/tools/permissions-calculator'
     | '/courses/'
+    | '/distros/'
+    | '/tutorials/'
     | '/admin/$courseId'
     | '/admin/manage-courses'
     | '/courses/$slug/$lesson'
@@ -229,16 +370,30 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/apps'
     | '/auth'
+    | '/certification'
     | '/chat'
+    | '/cheat-sheets'
+    | '/distro-finder'
     | '/docs'
+    | '/gaming'
     | '/lab'
+    | '/migration-guides'
     | '/resources'
     | '/terms'
+    | '/hardware-compatibility'
+    | '/verify/$uuid'
     | '/dashboard'
     | '/profile'
     | '/docs/$command'
+    | '/exam/practice'
+    | '/tools/command-translator'
+    | '/tools/cron-builder'
+    | '/tools/permissions-calculator'
     | '/courses'
+    | '/distros'
+    | '/tutorials'
     | '/admin/$courseId'
     | '/admin/manage-courses'
     | '/courses/$slug/$lesson'
@@ -249,11 +404,17 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/apps'
     | '/auth'
+    | '/certification'
     | '/chat'
+    | '/cheat-sheets'
     | '/courses'
+    | '/distro-finder'
     | '/docs'
+    | '/gaming'
     | '/lab'
+    | '/migration-guides'
     | '/resources'
     | '/terms'
     | '/_authenticated/admin'
@@ -261,25 +422,47 @@ export interface FileRouteTypes {
     | '/_authenticated/profile'
     | '/courses/$slug'
     | '/docs/$command'
+    | '/exam/practice'
+    | '/tools/command-translator'
+    | '/tools/cron-builder'
+    | '/tools/permissions-calculator'
     | '/courses/'
+    | '/distros/'
+    | '/tutorials/'
     | '/_authenticated/admin/$courseId'
     | '/_authenticated/admin/manage-courses'
     | '/courses/$slug/$lesson'
     | '/courses/$slug/practice'
     | '/_authenticated/admin/'
     | '/courses/$slug/'
+    | '/hardware-compatibility'
+    | '/verify/$uuid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AppsRoute: typeof AppsRoute
   AuthRoute: typeof AuthRoute
+  CertificationRoute: typeof CertificationRoute
   ChatRoute: typeof ChatRoute
+  CheatSheetsRoute: typeof CheatSheetsRoute
   CoursesRoute: typeof CoursesRouteWithChildren
+  DistroFinderRoute: typeof DistroFinderRoute
   DocsRoute: typeof DocsRouteWithChildren
+  GamingRoute: typeof GamingRoute
   LabRoute: typeof LabRoute
+  MigrationGuidesRoute: typeof MigrationGuidesRoute
   ResourcesRoute: typeof ResourcesRoute
   TermsRoute: typeof TermsRoute
+  HardwareCompatibilityRoute: typeof HardwareCompatibilityRoute
+  VerifyUuidRoute: typeof VerifyUuidRoute
+  ExamPracticeRoute: typeof ExamPracticeRoute
+  ToolsCommandTranslatorRoute: typeof ToolsCommandTranslatorRoute
+  ToolsCronBuilderRoute: typeof ToolsCronBuilderRoute
+  ToolsPermissionsCalculatorRoute: typeof ToolsPermissionsCalculatorRoute
+  DistrosIndexRoute: typeof DistrosIndexRoute
+  TutorialsIndexRoute: typeof TutorialsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -298,11 +481,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/apps': {
+      id: '/apps'
+      path: '/apps'
+      fullPath: '/apps'
+      preLoaderRoute: typeof AppsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/auth': {
       id: '/auth'
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certification': {
+      id: '/certification'
+      path: '/certification'
+      fullPath: '/certification'
+      preLoaderRoute: typeof CertificationRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -312,11 +509,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cheat-sheets': {
+      id: '/cheat-sheets'
+      path: '/cheat-sheets'
+      fullPath: '/cheat-sheets'
+      preLoaderRoute: typeof CheatSheetsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/courses': {
       id: '/courses'
       path: '/courses'
       fullPath: '/courses'
       preLoaderRoute: typeof CoursesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/distro-finder': {
+      id: '/distro-finder'
+      path: '/distro-finder'
+      fullPath: '/distro-finder'
+      preLoaderRoute: typeof DistroFinderRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/docs': {
@@ -326,11 +537,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/gaming': {
+      id: '/gaming'
+      path: '/gaming'
+      fullPath: '/gaming'
+      preLoaderRoute: typeof GamingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lab': {
       id: '/lab'
       path: '/lab'
       fullPath: '/lab'
       preLoaderRoute: typeof LabRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/migration-guides': {
+      id: '/migration-guides'
+      path: '/migration-guides'
+      fullPath: '/migration-guides'
+      preLoaderRoute: typeof MigrationGuidesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/resources': {
@@ -345,6 +570,20 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/hardware-compatibility': {
+      id: '/hardware-compatibility'
+      path: '/hardware-compatibility'
+      fullPath: '/hardware-compatibility'
+      preLoaderRoute: typeof HardwareCompatibilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify/$uuid': {
+      id: '/verify/$uuid'
+      path: '/verify/$uuid'
+      fullPath: '/verify/$uuid'
+      preLoaderRoute: typeof VerifyUuidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -382,12 +621,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CoursesSlugRouteImport
       parentRoute: typeof CoursesRoute
     }
+    '/distros/': {
+      id: '/distros/'
+      path: '/distros'
+      fullPath: '/distros/'
+      preLoaderRoute: typeof DistrosIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/docs/$command': {
       id: '/docs/$command'
       path: '/$command'
       fullPath: '/docs/$command'
       preLoaderRoute: typeof DocsCommandRouteImport
       parentRoute: typeof DocsRoute
+    }
+    '/exam/practice': {
+      id: '/exam/practice'
+      path: '/exam/practice'
+      fullPath: '/exam/practice'
+      preLoaderRoute: typeof ExamPracticeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/command-translator': {
+      id: '/tools/command-translator'
+      path: '/tools/command-translator'
+      fullPath: '/tools/command-translator'
+      preLoaderRoute: typeof ToolsCommandTranslatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/cron-builder': {
+      id: '/tools/cron-builder'
+      path: '/tools/cron-builder'
+      fullPath: '/tools/cron-builder'
+      preLoaderRoute: typeof ToolsCronBuilderRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tools/permissions-calculator': {
+      id: '/tools/permissions-calculator'
+      path: '/tools/permissions-calculator'
+      fullPath: '/tools/permissions-calculator'
+      preLoaderRoute: typeof ToolsPermissionsCalculatorRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutorials/': {
+      id: '/tutorials/'
+      path: '/tutorials'
+      fullPath: '/tutorials/'
+      preLoaderRoute: typeof TutorialsIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
       id: '/_authenticated/admin/'
@@ -506,13 +787,27 @@ const DocsRouteWithChildren = DocsRoute._addFileChildren(DocsRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AppsRoute: AppsRoute,
   AuthRoute: AuthRoute,
+  CertificationRoute: CertificationRoute,
   ChatRoute: ChatRoute,
+  CheatSheetsRoute: CheatSheetsRoute,
   CoursesRoute: CoursesRouteWithChildren,
+  DistroFinderRoute: DistroFinderRoute,
   DocsRoute: DocsRouteWithChildren,
+  GamingRoute: GamingRoute,
   LabRoute: LabRoute,
+  MigrationGuidesRoute: MigrationGuidesRoute,
   ResourcesRoute: ResourcesRoute,
   TermsRoute: TermsRoute,
+  HardwareCompatibilityRoute: HardwareCompatibilityRoute,
+  VerifyUuidRoute: VerifyUuidRoute,
+  ExamPracticeRoute: ExamPracticeRoute,
+  ToolsCommandTranslatorRoute: ToolsCommandTranslatorRoute,
+  ToolsCronBuilderRoute: ToolsCronBuilderRoute,
+  ToolsPermissionsCalculatorRoute: ToolsPermissionsCalculatorRoute,
+  DistrosIndexRoute: DistrosIndexRoute,
+  TutorialsIndexRoute: TutorialsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
