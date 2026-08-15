@@ -20,12 +20,11 @@ import { Route as CoursesRouteImport } from './routes/courses'
 import { Route as DistroFinderRouteImport } from './routes/distro-finder'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as GamingRouteImport } from './routes/gaming'
+import { Route as HardwareCompatibilityRouteImport } from './routes/hardware-compatibility'
 import { Route as LabRouteImport } from './routes/lab'
 import { Route as MigrationGuidesRouteImport } from './routes/migration-guides'
 import { Route as ResourcesRouteImport } from './routes/resources'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as HardwareCompatibilityRouteImport } from './routes/hardware-compatibility'
-import { Route as VerifyUuidRouteImport } from './routes/verify.$uuid'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedProfileRouteImport } from './routes/_authenticated/profile'
@@ -38,6 +37,7 @@ import { Route as ToolsCommandTranslatorRouteImport } from './routes/tools.comma
 import { Route as ToolsCronBuilderRouteImport } from './routes/tools.cron-builder'
 import { Route as ToolsPermissionsCalculatorRouteImport } from './routes/tools.permissions-calculator'
 import { Route as TutorialsIndexRouteImport } from './routes/tutorials.index'
+import { Route as VerifyUuidRouteImport } from './routes/verify.$uuid'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin.index'
 import { Route as AuthenticatedAdminCourseIdRouteImport } from './routes/_authenticated/admin.$courseId'
 import { Route as AuthenticatedAdminManageCoursesRouteImport } from './routes/_authenticated/admin.manage-courses'
@@ -99,6 +99,11 @@ const GamingRoute = GamingRouteImport.update({
   path: '/gaming',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HardwareCompatibilityRoute = HardwareCompatibilityRouteImport.update({
+  id: '/hardware-compatibility',
+  path: '/hardware-compatibility',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LabRoute = LabRouteImport.update({
   id: '/lab',
   path: '/lab',
@@ -117,16 +122,6 @@ const ResourcesRoute = ResourcesRouteImport.update({
 const TermsRoute = TermsRouteImport.update({
   id: '/terms',
   path: '/terms',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HardwareCompatibilityRoute = HardwareCompatibilityRouteImport.update({
-  id: '/hardware-compatibility',
-  path: '/hardware-compatibility',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const VerifyUuidRoute = VerifyUuidRouteImport.update({
-  id: '/verify/$uuid',
-  path: '/verify/$uuid',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -190,6 +185,11 @@ const TutorialsIndexRoute = TutorialsIndexRouteImport.update({
   path: '/tutorials/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const VerifyUuidRoute = VerifyUuidRouteImport.update({
+  id: '/verify/$uuid',
+  path: '/verify/$uuid',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedAdminIndexRoute = AuthenticatedAdminIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -234,12 +234,11 @@ export interface FileRoutesByFullPath {
   '/distro-finder': typeof DistroFinderRoute
   '/docs': typeof DocsRouteWithChildren
   '/gaming': typeof GamingRoute
+  '/hardware-compatibility': typeof HardwareCompatibilityRoute
   '/lab': typeof LabRoute
   '/migration-guides': typeof MigrationGuidesRoute
   '/resources': typeof ResourcesRoute
   '/terms': typeof TermsRoute
-  '/hardware-compatibility': typeof HardwareCompatibilityRoute
-  '/verify/$uuid': typeof VerifyUuidRoute
   '/admin': typeof AuthenticatedAdminRouteWithChildren
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
@@ -249,6 +248,7 @@ export interface FileRoutesByFullPath {
   '/tools/command-translator': typeof ToolsCommandTranslatorRoute
   '/tools/cron-builder': typeof ToolsCronBuilderRoute
   '/tools/permissions-calculator': typeof ToolsPermissionsCalculatorRoute
+  '/verify/$uuid': typeof VerifyUuidRoute
   '/courses/': typeof CoursesIndexRoute
   '/distros/': typeof DistrosIndexRoute
   '/tutorials/': typeof TutorialsIndexRoute
@@ -269,12 +269,11 @@ export interface FileRoutesByTo {
   '/distro-finder': typeof DistroFinderRoute
   '/docs': typeof DocsRouteWithChildren
   '/gaming': typeof GamingRoute
+  '/hardware-compatibility': typeof HardwareCompatibilityRoute
   '/lab': typeof LabRoute
   '/migration-guides': typeof MigrationGuidesRoute
   '/resources': typeof ResourcesRoute
   '/terms': typeof TermsRoute
-  '/hardware-compatibility': typeof HardwareCompatibilityRoute
-  '/verify/$uuid': typeof VerifyUuidRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/profile': typeof AuthenticatedProfileRoute
   '/docs/$command': typeof DocsCommandRoute
@@ -282,6 +281,7 @@ export interface FileRoutesByTo {
   '/tools/command-translator': typeof ToolsCommandTranslatorRoute
   '/tools/cron-builder': typeof ToolsCronBuilderRoute
   '/tools/permissions-calculator': typeof ToolsPermissionsCalculatorRoute
+  '/verify/$uuid': typeof VerifyUuidRoute
   '/courses': typeof CoursesIndexRoute
   '/distros': typeof DistrosIndexRoute
   '/tutorials': typeof TutorialsIndexRoute
@@ -305,12 +305,11 @@ export interface FileRoutesById {
   '/distro-finder': typeof DistroFinderRoute
   '/docs': typeof DocsRouteWithChildren
   '/gaming': typeof GamingRoute
+  '/hardware-compatibility': typeof HardwareCompatibilityRoute
   '/lab': typeof LabRoute
   '/migration-guides': typeof MigrationGuidesRoute
   '/resources': typeof ResourcesRoute
   '/terms': typeof TermsRoute
-  '/hardware-compatibility': typeof HardwareCompatibilityRoute
-  '/verify/$uuid': typeof VerifyUuidRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRouteWithChildren
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/profile': typeof AuthenticatedProfileRoute
@@ -320,6 +319,7 @@ export interface FileRoutesById {
   '/tools/command-translator': typeof ToolsCommandTranslatorRoute
   '/tools/cron-builder': typeof ToolsCronBuilderRoute
   '/tools/permissions-calculator': typeof ToolsPermissionsCalculatorRoute
+  '/verify/$uuid': typeof VerifyUuidRoute
   '/courses/': typeof CoursesIndexRoute
   '/distros/': typeof DistrosIndexRoute
   '/tutorials/': typeof TutorialsIndexRoute
@@ -343,12 +343,11 @@ export interface FileRouteTypes {
     | '/distro-finder'
     | '/docs'
     | '/gaming'
+    | '/hardware-compatibility'
     | '/lab'
     | '/migration-guides'
     | '/resources'
     | '/terms'
-    | '/hardware-compatibility'
-    | '/verify/$uuid'
     | '/admin'
     | '/dashboard'
     | '/profile'
@@ -358,6 +357,7 @@ export interface FileRouteTypes {
     | '/tools/command-translator'
     | '/tools/cron-builder'
     | '/tools/permissions-calculator'
+    | '/verify/$uuid'
     | '/courses/'
     | '/distros/'
     | '/tutorials/'
@@ -378,12 +378,11 @@ export interface FileRouteTypes {
     | '/distro-finder'
     | '/docs'
     | '/gaming'
+    | '/hardware-compatibility'
     | '/lab'
     | '/migration-guides'
     | '/resources'
     | '/terms'
-    | '/hardware-compatibility'
-    | '/verify/$uuid'
     | '/dashboard'
     | '/profile'
     | '/docs/$command'
@@ -391,6 +390,7 @@ export interface FileRouteTypes {
     | '/tools/command-translator'
     | '/tools/cron-builder'
     | '/tools/permissions-calculator'
+    | '/verify/$uuid'
     | '/courses'
     | '/distros'
     | '/tutorials'
@@ -413,6 +413,7 @@ export interface FileRouteTypes {
     | '/distro-finder'
     | '/docs'
     | '/gaming'
+    | '/hardware-compatibility'
     | '/lab'
     | '/migration-guides'
     | '/resources'
@@ -426,6 +427,7 @@ export interface FileRouteTypes {
     | '/tools/command-translator'
     | '/tools/cron-builder'
     | '/tools/permissions-calculator'
+    | '/verify/$uuid'
     | '/courses/'
     | '/distros/'
     | '/tutorials/'
@@ -435,8 +437,6 @@ export interface FileRouteTypes {
     | '/courses/$slug/practice'
     | '/_authenticated/admin/'
     | '/courses/$slug/'
-    | '/hardware-compatibility'
-    | '/verify/$uuid'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -451,16 +451,16 @@ export interface RootRouteChildren {
   DistroFinderRoute: typeof DistroFinderRoute
   DocsRoute: typeof DocsRouteWithChildren
   GamingRoute: typeof GamingRoute
+  HardwareCompatibilityRoute: typeof HardwareCompatibilityRoute
   LabRoute: typeof LabRoute
   MigrationGuidesRoute: typeof MigrationGuidesRoute
   ResourcesRoute: typeof ResourcesRoute
   TermsRoute: typeof TermsRoute
-  HardwareCompatibilityRoute: typeof HardwareCompatibilityRoute
-  VerifyUuidRoute: typeof VerifyUuidRoute
   ExamPracticeRoute: typeof ExamPracticeRoute
   ToolsCommandTranslatorRoute: typeof ToolsCommandTranslatorRoute
   ToolsCronBuilderRoute: typeof ToolsCronBuilderRoute
   ToolsPermissionsCalculatorRoute: typeof ToolsPermissionsCalculatorRoute
+  VerifyUuidRoute: typeof VerifyUuidRoute
   DistrosIndexRoute: typeof DistrosIndexRoute
   TutorialsIndexRoute: typeof TutorialsIndexRoute
 }
@@ -544,6 +544,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GamingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/hardware-compatibility': {
+      id: '/hardware-compatibility'
+      path: '/hardware-compatibility'
+      fullPath: '/hardware-compatibility'
+      preLoaderRoute: typeof HardwareCompatibilityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/lab': {
       id: '/lab'
       path: '/lab'
@@ -570,20 +577,6 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/hardware-compatibility': {
-      id: '/hardware-compatibility'
-      path: '/hardware-compatibility'
-      fullPath: '/hardware-compatibility'
-      preLoaderRoute: typeof HardwareCompatibilityRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/verify/$uuid': {
-      id: '/verify/$uuid'
-      path: '/verify/$uuid'
-      fullPath: '/verify/$uuid'
-      preLoaderRoute: typeof VerifyUuidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -668,6 +661,13 @@ declare module '@tanstack/react-router' {
       path: '/tutorials'
       fullPath: '/tutorials/'
       preLoaderRoute: typeof TutorialsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/verify/$uuid': {
+      id: '/verify/$uuid'
+      path: '/verify/$uuid'
+      fullPath: '/verify/$uuid'
+      preLoaderRoute: typeof VerifyUuidRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin/': {
@@ -796,16 +796,16 @@ const rootRouteChildren: RootRouteChildren = {
   DistroFinderRoute: DistroFinderRoute,
   DocsRoute: DocsRouteWithChildren,
   GamingRoute: GamingRoute,
+  HardwareCompatibilityRoute: HardwareCompatibilityRoute,
   LabRoute: LabRoute,
   MigrationGuidesRoute: MigrationGuidesRoute,
   ResourcesRoute: ResourcesRoute,
   TermsRoute: TermsRoute,
-  HardwareCompatibilityRoute: HardwareCompatibilityRoute,
-  VerifyUuidRoute: VerifyUuidRoute,
   ExamPracticeRoute: ExamPracticeRoute,
   ToolsCommandTranslatorRoute: ToolsCommandTranslatorRoute,
   ToolsCronBuilderRoute: ToolsCronBuilderRoute,
   ToolsPermissionsCalculatorRoute: ToolsPermissionsCalculatorRoute,
+  VerifyUuidRoute: VerifyUuidRoute,
   DistrosIndexRoute: DistrosIndexRoute,
   TutorialsIndexRoute: TutorialsIndexRoute,
 }

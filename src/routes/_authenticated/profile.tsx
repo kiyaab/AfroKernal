@@ -43,6 +43,7 @@ import {
   Clock,
   TrendingUp,
   Link2,
+  Eye,
   Mail,
   Twitter,
   Linkedin,

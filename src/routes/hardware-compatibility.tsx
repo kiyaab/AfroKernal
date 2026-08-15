@@ -3,7 +3,7 @@ import { Cpu, Search, CheckCircle2, AlertTriangle, XCircle, Copy, Check, Termina
 import { useState, useMemo } from "react";
 import { HARDWARE_DATA, DIAGNOSTIC_COMMANDS, HardwareItem } from "@/lib/hardware-data";
 
-export const Route = createFileRoute("/hardware-compatibility" as any)({
+export const Route = createFileRoute("/hardware-compatibility")({
   component: HardwareCompatibility,
 });
 

@@ -351,20 +351,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
         // Sync to Supabase in background without blocking
         try {
-          supabase.from("lesson_progress").upsert({
-            user_id: user.id,
-            lesson_id: lessonId,
-            completed: true,
-            completed_at: new Date().toISOString(),
-          } as never).then(() => {}).catch(() => {});
+          Promise.resolve(
+            supabase.from("lesson_progress").upsert({
+              user_id: user.id,
+              lesson_id: lessonId,
+              completed: true,
+              completed_at: new Date().toISOString(),
+            } as never)
+          ).catch(() => {});
 
-          supabase.from("user_stats").upsert({
-            user_id: user.id,
-            xp: newXp,
-            level: newLevel,
-            streak_days: newStreak,
-            updated_at: new Date().toISOString(),
-          } as never).then(() => {}).catch(() => {});
+          Promise.resolve(
+            supabase.from("user_stats").upsert({
+              user_id: user.id,
+              xp: newXp,
+              level: newLevel,
+              streak_days: newStreak,
+              updated_at: new Date().toISOString(),
+            } as never)
+          ).catch(() => {});
         } catch {}
       }
 
@@ -398,12 +402,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         });
 
         try {
-          supabase.from("user_stats").upsert({
-            user_id: user.id,
-            xp: newXp,
-            level: newLevel,
-            updated_at: new Date().toISOString(),
-          } as never).then(() => {}).catch(() => {});
+          Promise.resolve(
+            supabase.from("user_stats").upsert({
+              user_id: user.id,
+              xp: newXp,
+              level: newLevel,
+              updated_at: new Date().toISOString(),
+            } as never)
+          ).catch(() => {});
         } catch {}
       }
 

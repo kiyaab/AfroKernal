@@ -287,7 +287,7 @@ function LessonPage() {
         {activeTab === "notes" && (
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-10 shadow-xl space-y-6">
             <div className="prose prose-invert max-w-none">
-              <NotesViewer content={currentLesson.content} />
+              <NotesViewer title={currentLesson.title} content={currentLesson.content} />
             </div>
           </div>
         )}

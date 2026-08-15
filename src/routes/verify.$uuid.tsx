@@ -3,7 +3,7 @@ import { Award, CheckCircle2, ShieldCheck, Download, Calendar, User, ArrowLeft, 
 import { useState } from "react";
 import jsPDF from "jspdf";
 
-export const Route = createFileRoute("/verify/$uuid" as any)({
+export const Route = createFileRoute("/verify/$uuid")({
   component: CertificateVerification,
 });
 
