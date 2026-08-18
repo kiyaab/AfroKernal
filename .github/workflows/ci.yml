@@ -16,6 +16,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+permissions:
+  contents: read
+
 jobs:
   lint-and-typecheck:
     name: Code Quality & Type Check
@@ -33,7 +36,7 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run ESLint (warnings allowed)
+      - name: Run ESLint
         run: npm run lint -- --max-warnings 100
 
       - name: Run TypeScript Check
@@ -56,19 +59,13 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Resolve build environment variables
-        id: build-env
-        run: |
-          echo "VITE_SUPABASE_URL=${VITE_SUPABASE_URL:-https://placeholder.supabase.co}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY:-placeholder-anon-key}" >> $GITHUB_ENV
-          echo "VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID:-placeholder-project-id}" >> $GITHUB_ENV
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-
       - name: Build Application
         run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL != '' && secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+          VITE_SUPABASE_PUBLISHABLE_KEY: ${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY != '' && secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key' }}
+          VITE_SUPABASE_PROJECT_ID: ${{ secrets.VITE_SUPABASE_PROJECT_ID != '' && secrets.VITE_SUPABASE_PROJECT_ID || 'placeholder-project-id' }}
+          NODE_ENV: production
 
   docker-build-check:
     name: Docker Build Validation
@@ -88,9 +85,7 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: afrokernel:test
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
           build-args: |
             VITE_SUPABASE_URL=https://placeholder.supabase.co
-            VITE_SUPABASE_PUBLISHABLE_KEY=placeholder-key
-            VITE_SUPABASE_PROJECT_ID=placeholder-id
+            VITE_SUPABASE_PUBLISHABLE_KEY=placeholder-anon-key
+            VITE_SUPABASE_PROJECT_ID=placeholder-project-id

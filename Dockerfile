@@ -55,19 +55,18 @@ ENV NODE_ENV=production \
     PORT=3000 \
     HOST=0.0.0.0
 
-# Install curl/wget for container health check
+# Install curl for container health check
 RUN apk add --no-cache curl
 
 # Create unprivileged application user & group
 RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 afrokernel
 
-# Copy necessary production files
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/.output ./.output
-COPY --from=builder --chown=afrokernel:nodejs /app ./
+# Copy production build output and runtime files
+COPY --from=builder --chown=afrokernel:nodejs /app/.output ./.output
+COPY --from=builder --chown=afrokernel:nodejs /app/public ./public
+COPY --from=builder --chown=afrokernel:nodejs /app/package.json ./package.json
+COPY --from=builder --chown=afrokernel:nodejs /app/node_modules ./node_modules
 
 # Switch to non-root user
 USER afrokernel
@@ -79,5 +78,6 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
   CMD curl -f http://localhost:3000/ || exit 1
 
-# Start the application preview server on all interfaces
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
+# Start the production Nitro SSR server
+CMD ["node", ".output/server/index.mjs"]
+

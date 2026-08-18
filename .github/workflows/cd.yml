@@ -18,7 +18,6 @@ concurrency:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
 
 jobs:
   build-and-push:
@@ -27,6 +26,10 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Set lower case image name
+        run: |
+          echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -61,12 +64,12 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
           build-args: |
-            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL }}
-            VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY }}
-            VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID }}
-            SUPABASE_URL=${{ secrets.SUPABASE_URL }}
-            SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY }}
-            SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID }}
+            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL != '' && secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
+            VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY != '' && secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key' }}
+            VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID != '' && secrets.VITE_SUPABASE_PROJECT_ID || 'placeholder-project-id' }}
+            SUPABASE_URL=${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_URL || 'https://placeholder.supabase.co' }}
+            SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' && secrets.SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key' }}
+            SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID != '' && secrets.SUPABASE_PROJECT_ID || 'placeholder-project-id' }}
 
   deploy:
     name: Trigger Deployment
@@ -78,7 +81,3 @@ jobs:
         run: |
           echo "Container image successfully pushed to ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
           echo "Ready for production deployment rollouts."
-          # Optional webhook or deployment trigger:
-          # if [ -n "${{ secrets.DEPLOY_WEBHOOK_URL }}" ]; then
-          #   curl -X POST "${{ secrets.DEPLOY_WEBHOOK_URL }}"
-          # fi
