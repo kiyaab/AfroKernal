@@ -79,7 +79,12 @@ export function exportQuizPDF(data: QuizReportData) {
   doc.setFontSize(12);
   doc.text(`Score: ${data.score}%`, pageWidth - 42.5, y + 16, { align: "center" });
   doc.setFontSize(8);
-  doc.text(`${data.correct} / ${data.total} Correct (${data.passed ? "PASSED" : "FAILED"})`, pageWidth - 42.5, y + 23, { align: "center" });
+  doc.text(
+    `${data.correct} / ${data.total} Correct (${data.passed ? "PASSED" : "FAILED"})`,
+    pageWidth - 42.5,
+    y + 23,
+    { align: "center" },
+  );
 
   y += 45;
 
@@ -143,9 +148,17 @@ export function exportQuizPDF(data: QuizReportData) {
     doc.setPage(i);
     doc.setFontSize(8);
     doc.setTextColor(150, 150, 160);
-    doc.text(`AfroKernel Learner Certificate & Report — Page ${i} of ${pageCount}`, pageWidth / 2, 290, { align: "center" });
+    doc.text(
+      `AfroKernel Learner Certificate & Report — Page ${i} of ${pageCount}`,
+      pageWidth / 2,
+      290,
+      { align: "center" },
+    );
   }
 
-  const safeFilename = `${data.courseTitle}-${data.lessonTitle}-Quiz-Report.pdf`.replace(/[^a-z0-9]/gi, "_");
+  const safeFilename = `${data.courseTitle}-${data.lessonTitle}-Quiz-Report.pdf`.replace(
+    /[^a-z0-9]/gi,
+    "_",
+  );
   doc.save(safeFilename);
 }

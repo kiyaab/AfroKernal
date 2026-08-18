@@ -2,18 +2,16 @@ import { useEffect, useMemo, useState } from "react";
 import ReactMarkdown from "react-markdown";
 import { BookOpen, Highlighter, Maximize2, Minimize2, Type, X } from "lucide-react";
 
-export function NotesViewer({
-  title,
-  content,
-}: {
-  title: string;
-  content: string;
-}) {
+export function NotesViewer({ title, content }: { title: string; content: string }) {
   const [fontSize, setFontSize] = useState<"sm" | "base" | "lg" | "xl">("base");
   const [reading, setReading] = useState(false);
 
   const words = useMemo(
-    () => content.replace(/[#*`>\-\[\]()]/g, " ").split(/\s+/).filter(Boolean).length,
+    () =>
+      content
+        .replace(/[#*`>\-[\]()]/g, " ")
+        .split(/\s+/)
+        .filter(Boolean).length,
     [content],
   );
   const readMin = Math.max(1, Math.ceil(words / 180));
@@ -112,7 +110,9 @@ export function NotesViewer({
               <Highlighter className="h-4 w-4 shrink-0 text-primary" />
               <div className="min-w-0">
                 <p className="truncate text-sm font-semibold">{title}</p>
-                <p className="text-[11px] opacity-60">Reading mode · Esc to exit · ~{readMin} min</p>
+                <p className="text-[11px] opacity-60">
+                  Reading mode · Esc to exit · ~{readMin} min
+                </p>
               </div>
             </div>
             <div className="flex items-center gap-2">

@@ -1,5 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Cpu, Search, CheckCircle2, AlertTriangle, XCircle, Copy, Check, Terminal, ExternalLink, Filter } from "lucide-react";
+import {
+  Cpu,
+  Search,
+  CheckCircle2,
+  AlertTriangle,
+  XCircle,
+  Copy,
+  Check,
+  Terminal,
+  ExternalLink,
+  Filter,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 import { HARDWARE_DATA, DIAGNOSTIC_COMMANDS, HardwareItem } from "@/lib/hardware-data";
 
@@ -43,7 +54,8 @@ function HardwareCompatibility() {
         </div>
         <h1 className="text-4xl font-display font-bold">Linux Hardware Compatibility Database</h1>
         <p className="text-muted-foreground text-base max-w-2xl">
-          Check out-of-the-box driver support for GPUs, Wi-Fi chips, laptops, and printers before making the switch to Linux.
+          Check out-of-the-box driver support for GPUs, Wi-Fi chips, laptops, and printers before
+          making the switch to Linux.
         </p>
       </div>
 
@@ -53,14 +65,20 @@ function HardwareCompatibility() {
           <Terminal className="h-4 w-4" /> Live Hardware Diagnostic Commands
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Run these commands in your Linux terminal to identify PCI devices, loaded kernel modules, and driver status:
+          Run these commands in your Linux terminal to identify PCI devices, loaded kernel modules,
+          and driver status:
         </p>
 
         <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
           {DIAGNOSTIC_COMMANDS.map((diag) => (
-            <div key={diag.cmd} className="rounded-xl border border-border bg-background/60 p-3.5 flex flex-col justify-between">
+            <div
+              key={diag.cmd}
+              className="rounded-xl border border-border bg-background/60 p-3.5 flex flex-col justify-between"
+            >
               <div>
-                <span className="font-semibold text-xs text-foreground block mb-1">{diag.title}</span>
+                <span className="font-semibold text-xs text-foreground block mb-1">
+                  {diag.title}
+                </span>
                 <p className="text-[11px] text-muted-foreground mb-3">{diag.desc}</p>
               </div>
               <div className="flex items-center justify-between p-2 rounded-lg bg-card border border-border font-mono text-[11px]">
@@ -70,7 +88,11 @@ function HardwareCompatibility() {
                   className="p-1 text-muted-foreground hover:text-foreground shrink-0 transition"
                   title="Copy command"
                 >
-                  {copiedCmd === diag.cmd ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copiedCmd === diag.cmd ? (
+                    <Check className="h-3.5 w-3.5 text-emerald-500" />
+                  ) : (
+                    <Copy className="h-3.5 w-3.5" />
+                  )}
                 </button>
               </div>
             </div>
@@ -114,7 +136,9 @@ function HardwareCompatibility() {
           <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-card/30">
             <Cpu className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
             <h3 className="text-lg font-semibold">No hardware match found</h3>
-            <p className="text-sm text-muted-foreground mt-1">Try another search keyword or check external databases.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Try another search keyword or check external databases.
+            </p>
           </div>
         ) : (
           filteredHardware.map((item) => {
@@ -138,10 +162,14 @@ function HardwareCompatibility() {
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs pt-1">
                     <span className="text-muted-foreground">
-                      Kernel Module: <strong className="font-mono text-primary">{item.kernelDriver}</strong>
+                      Kernel Module:{" "}
+                      <strong className="font-mono text-primary">{item.kernelDriver}</strong>
                     </span>
                     <span className="text-muted-foreground">
-                      Tested On: <span className="text-foreground font-medium">{item.testedDistros.join(", ")}</span>
+                      Tested On:{" "}
+                      <span className="text-foreground font-medium">
+                        {item.testedDistros.join(", ")}
+                      </span>
                     </span>
                   </div>
                 </div>
@@ -152,11 +180,15 @@ function HardwareCompatibility() {
                       isPlatinum
                         ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500"
                         : isGold
-                        ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
-                        : "border-rose-500/30 bg-rose-500/10 text-rose-500"
+                          ? "border-amber-500/30 bg-amber-500/10 text-amber-500"
+                          : "border-rose-500/30 bg-rose-500/10 text-rose-500"
                     }`}
                   >
-                    {isPlatinum ? <CheckCircle2 className="h-4 w-4" /> : <AlertTriangle className="h-4 w-4" />}
+                    {isPlatinum ? (
+                      <CheckCircle2 className="h-4 w-4" />
+                    ) : (
+                      <AlertTriangle className="h-4 w-4" />
+                    )}
                     <span>{item.compatibility}</span>
                   </div>
                 </div>

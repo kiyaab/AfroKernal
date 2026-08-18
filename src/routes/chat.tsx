@@ -9,12 +9,21 @@ export const Route = createFileRoute("/chat")({
   head: () => ({
     meta: [
       { title: "AI Linux Tutor — AfroKernel" },
-      { name: "description", content: "Chat with the AfroKernel AI tutor. Grounded, cited answers with docs excerpts highlighted from our Linux reference." },
+      {
+        name: "description",
+        content:
+          "Chat with the AfroKernel AI tutor. Grounded, cited answers with docs excerpts highlighted from our Linux reference.",
+      },
       { property: "og:title", content: "AfroKernel AI Linux Tutor" },
-      { property: "og:description", content: "Your free 24/7 Linux mentor with cited docs excerpts." },
+      {
+        property: "og:description",
+        content: "Your free 24/7 Linux mentor with cited docs excerpts.",
+      },
     ],
   }),
-  validateSearch: (s: Record<string, unknown>): { q?: string } => ({ q: typeof s.q === "string" ? s.q : undefined }),
+  validateSearch: (s: Record<string, unknown>): { q?: string } => ({
+    q: typeof s.q === "string" ? s.q : undefined,
+  }),
   component: ChatPage,
 });
 

@@ -1,5 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { FileText, Search, Copy, Check, Terminal, ExternalLink, Printer, Sparkles, Filter } from "lucide-react";
+import {
+  FileText,
+  Search,
+  Copy,
+  Check,
+  Terminal,
+  ExternalLink,
+  Printer,
+  Sparkles,
+  Filter,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 import { CHEATSHEETS_DATA, CheatSheetCategory } from "@/lib/cheatsheets-data";
 
@@ -30,7 +40,7 @@ function CheatSheets() {
           (item) =>
             item.command.toLowerCase().includes(q) ||
             item.description.toLowerCase().includes(q) ||
-            (item.example && item.example.toLowerCase().includes(q))
+            (item.example && item.example.toLowerCase().includes(q)),
         );
         return { ...sec, items: filteredItems };
       })
@@ -47,7 +57,8 @@ function CheatSheets() {
           </div>
           <h1 className="text-4xl font-display font-bold">Linux Cheat Sheets</h1>
           <p className="text-muted-foreground text-base max-w-2xl mt-1">
-            Quick-reference cheat sheets for the tools you use every day. Search commands, copy snippets in 1 click, or print to keep on your desk.
+            Quick-reference cheat sheets for the tools you use every day. Search commands, copy
+            snippets in 1 click, or print to keep on your desk.
           </p>
         </div>
         <button
@@ -88,7 +99,9 @@ function CheatSheets() {
           <div className="flex items-center gap-3">
             <span className="text-4xl p-2 rounded-2xl bg-secondary/80">{activeSheet.icon}</span>
             <div>
-              <h2 className="text-2xl font-bold text-foreground">{activeSheet.title} Cheat Sheet</h2>
+              <h2 className="text-2xl font-bold text-foreground">
+                {activeSheet.title} Cheat Sheet
+              </h2>
               <p className="text-xs text-muted-foreground mt-0.5">{activeSheet.summary}</p>
             </div>
           </div>
@@ -137,16 +150,26 @@ function CheatSheets() {
                             className="p-1.5 rounded-lg border border-border bg-card text-muted-foreground hover:text-foreground shrink-0 transition"
                             title="Copy command"
                           >
-                            {copiedCmd === item.command ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                            {copiedCmd === item.command ? (
+                              <Check className="h-3.5 w-3.5 text-emerald-500" />
+                            ) : (
+                              <Copy className="h-3.5 w-3.5" />
+                            )}
                           </button>
                         </div>
-                        <p className="text-xs text-muted-foreground leading-relaxed">{item.description}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed">
+                          {item.description}
+                        </p>
                       </div>
 
                       {item.example && (
                         <div className="pt-2 border-t border-border/60 font-mono text-[11px] text-muted-foreground">
-                          <span className="text-[10px] text-muted-foreground/60 block font-sans">Example:</span>
-                          <span className="text-foreground/90 whitespace-pre-wrap">{item.example}</span>
+                          <span className="text-[10px] text-muted-foreground/60 block font-sans">
+                            Example:
+                          </span>
+                          <span className="text-foreground/90 whitespace-pre-wrap">
+                            {item.example}
+                          </span>
                         </div>
                       )}
                     </div>

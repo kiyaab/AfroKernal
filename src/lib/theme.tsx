@@ -10,9 +10,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>("dark");
 
   useEffect(() => {
-    const saved = (typeof window !== "undefined" && localStorage.getItem("afrokernel-theme")) as
-      | Theme
-      | null;
+    const saved = (typeof window !== "undefined" &&
+      localStorage.getItem("afrokernel-theme")) as Theme | null;
     if (saved === "light" || saved === "dark") setTheme(saved);
   }, []);
 

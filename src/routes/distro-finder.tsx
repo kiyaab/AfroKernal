@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Compass, CheckCircle2, ArrowRight, ArrowLeft, RefreshCw, Sparkles, ExternalLink, Download, Scale } from "lucide-react";
+import {
+  Compass,
+  CheckCircle2,
+  ArrowRight,
+  ArrowLeft,
+  RefreshCw,
+  Sparkles,
+  ExternalLink,
+  Download,
+  Scale,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
 
@@ -27,31 +37,88 @@ const questions: Question[] = [
     title: "How much Linux experience do you have?",
     subtitle: "We'll tailor the recommended system maintenance difficulty to your comfort level.",
     options: [
-      { label: "Beginner", desc: "Never used Linux before or just starting out. I want everything to work out of the box.", value: "beginner", icon: "🌱" },
-      { label: "Intermediate", desc: "Comfortable with basic terminal commands, installing packages, and light troubleshooting.", value: "intermediate", icon: "🚀" },
-      { label: "Advanced / Power User", desc: "I love the terminal, customized kernels, dotfiles, and complete control over my operating system.", value: "advanced", icon: "⚡" },
+      {
+        label: "Beginner",
+        desc: "Never used Linux before or just starting out. I want everything to work out of the box.",
+        value: "beginner",
+        icon: "🌱",
+      },
+      {
+        label: "Intermediate",
+        desc: "Comfortable with basic terminal commands, installing packages, and light troubleshooting.",
+        value: "intermediate",
+        icon: "🚀",
+      },
+      {
+        label: "Advanced / Power User",
+        desc: "I love the terminal, customized kernels, dotfiles, and complete control over my operating system.",
+        value: "advanced",
+        icon: "⚡",
+      },
     ],
   },
   {
     id: "usecase",
     title: "What will you primarily use Linux for?",
-    subtitle: "Different distributions optimize their kernels and pre-installed toolchains for specific workloads.",
+    subtitle:
+      "Different distributions optimize their kernels and pre-installed toolchains for specific workloads.",
     options: [
-      { label: "Everyday Desktop & Office", desc: "Web browsing, document editing, video streaming, email, and casual computing.", value: "desktop", icon: "💻" },
-      { label: "Gaming (Steam / Proton / Lutris)", desc: "Playing Windows games on Linux, Steam Deck emulation, high refresh rate, and modern GPU drivers.", value: "gaming", icon: "🎮" },
-      { label: "Software Development & DevOps", desc: "Programming in Python, Rust, Go, Node, Docker containers, Kubernetes, and local virtualization.", value: "development", icon: "🛠️" },
-      { label: "Content Creation (Video / Audio / Art)", desc: "Video editing in DaVinci Resolve/Kdenlive, 3D modeling in Blender, digital art in Krita, and audio production.", value: "media", icon: "🎨" },
-      { label: "Server, Security & Self-Hosting", desc: "Homelabs, Docker clusters, network security, penetration testing, or long-term production servers.", value: "server", icon: "🛡️" },
+      {
+        label: "Everyday Desktop & Office",
+        desc: "Web browsing, document editing, video streaming, email, and casual computing.",
+        value: "desktop",
+        icon: "💻",
+      },
+      {
+        label: "Gaming (Steam / Proton / Lutris)",
+        desc: "Playing Windows games on Linux, Steam Deck emulation, high refresh rate, and modern GPU drivers.",
+        value: "gaming",
+        icon: "🎮",
+      },
+      {
+        label: "Software Development & DevOps",
+        desc: "Programming in Python, Rust, Go, Node, Docker containers, Kubernetes, and local virtualization.",
+        value: "development",
+        icon: "🛠️",
+      },
+      {
+        label: "Content Creation (Video / Audio / Art)",
+        desc: "Video editing in DaVinci Resolve/Kdenlive, 3D modeling in Blender, digital art in Krita, and audio production.",
+        value: "media",
+        icon: "🎨",
+      },
+      {
+        label: "Server, Security & Self-Hosting",
+        desc: "Homelabs, Docker clusters, network security, penetration testing, or long-term production servers.",
+        value: "server",
+        icon: "🛡️",
+      },
     ],
   },
   {
     id: "hardware",
     title: "How would you describe your computer hardware?",
-    subtitle: "Some distros require modern 64-bit systems with 8GB+ RAM, while others revive 15-year-old laptops.",
+    subtitle:
+      "Some distros require modern 64-bit systems with 8GB+ RAM, while others revive 15-year-old laptops.",
     options: [
-      { label: "Modern & Powerful (2020 or newer)", desc: "High-spec modern CPU, NVMe SSD, 8GB to 64GB+ RAM, modern dedicated or integrated graphics.", value: "modern", icon: "🔥" },
-      { label: "Average PC / Laptop (2015–2020)", desc: "Mid-range specifications, 4GB–8GB RAM, standard SATA SSD or fast hard drive.", value: "average", icon: "⚡" },
-      { label: "Older Hardware / Low-Spec (Pre-2015)", desc: "Older machine with 2GB–4GB RAM, slow HDD, or low-power CPU that needs a lightweight distro.", value: "older", icon: "🍃" },
+      {
+        label: "Modern & Powerful (2020 or newer)",
+        desc: "High-spec modern CPU, NVMe SSD, 8GB to 64GB+ RAM, modern dedicated or integrated graphics.",
+        value: "modern",
+        icon: "🔥",
+      },
+      {
+        label: "Average PC / Laptop (2015–2020)",
+        desc: "Mid-range specifications, 4GB–8GB RAM, standard SATA SSD or fast hard drive.",
+        value: "average",
+        icon: "⚡",
+      },
+      {
+        label: "Older Hardware / Low-Spec (Pre-2015)",
+        desc: "Older machine with 2GB–4GB RAM, slow HDD, or low-power CPU that needs a lightweight distro.",
+        value: "older",
+        icon: "🍃",
+      },
     ],
   },
   {
@@ -59,21 +126,62 @@ const questions: Question[] = [
     title: "What is your preference for software updates?",
     subtitle: "Choose between rock-solid long-term releases or continuous cutting-edge packages.",
     options: [
-      { label: "Rock-Solid LTS (Long Term Support)", desc: "Battle-tested software that rarely changes. Updates are focused on security and stability.", value: "lts", icon: "🧱" },
-      { label: "Balanced Regular Releases (Every 6 Months)", desc: "A healthy mix of fresh kernel features, new desktop versions, and tested stability.", value: "balanced", icon: "⚖️" },
-      { label: "Bleeding Edge Rolling Release", desc: "Always receive the latest upstream software, kernel, and Mesa drivers the day they release.", value: "rolling", icon: "🏎️" },
-      { label: "Immutable & Atomic Updates", desc: "Read-only root filesystem with atomic updates and instant rollbacks (like Android or macOS).", value: "immutable", icon: "🔒" },
+      {
+        label: "Rock-Solid LTS (Long Term Support)",
+        desc: "Battle-tested software that rarely changes. Updates are focused on security and stability.",
+        value: "lts",
+        icon: "🧱",
+      },
+      {
+        label: "Balanced Regular Releases (Every 6 Months)",
+        desc: "A healthy mix of fresh kernel features, new desktop versions, and tested stability.",
+        value: "balanced",
+        icon: "⚖️",
+      },
+      {
+        label: "Bleeding Edge Rolling Release",
+        desc: "Always receive the latest upstream software, kernel, and Mesa drivers the day they release.",
+        value: "rolling",
+        icon: "🏎️",
+      },
+      {
+        label: "Immutable & Atomic Updates",
+        desc: "Read-only root filesystem with atomic updates and instant rollbacks (like Android or macOS).",
+        value: "immutable",
+        icon: "🔒",
+      },
     ],
   },
   {
     id: "desktop",
     title: "What desktop layout style do you prefer?",
-    subtitle: "The desktop environment defines the user interface, window management, and workflow.",
+    subtitle:
+      "The desktop environment defines the user interface, window management, and workflow.",
     options: [
-      { label: "Familiar & Windows-like", desc: "Bottom taskbar, start menu, system tray (e.g. Cinnamon, KDE Plasma, XFCE).", value: "traditional", icon: "🪟" },
-      { label: "Modern & Polished (GNOME / COSMIC)", desc: "Clean gestures, top bar, dynamic workspaces, and app grid (like macOS or modern tablets).", value: "modern_de", icon: "✨" },
-      { label: "Lightweight & Resource-Friendly", desc: "Minimal memory footprint, fast animations, ultra-efficient (XFCE, MATE, LXQt).", value: "lightweight", icon: "💨" },
-      { label: "No Preference / I'll customize it", desc: "I am happy to try whatever fits my system best.", value: "any", icon: "🎯" },
+      {
+        label: "Familiar & Windows-like",
+        desc: "Bottom taskbar, start menu, system tray (e.g. Cinnamon, KDE Plasma, XFCE).",
+        value: "traditional",
+        icon: "🪟",
+      },
+      {
+        label: "Modern & Polished (GNOME / COSMIC)",
+        desc: "Clean gestures, top bar, dynamic workspaces, and app grid (like macOS or modern tablets).",
+        value: "modern_de",
+        icon: "✨",
+      },
+      {
+        label: "Lightweight & Resource-Friendly",
+        desc: "Minimal memory footprint, fast animations, ultra-efficient (XFCE, MATE, LXQt).",
+        value: "lightweight",
+        icon: "💨",
+      },
+      {
+        label: "No Preference / I'll customize it",
+        desc: "I am happy to try whatever fits my system best.",
+        value: "any",
+        icon: "🎯",
+      },
     ],
   },
 ];
@@ -128,7 +236,11 @@ function DistroFinder() {
           score += 10;
         }
       } else if (answers.experience === "advanced") {
-        if (distro.difficulty === "Advanced" || distro.id === "arch-linux" || distro.id === "nixos") {
+        if (
+          distro.difficulty === "Advanced" ||
+          distro.id === "arch-linux" ||
+          distro.id === "nixos"
+        ) {
           score += 30;
           reasons.push("Gives power users full control and unlimited customization");
         } else {
@@ -150,7 +262,9 @@ function DistroFinder() {
       } else if (answers.usecase === "server") {
         score += distro.serverScore * 3.5;
         if (distro.serverScore >= 9) {
-          reasons.push("Engineered for mission-critical servers, stability, and enterprise deployments");
+          reasons.push(
+            "Engineered for mission-critical servers, stability, and enterprise deployments",
+          );
         }
       } else if (answers.usecase === "media") {
         if (distro.id === "pop-os" || distro.id === "fedora" || distro.id === "ubuntu") {
@@ -189,10 +303,18 @@ function DistroFinder() {
       }
 
       // 5. Desktop layout
-      if (answers.desktop === "traditional" && (distro.defaultDesktop.includes("Cinnamon") || distro.defaultDesktop.includes("KDE") || distro.defaultDesktop.includes("XFCE"))) {
+      if (
+        answers.desktop === "traditional" &&
+        (distro.defaultDesktop.includes("Cinnamon") ||
+          distro.defaultDesktop.includes("KDE") ||
+          distro.defaultDesktop.includes("XFCE"))
+      ) {
         score += 15;
         reasons.push("Features a familiar, Windows-style desktop interface");
-      } else if (answers.desktop === "modern_de" && (distro.defaultDesktop.includes("GNOME") || distro.defaultDesktop.includes("COSMIC"))) {
+      } else if (
+        answers.desktop === "modern_de" &&
+        (distro.defaultDesktop.includes("GNOME") || distro.defaultDesktop.includes("COSMIC"))
+      ) {
         score += 15;
         reasons.push("Features a sleek, modern desktop workflow with fluid gestures");
       } else if (answers.desktop === "lightweight" && distro.runsOnOldHardware) {
@@ -218,7 +340,8 @@ function DistroFinder() {
         </div>
         <h1 className="text-4xl font-display font-bold">Linux Distro Finder</h1>
         <p className="text-muted-foreground text-base max-w-xl">
-          Answer 5 quick questions and our recommendation engine will calculate your top 3 matches from our distribution database.
+          Answer 5 quick questions and our recommendation engine will calculate your top 3 matches
+          from our distribution database.
         </p>
       </div>
 
@@ -262,7 +385,9 @@ function DistroFinder() {
                   <div className="flex items-center gap-4">
                     {opt.icon && <span className="text-2xl">{opt.icon}</span>}
                     <div>
-                      <div className={`font-semibold text-base transition ${isSelected ? "text-primary" : "text-foreground"}`}>
+                      <div
+                        className={`font-semibold text-base transition ${isSelected ? "text-primary" : "text-foreground"}`}
+                      >
                         {opt.label}
                       </div>
                       <div className="text-xs text-muted-foreground mt-0.5">{opt.desc}</div>
@@ -270,7 +395,9 @@ function DistroFinder() {
                   </div>
                   <div
                     className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition ${
-                      isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border"
+                      isSelected
+                        ? "border-primary bg-primary text-primary-foreground"
+                        : "border-border"
                     }`}
                   >
                     {isSelected && <div className="h-2 w-2 rounded-full bg-current" />}
@@ -314,37 +441,52 @@ function DistroFinder() {
 
           <div className="grid gap-6 md:grid-cols-3">
             {topThree.map(({ distro, matchPercentage, reasons }, idx) => {
-              const badgeLabel = idx === 0 ? "🏆 Best Match" : idx === 1 ? "🥈 Runner-Up" : "🥉 Great Alternative";
+              const badgeLabel =
+                idx === 0 ? "🏆 Best Match" : idx === 1 ? "🥈 Runner-Up" : "🥉 Great Alternative";
               const borderClass =
                 idx === 0
                   ? "border-primary ring-2 ring-primary/40 bg-card shadow-xl"
                   : "border-border bg-card/70";
 
               return (
-                <div key={distro.id} className={`rounded-2xl border p-6 flex flex-col justify-between ${borderClass}`}>
+                <div
+                  key={distro.id}
+                  className={`rounded-2xl border p-6 flex flex-col justify-between ${borderClass}`}
+                >
                   <div>
                     <div className="flex items-center justify-between mb-4">
                       <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
                         {badgeLabel}
                       </span>
-                      <span className="text-sm font-extrabold text-foreground">{matchPercentage}% Match</span>
+                      <span className="text-sm font-extrabold text-foreground">
+                        {matchPercentage}% Match
+                      </span>
                     </div>
 
                     <div className="flex items-center gap-3 mb-3">
                       <span className="text-3xl">{distro.logo}</span>
                       <div>
                         <h3 className="text-xl font-bold text-foreground">{distro.name}</h3>
-                        <span className="text-xs text-muted-foreground">{distro.base} base · {distro.defaultDesktop}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {distro.base} base · {distro.defaultDesktop}
+                        </span>
                       </div>
                     </div>
 
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-4">{distro.tagline}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                      {distro.tagline}
+                    </p>
 
                     {/* Why this matches you */}
                     <div className="space-y-2 mb-6">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Why this matches you:</p>
+                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        Why this matches you:
+                      </p>
                       {reasons.map((r, i) => (
-                        <div key={i} className="flex items-start gap-1.5 text-xs text-foreground/90">
+                        <div
+                          key={i}
+                          className="flex items-start gap-1.5 text-xs text-foreground/90"
+                        >
                           <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                           <span>{r}</span>
                         </div>

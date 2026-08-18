@@ -56,14 +56,26 @@ import {
   Link2,
   LayoutDashboard,
 } from "lucide-react";
-import { AreaChart, Area, XAxis, YAxis, Tooltip as RechartsTooltip, ResponsiveContainer, CartesianGrid } from "recharts";
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  Tooltip as RechartsTooltip,
+  ResponsiveContainer,
+  CartesianGrid,
+} from "recharts";
 import { LINUX_FUNDAMENTALS_LESSONS } from "@/lib/linux-curriculum";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
       { title: "Admin Portal — AfroKernel Control Center" },
-      { name: "description", content: "Deep admin control dashboard for AfroKernel: User management, course authoring, practice exam tracking, and platform metrics." },
+      {
+        name: "description",
+        content:
+          "Deep admin control dashboard for AfroKernel: User management, course authoring, practice exam tracking, and platform metrics.",
+      },
       { property: "og:title", content: "AfroKernel Deep Admin Control Center" },
     ],
   }),
@@ -90,16 +102,23 @@ function AdminLayout() {
       <header className="border-b border-border/60 sticky top-0 z-40 bg-background/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link to="/"><Logo /></Link>
+            <Link to="/">
+              <Logo />
+            </Link>
             <span className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
               <Shield className="w-3.5 h-3.5" /> Admin Control Center
             </span>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="text-xs font-semibold hover:text-primary flex items-center gap-1">
+            <Link
+              to="/dashboard"
+              className="text-xs font-semibold hover:text-primary flex items-center gap-1"
+            >
               <ArrowLeft className="w-3.5 h-3.5" /> Learner Dashboard
             </Link>
-            <Link to="/courses" className="text-xs font-semibold hover:text-primary">View Courses</Link>
+            <Link to="/courses" className="text-xs font-semibold hover:text-primary">
+              View Courses
+            </Link>
             <ThemeToggle />
           </div>
         </div>
@@ -107,7 +126,9 @@ function AdminLayout() {
 
       <main className="max-w-7xl mx-auto px-6 py-8">
         {loading && !unlocked && !hasAccess ? (
-          <div className="flex items-center gap-2 text-muted-foreground"><Loader2 className="w-4 h-4 animate-spin" /> Verifying Admin Credentials…</div>
+          <div className="flex items-center gap-2 text-muted-foreground">
+            <Loader2 className="w-4 h-4 animate-spin" /> Verifying Admin Credentials…
+          </div>
         ) : !hasAccess ? (
           <NoAccess onUnlock={() => setUnlocked(true)} />
         ) : (
@@ -152,7 +173,10 @@ function NoAccess({ onUnlock }: { onUnlock: () => void }) {
         Enter your admin credentials to access the control center.
       </p>
 
-      <form onSubmit={handleSubmit} className="mt-8 rounded-3xl border border-border p-6 bg-card text-left space-y-4 shadow-2xl">
+      <form
+        onSubmit={handleSubmit}
+        className="mt-8 rounded-3xl border border-border p-6 bg-card text-left space-y-4 shadow-2xl"
+      >
         <div>
           <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
             Admin Email
@@ -267,7 +291,11 @@ function AdminUserManagement() {
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<LearnerRecord | null>(null);
 
-  const { data: learners, isLoading, refetch } = useQuery({
+  const {
+    data: learners,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ["admin-learners-master"],
     queryFn: async (): Promise<LearnerRecord[]> => {
       const localUsers = getAllLearnerRecords();
@@ -285,9 +313,13 @@ function AdminUserManagement() {
           const pr_ = p as any;
           const s = (stats ?? []).find((st) => st.user_id === p.id);
           const r = (roles ?? []).filter((ro) => ro.user_id === p.id).map((ro) => ro.role);
-          const pr = (progress ?? []).filter((pg) => pg.user_id === p.id && pg.completed).map((pg) => pg.lesson_id);
+          const pr = (progress ?? [])
+            .filter((pg) => pg.user_id === p.id && pg.completed)
+            .map((pg) => pg.lesson_id);
 
-          const existingIdx = merged.findIndex((m) => m.id === p.id || (pr_.email && m.email === pr_.email));
+          const existingIdx = merged.findIndex(
+            (m) => m.id === p.id || (pr_.email && m.email === pr_.email),
+          );
           const row: LearnerRecord = {
             id: p.id,
             displayName: p.display_name || pr_.email?.split("@")[0] || "Learner",
@@ -301,11 +333,15 @@ function AdminUserManagement() {
             xp: s?.xp ?? (existingIdx >= 0 ? merged[existingIdx].xp : 150),
             level: s?.level ?? (existingIdx >= 0 ? merged[existingIdx].level : 1),
             streak: s?.streak_days ?? (existingIdx >= 0 ? merged[existingIdx].streak : 1),
-            roles: r.length > 0 ? r : (existingIdx >= 0 ? merged[existingIdx].roles : ["user"]),
+            roles: r.length > 0 ? r : existingIdx >= 0 ? merged[existingIdx].roles : ["user"],
             enrolledCourses: existingIdx >= 0 ? merged[existingIdx].enrolledCourses : ["linux"],
-            completedLessons: Array.from(new Set([...(existingIdx >= 0 ? merged[existingIdx].completedLessons : []), ...pr])),
+            completedLessons: Array.from(
+              new Set([...(existingIdx >= 0 ? merged[existingIdx].completedLessons : []), ...pr]),
+            ),
             examSubmissions: existingIdx >= 0 ? merged[existingIdx].examSubmissions : [],
-            createdAt: p.created_at || (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
+            createdAt:
+              p.created_at ||
+              (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
             updatedAt: p.updated_at || new Date().toISOString(),
             lastActive: new Date().toISOString(),
           };
@@ -323,8 +359,29 @@ function AdminUserManagement() {
             streak: 30,
             roles: ["admin", "instructor", "user"],
             enrolledCourses: ["linux", "security", "devops", "scripting", "networking", "cloud"],
-            completedLessons: ["lf-01", "lf-02", "lf-03", "lf-04", "lf-05", "lf-06", "lf-07", "lf-08"],
-            examSubmissions: [{ id: "exam-admin-01", userId: "master-admin-001", trackId: "all", trackLabel: "Comprehensive Linux Exam", score: 10, totalQuestions: 10, percentage: 100, passed: true, submittedAt: new Date().toISOString() }],
+            completedLessons: [
+              "lf-01",
+              "lf-02",
+              "lf-03",
+              "lf-04",
+              "lf-05",
+              "lf-06",
+              "lf-07",
+              "lf-08",
+            ],
+            examSubmissions: [
+              {
+                id: "exam-admin-01",
+                userId: "master-admin-001",
+                trackId: "all",
+                trackLabel: "Comprehensive Linux Exam",
+                score: 10,
+                totalQuestions: 10,
+                percentage: 100,
+                passed: true,
+                submittedAt: new Date().toISOString(),
+              },
+            ],
             createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
             updatedAt: new Date().toISOString(),
             lastActive: new Date().toISOString(),
@@ -356,13 +413,22 @@ function AdminUserManagement() {
 
   function grantBonusXp(user: LearnerRecord, amount: number) {
     const updatedXp = (user.xp || 0) + amount;
-    upsertLearnerRecord({ id: user.id, email: user.email, xp: updatedXp, level: Math.floor(updatedXp / 250) + 1 });
+    upsertLearnerRecord({
+      id: user.id,
+      email: user.email,
+      xp: updatedXp,
+      level: Math.floor(updatedXp / 250) + 1,
+    });
     refetch();
   }
 
   function toggleRole(user: LearnerRecord, role: string) {
     const has = user.roles.includes(role);
-    upsertLearnerRecord({ id: user.id, email: user.email, roles: has ? user.roles.filter((r) => r !== role) : [...user.roles, role] });
+    upsertLearnerRecord({
+      id: user.id,
+      email: user.email,
+      roles: has ? user.roles.filter((r) => r !== role) : [...user.roles, role],
+    });
     refetch();
   }
 
@@ -370,12 +436,39 @@ function AdminUserManagement() {
     <div className="space-y-6">
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
-          { label: "Registered Learners", value: totalLearners, Icon: Users, color: "text-primary", sub: "● Real-time accounts" },
-          { label: "Lessons Completed", value: totalLessonsCompleted, Icon: BookOpen, color: "text-primary", sub: "Across all tracks" },
-          { label: "Practice Exams", value: totalExamsTaken, Icon: Award, color: "text-emerald-500", sub: "Saved with scores" },
-          { label: "Total Platform XP", value: totalXpAwarded.toLocaleString(), Icon: Zap, color: "text-amber-400", sub: "Earned by community" },
+          {
+            label: "Registered Learners",
+            value: totalLearners,
+            Icon: Users,
+            color: "text-primary",
+            sub: "● Real-time accounts",
+          },
+          {
+            label: "Lessons Completed",
+            value: totalLessonsCompleted,
+            Icon: BookOpen,
+            color: "text-primary",
+            sub: "Across all tracks",
+          },
+          {
+            label: "Practice Exams",
+            value: totalExamsTaken,
+            Icon: Award,
+            color: "text-emerald-500",
+            sub: "Saved with scores",
+          },
+          {
+            label: "Total Platform XP",
+            value: totalXpAwarded.toLocaleString(),
+            Icon: Zap,
+            color: "text-amber-400",
+            sub: "Earned by community",
+          },
         ].map(({ label, value, Icon, color, sub }) => (
-          <div key={label} className="rounded-2xl border border-border bg-card p-5 space-y-1 shadow-sm">
+          <div
+            key={label}
+            className="rounded-2xl border border-border bg-card p-5 space-y-1 shadow-sm"
+          >
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="text-xs font-semibold">{label}</span>
               <Icon className={`h-4 w-4 ${color}`} />
@@ -388,8 +481,12 @@ function AdminUserManagement() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold font-display text-foreground">User & Learner Control Center</h2>
-          <p className="text-xs text-muted-foreground">Monitor real-time user registrations, course progress, and exam submissions.</p>
+          <h2 className="text-xl font-bold font-display text-foreground">
+            User & Learner Control Center
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Monitor real-time user registrations, course progress, and exam submissions.
+          </p>
         </div>
         <div className="relative max-w-xs w-full">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -422,7 +519,11 @@ function AdminUserManagement() {
                 const examCount = user.examSubmissions?.length || 0;
                 const latestExam = user.examSubmissions?.[0];
                 return (
-                  <tr key={user.id} className="hover:bg-secondary/20 transition cursor-pointer" onClick={() => setSelectedUser(user)}>
+                  <tr
+                    key={user.id}
+                    className="hover:bg-secondary/20 transition cursor-pointer"
+                    onClick={() => setSelectedUser(user)}
+                  >
                     <td className="p-4">
                       <div className="flex items-center gap-3">
                         <div className="h-9 w-9 rounded-full bg-primary/10 text-primary border border-primary/25 flex items-center justify-center font-bold font-mono">
@@ -431,39 +532,76 @@ function AdminUserManagement() {
                         <div>
                           <div className="font-bold text-foreground flex items-center gap-1.5">
                             {user.displayName}
-                            {isMaster && <span className="px-1.5 rounded bg-primary text-[10px] text-primary-foreground font-mono">MASTER</span>}
+                            {isMaster && (
+                              <span className="px-1.5 rounded bg-primary text-[10px] text-primary-foreground font-mono">
+                                MASTER
+                              </span>
+                            )}
                           </div>
-                          <div className="text-muted-foreground font-mono text-[11px]">{user.email}</div>
+                          <div className="text-muted-foreground font-mono text-[11px]">
+                            {user.email}
+                          </div>
                         </div>
                       </div>
                     </td>
                     <td className="p-4">
                       <div className="flex flex-wrap gap-1">
                         {user.roles.map((r) => (
-                          <span key={r} className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r === "admin" ? "bg-primary/20 text-primary border border-primary/30" : r === "instructor" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-secondary text-muted-foreground"}`}>{r}</span>
+                          <span
+                            key={r}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r === "admin" ? "bg-primary/20 text-primary border border-primary/30" : r === "instructor" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-secondary text-muted-foreground"}`}
+                          >
+                            {r}
+                          </span>
                         ))}
                       </div>
                     </td>
                     <td className="p-4">
-                      <div className="font-bold text-primary flex items-center gap-1 font-mono"><Zap className="h-3 w-3" /> {user.xp} XP (Lvl {user.level})</div>
-                      <div className="text-muted-foreground text-[11px]">🔥 {user.streak || 1} day streak</div>
+                      <div className="font-bold text-primary flex items-center gap-1 font-mono">
+                        <Zap className="h-3 w-3" /> {user.xp} XP (Lvl {user.level})
+                      </div>
+                      <div className="text-muted-foreground text-[11px]">
+                        🔥 {user.streak || 1} day streak
+                      </div>
                     </td>
                     <td className="p-4">
-                      <span className="font-semibold text-foreground">{user.enrolledCourses?.length || 0} enrolled</span>
-                      <div className="text-muted-foreground text-[11px]">✓ {user.completedLessons?.length || 0} lessons</div>
+                      <span className="font-semibold text-foreground">
+                        {user.enrolledCourses?.length || 0} enrolled
+                      </span>
+                      <div className="text-muted-foreground text-[11px]">
+                        ✓ {user.completedLessons?.length || 0} lessons
+                      </div>
                     </td>
                     <td className="p-4">
                       {examCount > 0 ? (
                         <div>
-                          <span className={`font-bold font-mono ${latestExam?.passed ? "text-emerald-400" : "text-amber-400"}`}>{latestExam?.percentage}% ({latestExam?.passed ? "Passed" : "Failed"})</span>
-                          <div className="text-muted-foreground text-[10px]">{examCount} exams total</div>
+                          <span
+                            className={`font-bold font-mono ${latestExam?.passed ? "text-emerald-400" : "text-amber-400"}`}
+                          >
+                            {latestExam?.percentage}% ({latestExam?.passed ? "Passed" : "Failed"})
+                          </span>
+                          <div className="text-muted-foreground text-[10px]">
+                            {examCount} exams total
+                          </div>
                         </div>
-                      ) : <span className="text-muted-foreground text-[11px]">No exams yet</span>}
+                      ) : (
+                        <span className="text-muted-foreground text-[11px]">No exams yet</span>
+                      )}
                     </td>
                     <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-1.5">
-                        <button onClick={() => grantBonusXp(user, 100)} className="px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 text-primary font-bold text-[11px] hover:bg-primary hover:text-primary-foreground transition">+100 XP</button>
-                        <button onClick={() => setSelectedUser(user)} className="px-2.5 py-1 rounded-lg border border-border bg-secondary text-foreground text-[11px] hover:bg-primary hover:text-primary-foreground transition font-semibold">Details</button>
+                        <button
+                          onClick={() => grantBonusXp(user, 100)}
+                          className="px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 text-primary font-bold text-[11px] hover:bg-primary hover:text-primary-foreground transition"
+                        >
+                          +100 XP
+                        </button>
+                        <button
+                          onClick={() => setSelectedUser(user)}
+                          className="px-2.5 py-1 rounded-lg border border-border bg-secondary text-foreground text-[11px] hover:bg-primary hover:text-primary-foreground transition font-semibold"
+                        >
+                          Details
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -479,29 +617,49 @@ function AdminUserManagement() {
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto space-y-6 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center font-bold text-lg font-mono">{selectedUser.displayName.substring(0, 2).toUpperCase()}</div>
+                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary border border-primary/25 flex items-center justify-center font-bold text-lg font-mono">
+                  {selectedUser.displayName.substring(0, 2).toUpperCase()}
+                </div>
                 <div>
                   <h3 className="font-bold text-xl text-foreground">{selectedUser.displayName}</h3>
                   <p className="text-xs text-muted-foreground font-mono">{selectedUser.email}</p>
                 </div>
               </div>
-              <button onClick={() => setSelectedUser(null)} className="px-3 py-1.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary">Close</button>
+              <button
+                onClick={() => setSelectedUser(null)}
+                className="px-3 py-1.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary"
+              >
+                Close
+              </button>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center text-xs">
-              {[["Total XP", selectedUser.xp, "text-primary"], ["Level", selectedUser.level, "text-foreground"], ["Streak", `🔥 ${selectedUser.streak || 1}d`, "text-amber-400"]].map(([lbl, val, cls]) => (
-                <div key={String(lbl)} className="p-3 rounded-2xl bg-secondary/40 border border-border">
+              {[
+                ["Total XP", selectedUser.xp, "text-primary"],
+                ["Level", selectedUser.level, "text-foreground"],
+                ["Streak", `🔥 ${selectedUser.streak || 1}d`, "text-amber-400"],
+              ].map(([lbl, val, cls]) => (
+                <div
+                  key={String(lbl)}
+                  className="p-3 rounded-2xl bg-secondary/40 border border-border"
+                >
                   <span className="text-muted-foreground block">{lbl}</span>
                   <span className={`font-mono text-lg font-bold ${cls}`}>{val}</span>
                 </div>
               ))}
             </div>
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Manage Roles:</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Manage Roles:
+              </span>
               <div className="flex gap-2">
                 {["admin", "instructor", "user"].map((r) => {
                   const has = selectedUser.roles.includes(r);
                   return (
-                    <button key={r} onClick={() => toggleRole(selectedUser, r)} className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${has ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/60 text-muted-foreground border-border hover:text-foreground"}`}>
+                    <button
+                      key={r}
+                      onClick={() => toggleRole(selectedUser, r)}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${has ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/60 text-muted-foreground border-border hover:text-foreground"}`}
+                    >
                       {has ? `✓ ${r.toUpperCase()}` : `+ Add ${r}`}
                     </button>
                   );
@@ -509,37 +667,67 @@ function AdminUserManagement() {
               </div>
             </div>
             <div className="space-y-2">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Enrolled Tracks:</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Enrolled Tracks:
+              </span>
               <div className="flex flex-wrap gap-2">
                 {(selectedUser.enrolledCourses || []).map((slug) => (
-                  <span key={slug} className="px-3 py-1 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-semibold">📚 {slug.toUpperCase()}</span>
+                  <span
+                    key={slug}
+                    className="px-3 py-1 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-semibold"
+                  >
+                    📚 {slug.toUpperCase()}
+                  </span>
                 ))}
               </div>
             </div>
             <div className="space-y-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Practice Exam Submissions ({selectedUser.examSubmissions?.length || 0}):</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                Practice Exam Submissions ({selectedUser.examSubmissions?.length || 0}):
+              </span>
               {selectedUser.examSubmissions && selectedUser.examSubmissions.length > 0 ? (
                 <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
                   {selectedUser.examSubmissions.map((exam) => (
-                    <div key={exam.id} className="p-3 rounded-2xl border border-border bg-secondary/30 text-xs flex items-center justify-between">
+                    <div
+                      key={exam.id}
+                      className="p-3 rounded-2xl border border-border bg-secondary/30 text-xs flex items-center justify-between"
+                    >
                       <div>
                         <div className="font-bold text-foreground">{exam.trackLabel}</div>
-                        <div className="text-[10px] text-muted-foreground font-mono">{new Date(exam.submittedAt).toLocaleString()}</div>
+                        <div className="text-[10px] text-muted-foreground font-mono">
+                          {new Date(exam.submittedAt).toLocaleString()}
+                        </div>
                       </div>
                       <div className="text-right">
-                        <span className={`font-bold font-mono text-sm ${exam.passed ? "text-emerald-400" : "text-amber-400"}`}>{exam.percentage}% ({exam.score}/{exam.totalQuestions})</span>
-                        <div className="text-[10px] text-muted-foreground font-semibold">{exam.passed ? "✓ Passed" : "✗ Needs Review"}</div>
+                        <span
+                          className={`font-bold font-mono text-sm ${exam.passed ? "text-emerald-400" : "text-amber-400"}`}
+                        >
+                          {exam.percentage}% ({exam.score}/{exam.totalQuestions})
+                        </span>
+                        <div className="text-[10px] text-muted-foreground font-semibold">
+                          {exam.passed ? "✓ Passed" : "✗ Needs Review"}
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
-              ) : <div className="p-4 rounded-2xl bg-secondary/30 text-xs text-muted-foreground text-center">No practice exams submitted yet.</div>}
+              ) : (
+                <div className="p-4 rounded-2xl bg-secondary/30 text-xs text-muted-foreground text-center">
+                  No practice exams submitted yet.
+                </div>
+              )}
             </div>
             <div className="pt-4 border-t border-border flex items-center justify-between">
               <span className="text-xs text-muted-foreground">Award Instant XP:</span>
               <div className="flex gap-2">
                 {[100, 500, 1000].map((amt) => (
-                  <button key={amt} onClick={() => grantBonusXp(selectedUser, amt)} className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 font-bold text-xs hover:bg-primary hover:text-primary-foreground transition">+{amt} XP</button>
+                  <button
+                    key={amt}
+                    onClick={() => grantBonusXp(selectedUser, amt)}
+                    className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 font-bold text-xs hover:bg-primary hover:text-primary-foreground transition"
+                  >
+                    +{amt} XP
+                  </button>
                 ))}
               </div>
             </div>
@@ -561,46 +749,112 @@ export function AdminCoursesList() {
       setSeeding(true);
       const { data: u } = await supabase.auth.getUser();
       for (const catCourse of CATALOG_COURSES) {
-        const { data: existing } = await supabase.from("courses").select("id").eq("slug", catCourse.slug).maybeSingle();
+        const { data: existing } = await supabase
+          .from("courses")
+          .select("id")
+          .eq("slug", catCourse.slug)
+          .maybeSingle();
         let courseId = existing?.id as string | undefined;
         if (!courseId) {
-          const { data: inserted, error: iErr } = await supabase.from("courses").insert({ title: catCourse.title, slug: catCourse.slug, description: catCourse.subtitle || catCourse.description, category: catCourse.category, difficulty: catCourse.difficulty, published: true, created_by: u.user?.id } as never).select("id").single();
+          const { data: inserted, error: iErr } = await supabase
+            .from("courses")
+            .insert({
+              title: catCourse.title,
+              slug: catCourse.slug,
+              description: catCourse.subtitle || catCourse.description,
+              category: catCourse.category,
+              difficulty: catCourse.difficulty,
+              published: true,
+              created_by: u.user?.id,
+            } as never)
+            .select("id")
+            .single();
           if (iErr) throw iErr;
           courseId = inserted.id;
         } else {
-          await supabase.from("courses").update({ title: catCourse.title, description: catCourse.subtitle || catCourse.description, published: true } as never).eq("id", courseId);
+          await supabase
+            .from("courses")
+            .update({
+              title: catCourse.title,
+              description: catCourse.subtitle || catCourse.description,
+              published: true,
+            } as never)
+            .eq("id", courseId);
           await supabase.from("lessons").delete().eq("course_id", courseId);
         }
-        await supabase.from("lessons").insert(catCourse.lessons.map((l) => ({ course_id: courseId, slug: l.slug, title: l.title, lesson_type: l.lesson_type, content: l.content, video_url: l.video_url || null, xp_reward: l.xp_reward, sort_order: l.sort_order, published: true })) as never);
+        await supabase.from("lessons").insert(
+          catCourse.lessons.map((l) => ({
+            course_id: courseId,
+            slug: l.slug,
+            title: l.title,
+            lesson_type: l.lesson_type,
+            content: l.content,
+            video_url: l.video_url || null,
+            xp_reward: l.xp_reward,
+            sort_order: l.sort_order,
+            published: true,
+          })) as never,
+        );
       }
     },
-    onSuccess: () => { setSeeding(false); qc.invalidateQueries({ queryKey: ["admin-courses"] }); qc.invalidateQueries({ queryKey: ["public-courses"] }); alert("All 6 curriculum tracks installed!"); },
-    onError: (err) => { setSeeding(false); alert(`Error: ${(err as Error).message}`); },
+    onSuccess: () => {
+      setSeeding(false);
+      qc.invalidateQueries({ queryKey: ["admin-courses"] });
+      qc.invalidateQueries({ queryKey: ["public-courses"] });
+      alert("All 6 curriculum tracks installed!");
+    },
+    onError: (err) => {
+      setSeeding(false);
+      alert(`Error: ${(err as Error).message}`);
+    },
   });
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
         <div>
-          <h2 className="text-xl font-bold font-display text-foreground">Course & Curriculum Registry</h2>
-          <p className="text-xs text-muted-foreground">Manage and seed course tracks, lessons, videos, and practice challenges.</p>
+          <h2 className="text-xl font-bold font-display text-foreground">
+            Course & Curriculum Registry
+          </h2>
+          <p className="text-xs text-muted-foreground">
+            Manage and seed course tracks, lessons, videos, and practice challenges.
+          </p>
         </div>
-        <button onClick={() => seedAllTracks.mutate()} disabled={seeding} className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm flex items-center gap-2 disabled:opacity-50">
-          {seeding ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+        <button
+          onClick={() => seedAllTracks.mutate()}
+          disabled={seeding}
+          className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm flex items-center gap-2 disabled:opacity-50"
+        >
+          {seeding ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4" />
+          )}
           Seed All 6 Curriculum Tracks
         </button>
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {CATALOG_COURSES.map((course) => (
-          <div key={course.id} className="rounded-2xl border border-border bg-card p-5 space-y-3 hover:border-primary/40 transition">
+          <div
+            key={course.id}
+            className="rounded-2xl border border-border bg-card p-5 space-y-3 hover:border-primary/40 transition"
+          >
             <div className="flex items-center justify-between">
-              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">{course.category}</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold">✓ Ready ({course.lessons.length} lessons)</span>
+              <span className="px-2.5 py-0.5 rounded-full bg-primary/10 text-primary text-[10px] font-bold">
+                {course.category}
+              </span>
+              <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 font-semibold">
+                ✓ Ready ({course.lessons.length} lessons)
+              </span>
             </div>
             <h3 className="font-bold text-base text-foreground">{course.title}</h3>
             <p className="text-xs text-muted-foreground line-clamp-2">{course.subtitle}</p>
             <div className="pt-2 border-t border-border flex items-center justify-between text-xs">
-              <Link to="/courses/$slug" params={{ slug: course.slug }} className="text-primary font-semibold hover:underline flex items-center gap-1">
+              <Link
+                to="/courses/$slug"
+                params={{ slug: course.slug }}
+                className="text-primary font-semibold hover:underline flex items-center gap-1"
+              >
                 View Public Page <ExternalLink className="h-3 w-3" />
               </Link>
             </div>
@@ -685,39 +939,64 @@ function AdminContentCreator() {
   }
 
   function updateQuestion(id: string, updates: Partial<QuizQuestion>) {
-    setQuestions((prev) => prev.map((q) => q.id === id ? { ...q, ...updates } : q));
+    setQuestions((prev) => prev.map((q) => (q.id === id ? { ...q, ...updates } : q)));
   }
 
   function updateOption(qId: string, optIdx: number, value: string) {
-    setQuestions((prev) => prev.map((q) => {
-      if (q.id !== qId) return q;
-      const opts = [...q.options] as [string, string, string, string];
-      opts[optIdx] = value;
-      return { ...q, options: opts };
-    }));
+    setQuestions((prev) =>
+      prev.map((q) => {
+        if (q.id !== qId) return q;
+        const opts = [...q.options] as [string, string, string, string];
+        opts[optIdx] = value;
+        return { ...q, options: opts };
+      }),
+    );
   }
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault();
     setErrorMsg(null);
     setSavedMsg(null);
-    if (!lessonTitle.trim()) { setErrorMsg("Please enter a lesson title."); return; }
-    if (lessonType === "video" && !videoUrl.trim()) { setErrorMsg("Please enter a YouTube URL."); return; }
-    if (lessonType === "quiz" && questions.some((q) => !q.question.trim())) { setErrorMsg("All quiz questions must have text."); return; }
+    if (!lessonTitle.trim()) {
+      setErrorMsg("Please enter a lesson title.");
+      return;
+    }
+    if (lessonType === "video" && !videoUrl.trim()) {
+      setErrorMsg("Please enter a YouTube URL.");
+      return;
+    }
+    if (lessonType === "quiz" && questions.some((q) => !q.question.trim())) {
+      setErrorMsg("All quiz questions must have text.");
+      return;
+    }
     setSaving(true);
 
     try {
-      const { data: course } = await supabase.from("courses").select("id").eq("slug", selectedCourseSlug).maybeSingle();
+      const { data: course } = await supabase
+        .from("courses")
+        .select("id")
+        .eq("slug", selectedCourseSlug)
+        .maybeSingle();
       const courseId = course?.id;
 
-      const quizPayload = lessonType === "quiz" ? JSON.stringify(questions.map((q) => ({ question: q.question, options: q.options, correctIndex: q.correctIndex }))) : null;
+      const quizPayload =
+        lessonType === "quiz"
+          ? JSON.stringify(
+              questions.map((q) => ({
+                question: q.question,
+                options: q.options,
+                correctIndex: q.correctIndex,
+              })),
+            )
+          : null;
 
       const lessonRow = {
         course_id: courseId || null,
         slug: `${selectedCourseSlug}-${Date.now()}`,
         title: lessonTitle.trim(),
         lesson_type: lessonType,
-        content: lessonType === "quiz" ? quizPayload : (lessonType === "notes" ? notesContent : description),
+        content:
+          lessonType === "quiz" ? quizPayload : lessonType === "notes" ? notesContent : description,
         video_url: lessonType === "video" ? videoUrl.trim() : null,
         xp_reward: xpReward,
         sort_order: sortOrder,
@@ -728,11 +1007,19 @@ function AdminContentCreator() {
       if (error) throw error;
 
       setSavedMsg(`✓ Lesson "${lessonTitle}" saved successfully to ${selectedCourseSlug}!`);
-      setLessonTitle(""); setVideoUrl(""); setVideoPreview(""); setDescription(""); setNotesContent(""); setNotesFileUrl(null); setQuestions([createBlankQuestion()]);
+      setLessonTitle("");
+      setVideoUrl("");
+      setVideoPreview("");
+      setDescription("");
+      setNotesContent("");
+      setNotesFileUrl(null);
+      setQuestions([createBlankQuestion()]);
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
     } catch (err: any) {
       // Fallback: save locally
-      setSavedMsg(`✓ Lesson saved locally (Supabase: ${err?.message ?? "unavailable"}). Will sync on next seed.`);
+      setSavedMsg(
+        `✓ Lesson saved locally (Supabase: ${err?.message ?? "unavailable"}). Will sync on next seed.`,
+      );
     } finally {
       setSaving(false);
     }
@@ -742,26 +1029,51 @@ function AdminContentCreator() {
     <div className="space-y-6">
       <div className="pb-4 border-b border-border">
         <h2 className="text-xl font-bold font-display text-foreground">Content Creator Studio</h2>
-        <p className="text-xs text-muted-foreground mt-1">Create lessons with YouTube videos, uploaded notes, or interactive quizzes. All content is saved to Supabase and published instantly.</p>
+        <p className="text-xs text-muted-foreground mt-1">
+          Create lessons with YouTube videos, uploaded notes, or interactive quizzes. All content is
+          saved to Supabase and published instantly.
+        </p>
       </div>
 
       <form onSubmit={handleSave} className="space-y-6">
         {/* Course + Lesson Meta */}
         <div className="grid sm:grid-cols-2 gap-4">
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Target Course</label>
-            <select value={selectedCourseSlug} onChange={(e) => setSelectedCourseSlug(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary">
-              {CATALOG_COURSES.map((c) => <option key={c.slug} value={c.slug}>{c.title}</option>)}
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Target Course
+            </label>
+            <select
+              value={selectedCourseSlug}
+              onChange={(e) => setSelectedCourseSlug(e.target.value)}
+              className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            >
+              {CATALOG_COURSES.map((c) => (
+                <option key={c.slug} value={c.slug}>
+                  {c.title}
+                </option>
+              ))}
             </select>
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Lesson Type</label>
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Lesson Type
+            </label>
             <div className="mt-1.5 grid grid-cols-4 gap-2">
               {(["video", "notes", "quiz", "reading"] as LessonType[]).map((t) => {
-                const icons = { video: Youtube, notes: FileText, quiz: HelpCircle, reading: BookOpen };
+                const icons = {
+                  video: Youtube,
+                  notes: FileText,
+                  quiz: HelpCircle,
+                  reading: BookOpen,
+                };
                 const Icon = icons[t];
                 return (
-                  <button key={t} type="button" onClick={() => setLessonType(t)} className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border text-xs font-semibold transition ${lessonType === t ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:text-foreground"}`}>
+                  <button
+                    key={t}
+                    type="button"
+                    onClick={() => setLessonType(t)}
+                    className={`flex flex-col items-center gap-1 py-2 px-1 rounded-xl border text-xs font-semibold transition ${lessonType === t ? "bg-primary text-primary-foreground border-primary" : "bg-card border-border text-muted-foreground hover:text-foreground"}`}
+                  >
                     <Icon className="w-4 h-4" />
                     {t.charAt(0).toUpperCase() + t.slice(1)}
                   </button>
@@ -773,42 +1085,94 @@ function AdminContentCreator() {
 
         <div className="grid sm:grid-cols-3 gap-4">
           <div className="sm:col-span-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Lesson Title</label>
-            <input type="text" required placeholder="e.g. Introduction to Linux Filesystems" value={lessonTitle} onChange={(e) => setLessonTitle(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary" />
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Lesson Title
+            </label>
+            <input
+              type="text"
+              required
+              placeholder="e.g. Introduction to Linux Filesystems"
+              value={lessonTitle}
+              onChange={(e) => setLessonTitle(e.target.value)}
+              className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+            />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">XP Reward</label>
-              <input type="number" min={5} max={500} value={xpReward} onChange={(e) => setXpReward(Number(e.target.value))} className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                XP Reward
+              </label>
+              <input
+                type="number"
+                min={5}
+                max={500}
+                value={xpReward}
+                onChange={(e) => setXpReward(Number(e.target.value))}
+                className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+              />
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sort Order</label>
-              <input type="number" min={1} value={sortOrder} onChange={(e) => setSortOrder(Number(e.target.value))} className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Sort Order
+              </label>
+              <input
+                type="number"
+                min={1}
+                value={sortOrder}
+                onChange={(e) => setSortOrder(Number(e.target.value))}
+                className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+              />
             </div>
           </div>
         </div>
 
         {/* Description */}
         <div>
-          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description / Learning Objectives</label>
-          <textarea rows={3} placeholder="What will learners achieve in this lesson?" value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
+          <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+            Description / Learning Objectives
+          </label>
+          <textarea
+            rows={3}
+            placeholder="What will learners achieve in this lesson?"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            className="mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none resize-none"
+          />
         </div>
 
         {/* ── VIDEO ── */}
         {lessonType === "video" && (
           <div className="rounded-2xl border border-border bg-card/60 p-5 space-y-4">
-            <h3 className="text-sm font-bold flex items-center gap-2 text-foreground"><Youtube className="w-4 h-4 text-red-500" /> YouTube Video Lesson</h3>
+            <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
+              <Youtube className="w-4 h-4 text-red-500" /> YouTube Video Lesson
+            </h3>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">YouTube URL</label>
-              <input type="url" placeholder="https://www.youtube.com/watch?v=..." value={videoUrl} onChange={(e) => handleVideoUrlChange(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                YouTube URL
+              </label>
+              <input
+                type="url"
+                placeholder="https://www.youtube.com/watch?v=..."
+                value={videoUrl}
+                onChange={(e) => handleVideoUrlChange(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary font-mono"
+              />
             </div>
             {videoPreview && (
               <div className="rounded-xl overflow-hidden border border-border aspect-video">
-                <iframe src={videoPreview} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen className="w-full h-full" title="YouTube Preview" />
+                <iframe
+                  src={videoPreview}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  className="w-full h-full"
+                  title="YouTube Preview"
+                />
               </div>
             )}
             {videoUrl && !videoPreview && (
-              <p className="text-xs text-amber-400">⚠ Could not detect a valid YouTube URL. Check the link format.</p>
+              <p className="text-xs text-amber-400">
+                ⚠ Could not detect a valid YouTube URL. Check the link format.
+              </p>
             )}
           </div>
         )}
@@ -816,23 +1180,45 @@ function AdminContentCreator() {
         {/* ── NOTES ── */}
         {lessonType === "notes" && (
           <div className="rounded-2xl border border-border bg-card/60 p-5 space-y-4">
-            <h3 className="text-sm font-bold flex items-center gap-2 text-foreground"><FileText className="w-4 h-4 text-blue-400" /> Notes / Document Lesson</h3>
+            <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
+              <FileText className="w-4 h-4 text-blue-400" /> Notes / Document Lesson
+            </h3>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Upload File from Device</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Upload File from Device
+              </label>
               <div
                 onClick={() => fileInputRef.current?.click()}
                 className="mt-1.5 w-full rounded-xl border-2 border-dashed border-border bg-background/50 p-8 flex flex-col items-center justify-center gap-3 cursor-pointer hover:border-primary/50 hover:bg-primary/5 transition"
               >
                 <FileUp className="w-8 h-8 text-muted-foreground" />
-                <p className="text-sm text-muted-foreground font-medium">Click to upload PDF, DOCX, or TXT</p>
+                <p className="text-sm text-muted-foreground font-medium">
+                  Click to upload PDF, DOCX, or TXT
+                </p>
                 <p className="text-xs text-muted-foreground">or drag and drop a file here</p>
-                {notesFileUrl && <span className="text-xs text-emerald-400 font-semibold">{notesContent}</span>}
+                {notesFileUrl && (
+                  <span className="text-xs text-emerald-400 font-semibold">{notesContent}</span>
+                )}
               </div>
-              <input ref={fileInputRef} type="file" accept=".pdf,.docx,.doc,.txt,.md" className="hidden" onChange={handleNotesFile} />
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".pdf,.docx,.doc,.txt,.md"
+                className="hidden"
+                onChange={handleNotesFile}
+              />
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Or Paste Markdown / Text Content</label>
-              <textarea rows={8} placeholder="# Lesson Notes&#10;&#10;Write your lesson content in markdown here..." value={notesContent} onChange={(e) => setNotesContent(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-background font-mono px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Or Paste Markdown / Text Content
+              </label>
+              <textarea
+                rows={8}
+                placeholder="# Lesson Notes&#10;&#10;Write your lesson content in markdown here..."
+                value={notesContent}
+                onChange={(e) => setNotesContent(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-border bg-background font-mono px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none resize-none"
+              />
             </div>
           </div>
         )}
@@ -841,31 +1227,70 @@ function AdminContentCreator() {
         {lessonType === "quiz" && (
           <div className="rounded-2xl border border-border bg-card/60 p-5 space-y-5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold flex items-center gap-2 text-foreground"><HelpCircle className="w-4 h-4 text-amber-400" /> Quiz Builder ({questions.length} questions)</h3>
-              <button type="button" onClick={addQuestion} className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary hover:text-primary-foreground transition">
+              <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
+                <HelpCircle className="w-4 h-4 text-amber-400" /> Quiz Builder ({questions.length}{" "}
+                questions)
+              </h3>
+              <button
+                type="button"
+                onClick={addQuestion}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary hover:text-primary-foreground transition"
+              >
                 <PlusCircle className="w-3.5 h-3.5" /> Add Question
               </button>
             </div>
             <div className="space-y-4">
               {questions.map((q, qIdx) => (
-                <div key={q.id} className="rounded-2xl border border-border bg-background p-4 space-y-3">
+                <div
+                  key={q.id}
+                  className="rounded-2xl border border-border bg-background p-4 space-y-3"
+                >
                   <div className="flex items-start gap-3">
-                    <span className="mt-2.5 min-w-[24px] h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">{qIdx + 1}</span>
+                    <span className="mt-2.5 min-w-[24px] h-6 w-6 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center">
+                      {qIdx + 1}
+                    </span>
                     <div className="flex-1">
-                      <input type="text" placeholder={`Question ${qIdx + 1}…`} value={q.question} onChange={(e) => updateQuestion(q.id, { question: e.target.value })} className="w-full rounded-xl border border-border bg-card px-4 py-2 text-sm text-foreground focus:border-primary focus:outline-none" />
+                      <input
+                        type="text"
+                        placeholder={`Question ${qIdx + 1}…`}
+                        value={q.question}
+                        onChange={(e) => updateQuestion(q.id, { question: e.target.value })}
+                        className="w-full rounded-xl border border-border bg-card px-4 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
+                      />
                     </div>
                     {questions.length > 1 && (
-                      <button type="button" onClick={() => removeQuestion(q.id)} className="mt-1 text-muted-foreground hover:text-destructive transition"><Trash2 className="w-4 h-4" /></button>
+                      <button
+                        type="button"
+                        onClick={() => removeQuestion(q.id)}
+                        className="mt-1 text-muted-foreground hover:text-destructive transition"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                     )}
                   </div>
                   <div className="grid sm:grid-cols-2 gap-2 pl-9">
                     {q.options.map((opt, oIdx) => (
-                      <div key={oIdx} className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${q.correctIndex === oIdx ? "border-emerald-500/50 bg-emerald-500/10" : "border-border bg-card/50"}`}>
-                        <button type="button" onClick={() => updateQuestion(q.id, { correctIndex: oIdx })} className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition ${q.correctIndex === oIdx ? "border-emerald-500 bg-emerald-500" : "border-muted-foreground/40"}`}>
+                      <div
+                        key={oIdx}
+                        className={`flex items-center gap-2 rounded-xl border px-3 py-2 ${q.correctIndex === oIdx ? "border-emerald-500/50 bg-emerald-500/10" : "border-border bg-card/50"}`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => updateQuestion(q.id, { correctIndex: oIdx })}
+                          className={`w-4 h-4 rounded-full border-2 flex-shrink-0 flex items-center justify-center transition ${q.correctIndex === oIdx ? "border-emerald-500 bg-emerald-500" : "border-muted-foreground/40"}`}
+                        >
                           {q.correctIndex === oIdx && <Check className="w-2.5 h-2.5 text-white" />}
                         </button>
-                        <input type="text" placeholder={`Option ${oIdx + 1}`} value={opt} onChange={(e) => updateOption(q.id, oIdx, e.target.value)} className="flex-1 bg-transparent text-sm text-foreground focus:outline-none" />
-                        {q.correctIndex === oIdx && <span className="text-[10px] text-emerald-400 font-bold">Correct</span>}
+                        <input
+                          type="text"
+                          placeholder={`Option ${oIdx + 1}`}
+                          value={opt}
+                          onChange={(e) => updateOption(q.id, oIdx, e.target.value)}
+                          className="flex-1 bg-transparent text-sm text-foreground focus:outline-none"
+                        />
+                        {q.correctIndex === oIdx && (
+                          <span className="text-[10px] text-emerald-400 font-bold">Correct</span>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -878,19 +1303,42 @@ function AdminContentCreator() {
         {/* ── READING ── */}
         {lessonType === "reading" && (
           <div className="rounded-2xl border border-border bg-card/60 p-5 space-y-4">
-            <h3 className="text-sm font-bold flex items-center gap-2 text-foreground"><BookOpen className="w-4 h-4 text-purple-400" /> Reading / Article Lesson</h3>
+            <h3 className="text-sm font-bold flex items-center gap-2 text-foreground">
+              <BookOpen className="w-4 h-4 text-purple-400" /> Reading / Article Lesson
+            </h3>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Article Content (Markdown)</label>
-              <textarea rows={12} placeholder="# Article Title&#10;&#10;Write your reading lesson content here in markdown..." value={description} onChange={(e) => setDescription(e.target.value)} className="mt-1.5 w-full rounded-xl border border-border bg-background font-mono px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Article Content (Markdown)
+              </label>
+              <textarea
+                rows={12}
+                placeholder="# Article Title&#10;&#10;Write your reading lesson content here in markdown..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="mt-1.5 w-full rounded-xl border border-border bg-background font-mono px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none resize-none"
+              />
             </div>
           </div>
         )}
 
         {/* Feedback */}
-        {savedMsg && <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 font-medium flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />{savedMsg}</div>}
-        {errorMsg && <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive font-medium">{errorMsg}</div>}
+        {savedMsg && (
+          <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 font-medium flex items-center gap-2">
+            <CheckCircle2 className="w-4 h-4" />
+            {savedMsg}
+          </div>
+        )}
+        {errorMsg && (
+          <div className="rounded-xl border border-destructive/30 bg-destructive/10 p-3 text-xs text-destructive font-medium">
+            {errorMsg}
+          </div>
+        )}
 
-        <button type="submit" disabled={saving} className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-md disabled:opacity-50">
+        <button
+          type="submit"
+          disabled={saving}
+          className="flex items-center gap-2 px-8 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-md disabled:opacity-50"
+        >
           {saving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
           Save & Publish Lesson
         </button>
@@ -902,20 +1350,90 @@ function AdminContentCreator() {
 /* ══════════ TAB 4: PAGES MANAGER ══════════ */
 
 const SITE_PAGES = [
-  { path: "/", label: "Home / Landing", desc: "Main landing page shown to all visitors", publishedByDefault: true },
-  { path: "/courses", label: "Courses Catalog", desc: "Browse all Linux, Security, DevOps course tracks", publishedByDefault: true },
-  { path: "/dashboard", label: "Learner Dashboard", desc: "Personal learning hub with progress, XP, and streaks", publishedByDefault: true },
-  { path: "/lab", label: "Live Terminal Lab", desc: "Browser-based interactive Linux terminal sandbox", publishedByDefault: true },
-  { path: "/exam/practice", label: "Practice Exam Center", desc: "Timed Linux certification practice exams", publishedByDefault: true },
-  { path: "/certification", label: "Certification Hub", desc: "Official certification exam portal", publishedByDefault: true },
-  { path: "/distros", label: "Linux Distro Finder", desc: "Interactive distro recommendation quiz", publishedByDefault: true },
-  { path: "/docs", label: "Command Reference Docs", desc: "Searchable Linux command documentation", publishedByDefault: true },
-  { path: "/tools/cron-builder", label: "Cron Builder Tool", desc: "Visual crontab expression builder", publishedByDefault: true },
-  { path: "/tools/permissions-calculator", label: "Permissions Calculator", desc: "chmod permissions visual calculator", publishedByDefault: true },
-  { path: "/cheat-sheets", label: "Cheat Sheets", desc: "Printable Linux command cheat sheets", publishedByDefault: true },
-  { path: "/resources", label: "Resources Library", desc: "Downloadable study materials and lab files", publishedByDefault: true },
-  { path: "/profile", label: "User Profile", desc: "Learner profile and portfolio page", publishedByDefault: true },
-  { path: "/admin", label: "Admin Control Center", desc: "This admin panel (restricted)", publishedByDefault: true },
+  {
+    path: "/",
+    label: "Home / Landing",
+    desc: "Main landing page shown to all visitors",
+    publishedByDefault: true,
+  },
+  {
+    path: "/courses",
+    label: "Courses Catalog",
+    desc: "Browse all Linux, Security, DevOps course tracks",
+    publishedByDefault: true,
+  },
+  {
+    path: "/dashboard",
+    label: "Learner Dashboard",
+    desc: "Personal learning hub with progress, XP, and streaks",
+    publishedByDefault: true,
+  },
+  {
+    path: "/lab",
+    label: "Live Terminal Lab",
+    desc: "Browser-based interactive Linux terminal sandbox",
+    publishedByDefault: true,
+  },
+  {
+    path: "/exam/practice",
+    label: "Practice Exam Center",
+    desc: "Timed Linux certification practice exams",
+    publishedByDefault: true,
+  },
+  {
+    path: "/certification",
+    label: "Certification Hub",
+    desc: "Official certification exam portal",
+    publishedByDefault: true,
+  },
+  {
+    path: "/distros",
+    label: "Linux Distro Finder",
+    desc: "Interactive distro recommendation quiz",
+    publishedByDefault: true,
+  },
+  {
+    path: "/docs",
+    label: "Command Reference Docs",
+    desc: "Searchable Linux command documentation",
+    publishedByDefault: true,
+  },
+  {
+    path: "/tools/cron-builder",
+    label: "Cron Builder Tool",
+    desc: "Visual crontab expression builder",
+    publishedByDefault: true,
+  },
+  {
+    path: "/tools/permissions-calculator",
+    label: "Permissions Calculator",
+    desc: "chmod permissions visual calculator",
+    publishedByDefault: true,
+  },
+  {
+    path: "/cheat-sheets",
+    label: "Cheat Sheets",
+    desc: "Printable Linux command cheat sheets",
+    publishedByDefault: true,
+  },
+  {
+    path: "/resources",
+    label: "Resources Library",
+    desc: "Downloadable study materials and lab files",
+    publishedByDefault: true,
+  },
+  {
+    path: "/profile",
+    label: "User Profile",
+    desc: "Learner profile and portfolio page",
+    publishedByDefault: true,
+  },
+  {
+    path: "/admin",
+    label: "Admin Control Center",
+    desc: "This admin panel (restricted)",
+    publishedByDefault: true,
+  },
 ];
 
 function AdminPagesManager() {
@@ -958,11 +1476,17 @@ function AdminPagesManager() {
       <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold font-display text-foreground">Pages Manager</h2>
-          <p className="text-xs text-muted-foreground mt-1">Toggle page visibility, add announcement banners, and manage all site pages.</p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Toggle page visibility, add announcement banners, and manage all site pages.
+          </p>
         </div>
         <div className="flex items-center gap-3 text-xs">
-          <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">{publishedCount} Published</span>
-          <span className="px-3 py-1.5 rounded-xl bg-secondary border border-border text-muted-foreground font-bold">{SITE_PAGES.length - publishedCount} Hidden</span>
+          <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+            {publishedCount} Published
+          </span>
+          <span className="px-3 py-1.5 rounded-xl bg-secondary border border-border text-muted-foreground font-bold">
+            {SITE_PAGES.length - publishedCount} Hidden
+          </span>
         </div>
       </div>
 
@@ -972,25 +1496,47 @@ function AdminPagesManager() {
           const hasBanner = !!banners[page.path];
           const isEditing = editingBanner === page.path;
           return (
-            <div key={page.path} className={`rounded-2xl border bg-card p-4 space-y-3 transition ${isPublished ? "border-border" : "border-border/40 opacity-60"}`}>
+            <div
+              key={page.path}
+              className={`rounded-2xl border bg-card p-4 space-y-3 transition ${isPublished ? "border-border" : "border-border/40 opacity-60"}`}
+            >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-foreground">{page.label}</span>
-                    <code className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-secondary text-muted-foreground">{page.path}</code>
-                    {hasBanner && <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">📢 Banner Active</span>}
+                    <code className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-secondary text-muted-foreground">
+                      {page.path}
+                    </code>
+                    {hasBanner && (
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
+                        📢 Banner Active
+                      </span>
+                    )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-0.5">{page.desc}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <Link to={page.path as any} target="_blank" className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition" title="View page">
+                  <Link
+                    to={page.path as any}
+                    target="_blank"
+                    className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition"
+                    title="View page"
+                  >
                     <ExternalLink className="w-3.5 h-3.5" />
                   </Link>
                   <button
                     onClick={() => togglePage(page.path)}
                     className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition ${isPublished ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20" : "bg-secondary text-muted-foreground border-border hover:text-foreground"}`}
                   >
-                    {isPublished ? <><ToggleRight className="w-3.5 h-3.5" /> Live</> : <><ToggleLeft className="w-3.5 h-3.5" /> Hidden</>}
+                    {isPublished ? (
+                      <>
+                        <ToggleRight className="w-3.5 h-3.5" /> Live
+                      </>
+                    ) : (
+                      <>
+                        <ToggleLeft className="w-3.5 h-3.5" /> Hidden
+                      </>
+                    )}
                   </button>
                 </div>
               </div>
@@ -998,7 +1544,9 @@ function AdminPagesManager() {
               {/* Banner editor */}
               {isEditing ? (
                 <div className="space-y-2">
-                  <label className="text-xs font-semibold text-muted-foreground">Announcement Banner Text:</label>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Announcement Banner Text:
+                  </label>
                   <input
                     type="text"
                     value={bannerDraft}
@@ -1008,20 +1556,44 @@ function AdminPagesManager() {
                     autoFocus
                   />
                   <div className="flex gap-2">
-                    <button onClick={() => saveBanner(page.path)} className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 transition flex items-center gap-1"><Save className="w-3 h-3" /> Save Banner</button>
-                    <button onClick={() => setEditingBanner(null)} className="px-3 py-1.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary">Cancel</button>
+                    <button
+                      onClick={() => saveBanner(page.path)}
+                      className="px-3 py-1.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 transition flex items-center gap-1"
+                    >
+                      <Save className="w-3 h-3" /> Save Banner
+                    </button>
+                    <button
+                      onClick={() => setEditingBanner(null)}
+                      className="px-3 py-1.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary"
+                    >
+                      Cancel
+                    </button>
                   </div>
                 </div>
               ) : (
                 <div className="flex items-center gap-2">
-                  <button onClick={() => { setEditingBanner(page.path); setBannerDraft(banners[page.path] ?? ""); }} className="text-xs text-muted-foreground hover:text-primary transition flex items-center gap-1">
-                    <Plus className="w-3 h-3" /> {hasBanner ? "Edit banner" : "Add announcement banner"}
+                  <button
+                    onClick={() => {
+                      setEditingBanner(page.path);
+                      setBannerDraft(banners[page.path] ?? "");
+                    }}
+                    className="text-xs text-muted-foreground hover:text-primary transition flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />{" "}
+                    {hasBanner ? "Edit banner" : "Add announcement banner"}
                   </button>
                   {hasBanner && (
                     <>
                       <span className="text-muted-foreground">·</span>
-                      <span className="text-xs text-amber-400 truncate max-w-xs">"{banners[page.path]}"</span>
-                      <button onClick={() => removeBanner(page.path)} className="text-muted-foreground hover:text-destructive transition"><Trash2 className="w-3 h-3" /></button>
+                      <span className="text-xs text-amber-400 truncate max-w-xs">
+                        "{banners[page.path]}"
+                      </span>
+                      <button
+                        onClick={() => removeBanner(page.path)}
+                        className="text-muted-foreground hover:text-destructive transition"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
                     </>
                   )}
                 </div>
@@ -1046,7 +1618,15 @@ interface Resource {
   createdAt: string;
 }
 
-const RESOURCE_CATEGORIES = ["Cheat Sheets", "Lab Files", "PDF Guides", "Practice Tests", "Tools", "Templates", "Other"];
+const RESOURCE_CATEGORIES = [
+  "Cheat Sheets",
+  "Lab Files",
+  "PDF Guides",
+  "Practice Tests",
+  "Tools",
+  "Templates",
+  "Other",
+];
 
 function AdminResourcesManager() {
   const [resources, setResources] = useState<Resource[]>(() => {
@@ -1054,7 +1634,13 @@ function AdminResourcesManager() {
     return stored ? JSON.parse(stored) : SAMPLE_RESOURCES;
   });
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({ title: "", description: "", category: "Cheat Sheets", fileUrl: "", fileType: "pdf" as Resource["fileType"] });
+  const [form, setForm] = useState({
+    title: "",
+    description: "",
+    category: "Cheat Sheets",
+    fileUrl: "",
+    fileType: "pdf" as Resource["fileType"],
+  });
   const [uploading, setUploading] = useState(false);
   const [savedMsg, setSavedMsg] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -1071,7 +1657,12 @@ function AdminResourcesManager() {
     const reader = new FileReader();
     reader.onload = () => {
       const url = reader.result as string;
-      setForm((f) => ({ ...f, fileUrl: url, title: f.title || file.name.replace(/\.[^.]+$/, ""), fileType: detectFileType(file.name) }));
+      setForm((f) => ({
+        ...f,
+        fileUrl: url,
+        title: f.title || file.name.replace(/\.[^.]+$/, ""),
+        fileType: detectFileType(file.name),
+      }));
       setUploading(false);
     };
     reader.readAsDataURL(file);
@@ -1087,7 +1678,11 @@ function AdminResourcesManager() {
   function handleAddResource(e: React.FormEvent) {
     e.preventDefault();
     if (!form.title || !form.fileUrl) return;
-    const newRes: Resource = { id: crypto.randomUUID(), ...form, createdAt: new Date().toISOString() };
+    const newRes: Resource = {
+      id: crypto.randomUUID(),
+      ...form,
+      createdAt: new Date().toISOString(),
+    };
     const next = [newRes, ...resources];
     save(next);
     setForm({ title: "", description: "", category: "Cheat Sheets", fileUrl: "", fileType: "pdf" });
@@ -1104,80 +1699,180 @@ function AdminResourcesManager() {
     <div className="space-y-6">
       <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold font-display text-foreground">Resources Library Manager</h2>
-          <p className="text-xs text-muted-foreground mt-1">Upload and manage downloadable resources: cheat sheets, PDFs, lab files, and external links.</p>
+          <h2 className="text-xl font-bold font-display text-foreground">
+            Resources Library Manager
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Upload and manage downloadable resources: cheat sheets, PDFs, lab files, and external
+            links.
+          </p>
         </div>
-        <button onClick={() => setShowForm((v) => !v)} className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm">
+        <button
+          onClick={() => setShowForm((v) => !v)}
+          className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm"
+        >
           <Plus className="w-4 h-4" /> Add Resource
         </button>
       </div>
 
-      {savedMsg && <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 font-medium flex items-center gap-2"><CheckCircle2 className="w-4 h-4" />{savedMsg}</div>}
+      {savedMsg && (
+        <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-400 font-medium flex items-center gap-2">
+          <CheckCircle2 className="w-4 h-4" />
+          {savedMsg}
+        </div>
+      )}
 
       {showForm && (
-        <form onSubmit={handleAddResource} className="rounded-2xl border border-primary/20 bg-card p-5 space-y-4">
+        <form
+          onSubmit={handleAddResource}
+          className="rounded-2xl border border-primary/20 bg-card p-5 space-y-4"
+        >
           <h3 className="font-bold text-sm text-foreground">Add New Resource</h3>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Title</label>
-              <input type="text" required placeholder="e.g. Linux Commands Cheat Sheet" value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none" />
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Title
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Linux Commands Cheat Sheet"
+                value={form.title}
+                onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+                className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+              />
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Category</label>
-              <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none">
-                {RESOURCE_CATEGORIES.map((c) => <option key={c}>{c}</option>)}
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Category
+              </label>
+              <select
+                value={form.category}
+                onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+                className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none"
+              >
+                {RESOURCE_CATEGORIES.map((c) => (
+                  <option key={c}>{c}</option>
+                ))}
               </select>
             </div>
           </div>
           <div>
-            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Description</label>
-            <textarea rows={2} placeholder="Short description of this resource..." value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none" />
+            <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              Description
+            </label>
+            <textarea
+              rows={2}
+              placeholder="Short description of this resource..."
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              className="mt-1.5 w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none resize-none"
+            />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">External URL (or upload below)</label>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                External URL (or upload below)
+              </label>
               <div className="flex gap-2 mt-1.5">
-                <input type="url" placeholder="https://..." value={form.fileUrl.startsWith("data:") ? "" : form.fileUrl} onChange={(e) => setForm((f) => ({ ...f, fileUrl: e.target.value, fileType: "link" }))} className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none font-mono" />
+                <input
+                  type="url"
+                  placeholder="https://..."
+                  value={form.fileUrl.startsWith("data:") ? "" : form.fileUrl}
+                  onChange={(e) =>
+                    setForm((f) => ({ ...f, fileUrl: e.target.value, fileType: "link" }))
+                  }
+                  className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none font-mono"
+                />
               </div>
             </div>
             <div>
-              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Upload File from Device</label>
-              <div onClick={() => fileRef.current?.click()} className="mt-1.5 flex items-center gap-3 rounded-xl border-2 border-dashed border-border bg-background/50 px-4 py-3 cursor-pointer hover:border-primary/40 transition">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Upload File from Device
+              </label>
+              <div
+                onClick={() => fileRef.current?.click()}
+                className="mt-1.5 flex items-center gap-3 rounded-xl border-2 border-dashed border-border bg-background/50 px-4 py-3 cursor-pointer hover:border-primary/40 transition"
+              >
                 <FileUp className="w-5 h-5 text-muted-foreground" />
-                <span className="text-xs text-muted-foreground">{form.fileUrl.startsWith("data:") ? "✓ File loaded" : "Choose file..."}</span>
+                <span className="text-xs text-muted-foreground">
+                  {form.fileUrl.startsWith("data:") ? "✓ File loaded" : "Choose file..."}
+                </span>
                 {uploading && <Loader2 className="w-4 h-4 animate-spin text-primary ml-auto" />}
               </div>
-              <input ref={fileRef} type="file" className="hidden" accept=".pdf,.docx,.doc,.zip,.txt,.md" onChange={handleFileUpload} />
+              <input
+                ref={fileRef}
+                type="file"
+                className="hidden"
+                accept=".pdf,.docx,.doc,.zip,.txt,.md"
+                onChange={handleFileUpload}
+              />
             </div>
           </div>
           <div className="flex gap-3">
-            <button type="submit" disabled={!form.title || !form.fileUrl} className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition flex items-center gap-2 disabled:opacity-50">
+            <button
+              type="submit"
+              disabled={!form.title || !form.fileUrl}
+              className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition flex items-center gap-2 disabled:opacity-50"
+            >
               <Save className="w-3.5 h-3.5" /> Save Resource
             </button>
-            <button type="button" onClick={() => setShowForm(false)} className="px-5 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary">Cancel</button>
+            <button
+              type="button"
+              onClick={() => setShowForm(false)}
+              className="px-5 py-2.5 rounded-xl border border-border text-xs font-semibold hover:bg-secondary"
+            >
+              Cancel
+            </button>
           </div>
         </form>
       )}
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {resources.map((res) => (
-          <div key={res.id} className="rounded-2xl border border-border bg-card p-4 space-y-3 hover:border-primary/30 transition group">
+          <div
+            key={res.id}
+            className="rounded-2xl border border-border bg-card p-4 space-y-3 hover:border-primary/30 transition group"
+          >
             <div className="flex items-start justify-between gap-3">
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <span className="text-lg">{res.fileType === "pdf" ? "📄" : res.fileType === "docx" ? "📝" : res.fileType === "zip" ? "📦" : res.fileType === "link" ? "🔗" : "📎"}</span>
+                  <span className="text-lg">
+                    {res.fileType === "pdf"
+                      ? "📄"
+                      : res.fileType === "docx"
+                        ? "📝"
+                        : res.fileType === "zip"
+                          ? "📦"
+                          : res.fileType === "link"
+                            ? "🔗"
+                            : "📎"}
+                  </span>
                   <span className="font-bold text-sm text-foreground truncate">{res.title}</span>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 mt-1 rounded-full bg-secondary text-muted-foreground font-semibold inline-block">{res.category}</span>
+                <span className="text-[10px] px-2 py-0.5 mt-1 rounded-full bg-secondary text-muted-foreground font-semibold inline-block">
+                  {res.category}
+                </span>
               </div>
-              <button onClick={() => deleteResource(res.id)} className="opacity-0 group-hover:opacity-100 transition text-muted-foreground hover:text-destructive">
+              <button
+                onClick={() => deleteResource(res.id)}
+                className="opacity-0 group-hover:opacity-100 transition text-muted-foreground hover:text-destructive"
+              >
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
             {res.description && <p className="text-xs text-muted-foreground">{res.description}</p>}
             <div className="pt-2 border-t border-border/60 flex items-center justify-between">
-              <span className="text-[10px] text-muted-foreground">{new Date(res.createdAt).toLocaleDateString()}</span>
-              <a href={res.fileUrl} download={!res.fileUrl.startsWith("http")} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline">
+              <span className="text-[10px] text-muted-foreground">
+                {new Date(res.createdAt).toLocaleDateString()}
+              </span>
+              <a
+                href={res.fileUrl}
+                download={!res.fileUrl.startsWith("http")}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+              >
                 <Download className="w-3 h-3" /> Download / View
               </a>
             </div>
@@ -1188,7 +1883,9 @@ function AdminResourcesManager() {
       {resources.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border bg-card/40 p-12 text-center">
           <FileText className="w-10 h-10 text-muted-foreground mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">No resources yet. Add your first resource above.</p>
+          <p className="text-sm text-muted-foreground">
+            No resources yet. Add your first resource above.
+          </p>
         </div>
       )}
     </div>
@@ -1196,9 +1893,35 @@ function AdminResourcesManager() {
 }
 
 const SAMPLE_RESOURCES: Resource[] = [
-  { id: "res-001", title: "Linux Commands Cheat Sheet", description: "Essential Linux command reference covering filesystem, permissions, processes, and networking.", category: "Cheat Sheets", fileUrl: "https://files.fosswire.com/2007/08/fwunixref.pdf", fileType: "pdf", createdAt: new Date(Date.now() - 86400000 * 5).toISOString() },
-  { id: "res-002", title: "Bash Scripting Reference", description: "Complete Bash scripting guide with variables, loops, conditionals, and functions.", category: "PDF Guides", fileUrl: "https://mywiki.wooledge.org/BashGuide", fileType: "link", createdAt: new Date(Date.now() - 86400000 * 3).toISOString() },
-  { id: "res-003", title: "Vim Keybindings Cheat Sheet", description: "Quick reference for Vim normal mode, insert mode, visual mode, and ex commands.", category: "Cheat Sheets", fileUrl: "https://vim.rtorr.com", fileType: "link", createdAt: new Date(Date.now() - 86400000 * 1).toISOString() },
+  {
+    id: "res-001",
+    title: "Linux Commands Cheat Sheet",
+    description:
+      "Essential Linux command reference covering filesystem, permissions, processes, and networking.",
+    category: "Cheat Sheets",
+    fileUrl: "https://files.fosswire.com/2007/08/fwunixref.pdf",
+    fileType: "pdf",
+    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+  },
+  {
+    id: "res-002",
+    title: "Bash Scripting Reference",
+    description:
+      "Complete Bash scripting guide with variables, loops, conditionals, and functions.",
+    category: "PDF Guides",
+    fileUrl: "https://mywiki.wooledge.org/BashGuide",
+    fileType: "link",
+    createdAt: new Date(Date.now() - 86400000 * 3).toISOString(),
+  },
+  {
+    id: "res-003",
+    title: "Vim Keybindings Cheat Sheet",
+    description: "Quick reference for Vim normal mode, insert mode, visual mode, and ex commands.",
+    category: "Cheat Sheets",
+    fileUrl: "https://vim.rtorr.com",
+    fileType: "link",
+    createdAt: new Date(Date.now() - 86400000 * 1).toISOString(),
+  },
 ];
 
 /* ══════════ TAB 6: PLATFORM ANALYTICS ══════════ */
@@ -1219,8 +1942,12 @@ function AdminAnalyticsTab() {
       <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4 shadow-xl">
         <div className="flex items-center justify-between pb-2">
           <div>
-            <h3 className="font-bold text-lg text-foreground">Weekly Active Learners & Lessons Completed</h3>
-            <p className="text-xs text-muted-foreground">Platform engagement trends over the last 7 days</p>
+            <h3 className="font-bold text-lg text-foreground">
+              Weekly Active Learners & Lessons Completed
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              Platform engagement trends over the last 7 days
+            </p>
           </div>
           <span className="text-xs font-bold text-emerald-400">+24% vs last week</span>
         </div>
@@ -1240,9 +1967,30 @@ function AdminAnalyticsTab() {
               <CartesianGrid strokeDasharray="3 3" opacity={0.1} />
               <XAxis dataKey="day" stroke="#888" fontSize={11} />
               <YAxis stroke="#888" fontSize={11} />
-              <RechartsTooltip contentStyle={{ backgroundColor: "#18181b", borderColor: "#27272a", borderRadius: "12px", fontSize: "12px" }} />
-              <Area type="monotone" dataKey="lessonsFinished" stroke="#10b981" fillOpacity={1} fill="url(#lessonsGrad)" name="Lessons Finished" />
-              <Area type="monotone" dataKey="activeLearners" stroke="#f59e0b" fillOpacity={1} fill="url(#learnersGrad)" name="Active Learners" />
+              <RechartsTooltip
+                contentStyle={{
+                  backgroundColor: "#18181b",
+                  borderColor: "#27272a",
+                  borderRadius: "12px",
+                  fontSize: "12px",
+                }}
+              />
+              <Area
+                type="monotone"
+                dataKey="lessonsFinished"
+                stroke="#10b981"
+                fillOpacity={1}
+                fill="url(#lessonsGrad)"
+                name="Lessons Finished"
+              />
+              <Area
+                type="monotone"
+                dataKey="activeLearners"
+                stroke="#f59e0b"
+                fillOpacity={1}
+                fill="url(#learnersGrad)"
+                name="Active Learners"
+              />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -1255,12 +2003,42 @@ function AdminAnalyticsTab() {
 
 function LinuxPackageRegistry() {
   const PACKAGES = [
-    { name: "coreutils", version: "9.4", desc: "Basic file, shell and text manipulation utilities", status: "Installed" },
-    { name: "systemd", version: "255", desc: "System and service manager for Linux operating systems", status: "Installed" },
-    { name: "nmap", version: "7.94", desc: "Network exploration tool and security / port scanner", status: "Installed" },
-    { name: "docker-ce", version: "26.1", desc: "Open source container runtime and engine daemon", status: "Installed" },
-    { name: "kubectl", version: "v1.30", desc: "Command-line tool for controlling Kubernetes clusters", status: "Installed" },
-    { name: "wireshark-cli", version: "4.2", desc: "Network protocol analyzer and packet dissection suite", status: "Installed" },
+    {
+      name: "coreutils",
+      version: "9.4",
+      desc: "Basic file, shell and text manipulation utilities",
+      status: "Installed",
+    },
+    {
+      name: "systemd",
+      version: "255",
+      desc: "System and service manager for Linux operating systems",
+      status: "Installed",
+    },
+    {
+      name: "nmap",
+      version: "7.94",
+      desc: "Network exploration tool and security / port scanner",
+      status: "Installed",
+    },
+    {
+      name: "docker-ce",
+      version: "26.1",
+      desc: "Open source container runtime and engine daemon",
+      status: "Installed",
+    },
+    {
+      name: "kubectl",
+      version: "v1.30",
+      desc: "Command-line tool for controlling Kubernetes clusters",
+      status: "Installed",
+    },
+    {
+      name: "wireshark-cli",
+      version: "4.2",
+      desc: "Network protocol analyzer and packet dissection suite",
+      status: "Installed",
+    },
   ];
 
   return (
@@ -1268,10 +2046,15 @@ function LinuxPackageRegistry() {
       <h3 className="text-xl font-bold">Linux Administration Packages & Sandbox Modules</h3>
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {PACKAGES.map((pkg) => (
-          <div key={pkg.name} className="p-4 rounded-2xl border border-border bg-card space-y-2 hover:border-primary/30 transition">
+          <div
+            key={pkg.name}
+            className="p-4 rounded-2xl border border-border bg-card space-y-2 hover:border-primary/30 transition"
+          >
             <div className="flex items-center justify-between">
               <span className="font-mono font-bold text-sm text-foreground">{pkg.name}</span>
-              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">v{pkg.version}</span>
+              <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold">
+                v{pkg.version}
+              </span>
             </div>
             <p className="text-xs text-muted-foreground">{pkg.desc}</p>
           </div>

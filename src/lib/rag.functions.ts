@@ -10,7 +10,8 @@ function serverPublic() {
     global: {
       fetch: (input, init) => {
         const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`) h.delete("Authorization");
+        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+          h.delete("Authorization");
         h.set("apikey", key);
         return fetch(input, { ...init, headers: h });
       },
@@ -54,7 +55,8 @@ function extractExcerpt(text: string, terms: string[]): { excerpt: string; start
   const idx = best.idx >= 0 ? best.idx : 0;
   const start = Math.max(0, idx - 120);
   const end = Math.min(clean.length, start + 480);
-  const excerpt = (start > 0 ? "…" : "") + clean.slice(start, end) + (end < clean.length ? "…" : "");
+  const excerpt =
+    (start > 0 ? "…" : "") + clean.slice(start, end) + (end < clean.length ? "…" : "");
   return { excerpt, startOffset: start };
 }
 
@@ -66,15 +68,19 @@ export type TutorLessonContext = {
 };
 
 export const askTutor = createServerFn({ method: "POST" })
-  .validator((input: {
-    question: string;
-    history?: ChatMessage[];
-    apiKey?: string;
-    lessonContext?: TutorLessonContext;
-  }) => input)
+  .validator(
+    (input: {
+      question: string;
+      history?: ChatMessage[];
+      apiKey?: string;
+      lessonContext?: TutorLessonContext;
+    }) => input,
+  )
   .handler(async ({ data }) => {
     const sb = serverPublic();
-    const terms = (data.question.toLowerCase().match(/[a-z][a-z0-9-]+/g) ?? []).filter((t) => t.length > 2).slice(0, 8);
+    const terms = (data.question.toLowerCase().match(/[a-z][a-z0-9-]+/g) ?? [])
+      .filter((t) => t.length > 2)
+      .slice(0, 8);
     type Row = { name: string; slug: string; short_desc: string; description: string };
     let context: Row[] = [];
     try {
@@ -88,10 +94,15 @@ export const askTutor = createServerFn({ method: "POST" })
       /* ignore — fall back to keyword search */
     }
     if (context.length === 0) {
-      const or = terms.map((t) => `name.ilike.%${t}%,short_desc.ilike.%${t}%,description.ilike.%${t}%`).join(",");
+      const or = terms
+        .map((t) => `name.ilike.%${t}%,short_desc.ilike.%${t}%,description.ilike.%${t}%`)
+        .join(",");
       if (or) {
         const { data: rows } = await sb
-          .from("linux_commands").select("name,slug,short_desc,description").or(or).limit(4);
+          .from("linux_commands")
+          .select("name,slug,short_desc,description")
+          .or(or)
+          .limit(4);
         context = (rows ?? []) as Row[];
       }
     }
@@ -153,7 +164,12 @@ export const saveConversation = createServerFn({ method: "POST" })
     if (convId) {
       await context.supabase.from("chat_messages").insert([
         { conversation_id: convId, user_id: context.userId, role: "user", content: data.question },
-        { conversation_id: convId, user_id: context.userId, role: "assistant", content: data.answer },
+        {
+          conversation_id: convId,
+          user_id: context.userId,
+          role: "assistant",
+          content: data.answer,
+        },
       ]);
     }
     return { ok: true };

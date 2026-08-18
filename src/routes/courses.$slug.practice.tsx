@@ -46,7 +46,12 @@ function PracticePage() {
   const [mode, setMode] = useState<"menu" | "quiz" | "result">("menu");
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [activeIdx, setActiveIdx] = useState(0);
-  const [score, setScore] = useState<{ correct: number; total: number; percentage: number; passed: boolean } | null>(null);
+  const [score, setScore] = useState<{
+    correct: number;
+    total: number;
+    percentage: number;
+    passed: boolean;
+  } | null>(null);
 
   const courseMeta = getCourseBySlug(slug) || CATALOG_COURSES[0];
 
@@ -118,7 +123,11 @@ function PracticePage() {
       <header className="border-b border-border/80 bg-card/60 backdrop-blur sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-6 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Link to="/courses/$slug" params={{ slug }} className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground">
+            <Link
+              to="/courses/$slug"
+              params={{ slug }}
+              className="flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="h-4 w-4" /> Syllabus
             </Link>
             <div className="h-4 w-px bg-border" />
@@ -150,14 +159,17 @@ function PracticePage() {
                 {courseMeta.title} Practice Quiz
               </h1>
               <p className="text-sm text-muted-foreground max-w-md mx-auto">
-                Test your understanding across all {courseMeta.lessons.length} lessons. Instant scoring, explanation reviews, and bonus XP upon passing.
+                Test your understanding across all {courseMeta.lessons.length} lessons. Instant
+                scoring, explanation reviews, and bonus XP upon passing.
               </p>
             </div>
 
             <div className="grid sm:grid-cols-3 gap-3 text-xs text-left max-w-lg mx-auto py-2">
               <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border">
                 <span className="text-muted-foreground block">Questions:</span>
-                <span className="font-bold text-foreground text-sm">{questions.length} Questions</span>
+                <span className="font-bold text-foreground text-sm">
+                  {questions.length} Questions
+                </span>
               </div>
               <div className="p-3.5 rounded-2xl bg-secondary/40 border border-border">
                 <span className="text-muted-foreground block">Passing Score:</span>
@@ -179,7 +191,12 @@ function PracticePage() {
                   Sign up or log in to record your test scores in your profile and Admin overview.
                 </p>
                 <button
-                  onClick={() => navigate({ to: "/auth", search: { redirect: `/courses/${slug}/practice`, mode: "signup" } })}
+                  onClick={() =>
+                    navigate({
+                      to: "/auth",
+                      search: { redirect: `/courses/${slug}/practice`, mode: "signup" },
+                    })
+                  }
                   className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110"
                 >
                   Sign In to Start Quiz
@@ -283,7 +300,9 @@ function PracticePage() {
           <div className="space-y-8 animate-in fade-in">
             <div
               className={`rounded-3xl border p-8 text-center space-y-4 shadow-xl ${
-                score.passed ? "border-emerald-500/40 bg-emerald-500/5" : "border-amber-500/40 bg-amber-500/5"
+                score.passed
+                  ? "border-emerald-500/40 bg-emerald-500/5"
+                  : "border-amber-500/40 bg-amber-500/5"
               }`}
             >
               <div
@@ -291,7 +310,11 @@ function PracticePage() {
                   score.passed ? "bg-emerald-500" : "bg-amber-500"
                 }`}
               >
-                {score.passed ? <CheckCircle2 className="h-8 w-8" /> : <Award className="h-8 w-8" />}
+                {score.passed ? (
+                  <CheckCircle2 className="h-8 w-8" />
+                ) : (
+                  <Award className="h-8 w-8" />
+                )}
               </div>
 
               <h2 className="text-3xl font-display font-black text-foreground">
@@ -303,7 +326,8 @@ function PracticePage() {
               </div>
 
               <p className="text-sm text-muted-foreground">
-                You answered <strong className="text-foreground">{score.correct}</strong> of {score.total} questions correctly.
+                You answered <strong className="text-foreground">{score.correct}</strong> of{" "}
+                {score.total} questions correctly.
                 {score.passed
                   ? " You've successfully proven your knowledge on this track!"
                   : " A score of 70% is required. Review the explanations below and try again."}
@@ -334,12 +358,17 @@ function PracticePage() {
                 const isCorrect = userChoice === q.correctIndex;
 
                 return (
-                  <div key={q.id} className="rounded-2xl border border-border bg-card p-5 space-y-3 text-xs">
+                  <div
+                    key={q.id}
+                    className="rounded-2xl border border-border bg-card p-5 space-y-3 text-xs"
+                  >
                     <div className="flex items-start justify-between gap-3">
                       <div className="font-bold text-foreground">
                         {idx + 1}. {q.question}
                       </div>
-                      <span className={`px-2 py-0.5 rounded-full font-bold ${isCorrect ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}>
+                      <span
+                        className={`px-2 py-0.5 rounded-full font-bold ${isCorrect ? "bg-emerald-500/10 text-emerald-500" : "bg-rose-500/10 text-rose-500"}`}
+                      >
                         {isCorrect ? "Correct" : "Incorrect"}
                       </span>
                     </div>

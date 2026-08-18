@@ -35,7 +35,10 @@ export const Route = createFileRoute("/courses/$slug/")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.slug.toUpperCase()} — AfroKernel Course Syllabus` },
-      { name: "description", content: `Complete syllabus, interactive lessons, video lectures, and practice quizzes for the AfroKernel ${params.slug} course.` },
+      {
+        name: "description",
+        content: `Complete syllabus, interactive lessons, video lectures, and practice quizzes for the AfroKernel ${params.slug} course.`,
+      },
       { property: "og:title", content: `AfroKernel Course — ${params.slug}` },
     ],
   }),
@@ -99,8 +102,10 @@ function CourseDetailPage() {
   const enrolled = user && isEnrolled(c.slug);
 
   const completedCount = c.lessons.filter((l) => completedLessons.includes(l.id)).length;
-  const progressPct = c.lessons.length > 0 ? Math.round((completedCount / c.lessons.length) * 100) : 0;
-  const firstUnfinishedLesson = c.lessons.find((l) => !completedLessons.includes(l.id)) || c.lessons[0];
+  const progressPct =
+    c.lessons.length > 0 ? Math.round((completedCount / c.lessons.length) * 100) : 0;
+  const firstUnfinishedLesson =
+    c.lessons.find((l) => !completedLessons.includes(l.id)) || c.lessons[0];
 
   function handleAction(targetLessonSlug?: string) {
     if (!user) {
@@ -182,7 +187,9 @@ function CourseDetailPage() {
                   <div className="flex items-center gap-1 text-amber-400 font-bold">
                     <Star className="h-4 w-4 fill-current" />
                     <span>{c.rating}</span>
-                    <span className="text-muted-foreground font-normal">({c.review_count} ratings)</span>
+                    <span className="text-muted-foreground font-normal">
+                      ({c.review_count} ratings)
+                    </span>
                   </div>
                   <div className="flex items-center gap-1">
                     <Users className="h-4 w-4 text-primary" />
@@ -196,10 +203,15 @@ function CourseDetailPage() {
 
                 {/* Skills tags */}
                 <div className="pt-2">
-                  <span className="text-xs font-semibold text-muted-foreground block mb-2">Skills you will gain:</span>
+                  <span className="text-xs font-semibold text-muted-foreground block mb-2">
+                    Skills you will gain:
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     {c.skills.map((skill) => (
-                      <span key={skill} className="px-3 py-1 rounded-xl bg-card border border-border text-xs font-medium text-foreground">
+                      <span
+                        key={skill}
+                        className="px-3 py-1 rounded-xl bg-card border border-border text-xs font-medium text-foreground"
+                      >
                         {skill}
                       </span>
                     ))}
@@ -217,7 +229,8 @@ function CourseDetailPage() {
                     100% Free Forever
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Includes video lectures, browser terminal labs, quizzes, and verifiable credential.
+                    Includes video lectures, browser terminal labs, quizzes, and verifiable
+                    credential.
                   </p>
                 </div>
 
@@ -398,9 +411,13 @@ function CourseDetailPage() {
                       }`}
                     >
                       {isCompleted ? (
-                        <>Review Lesson <ChevronRight className="h-3.5 w-3.5" /></>
+                        <>
+                          Review Lesson <ChevronRight className="h-3.5 w-3.5" />
+                        </>
                       ) : (
-                        <>Start Lesson <Play className="h-3 w-3 fill-current" /></>
+                        <>
+                          Start Lesson <Play className="h-3 w-3 fill-current" />
+                        </>
                       )}
                     </button>
                   </div>

@@ -30,7 +30,12 @@ const DEFAULT_QUIZ: BuiltInLessonQuiz = {
     {
       id: "default-2",
       prompt: "What does `ls -la` show?",
-      choices: ["Only hidden files", "Detailed listing including hidden files", "Disk usage only", "Running processes"],
+      choices: [
+        "Only hidden files",
+        "Detailed listing including hidden files",
+        "Disk usage only",
+        "Running processes",
+      ],
       correct_index: 1,
       explanation: "`-l` is long format; `-a` includes hidden (dot) files.",
     },
@@ -53,7 +58,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "w1",
         prompt: "Linux is commonly used for…",
-        choices: ["Servers and cloud only", "Servers, cloud, phones, and DevOps tools", "Windows desktops only", "Printer firmware only"],
+        choices: [
+          "Servers and cloud only",
+          "Servers, cloud, phones, and DevOps tools",
+          "Windows desktops only",
+          "Printer firmware only",
+        ],
         correct_index: 1,
         explanation: "Linux runs servers, Android phones, cloud VMs, containers, and more.",
       },
@@ -67,7 +77,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "w3",
         prompt: "What does `uname -a` help you see?",
-        choices: ["Only file sizes", "Kernel and system information", "Your password", "Git remotes"],
+        choices: [
+          "Only file sizes",
+          "Kernel and system information",
+          "Your password",
+          "Git remotes",
+        ],
         correct_index: 1,
         explanation: "`uname -a` prints kernel and system details.",
       },
@@ -123,7 +138,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "f3",
         prompt: "What does `cp notes.txt notes.bak` do?",
-        choices: ["Deletes notes.txt", "Copies notes.txt to notes.bak", "Moves notes.txt", "Renames the folder"],
+        choices: [
+          "Deletes notes.txt",
+          "Copies notes.txt to notes.bak",
+          "Moves notes.txt",
+          "Renames the folder",
+        ],
         correct_index: 1,
         explanation: "`cp` copies a file to a new name/path.",
       },
@@ -151,7 +171,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "u3",
         prompt: "What does `chmod 755 script.sh` typically allow?",
-        choices: ["No one can run it", "Owner rwx; group/others rx", "World-writable only", "Delete the file"],
+        choices: [
+          "No one can run it",
+          "Owner rwx; group/others rx",
+          "World-writable only",
+          "Delete the file",
+        ],
         correct_index: 1,
         explanation: "755 = rwxr-xr-x.",
       },
@@ -172,14 +197,24 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "p2",
         prompt: "Why update package indexes before installing?",
-        choices: ["To wipe /home", "To fetch latest package lists", "To reboot", "To change hostname"],
+        choices: [
+          "To wipe /home",
+          "To fetch latest package lists",
+          "To reboot",
+          "To change hostname",
+        ],
         correct_index: 1,
         explanation: "`apt update` refreshes package metadata.",
       },
       {
         id: "p3",
         prompt: "What is a package?",
-        choices: ["A kernel panic", "Bundled software ready to install", "A user password", "A partition table"],
+        choices: [
+          "A kernel panic",
+          "Bundled software ready to install",
+          "A user password",
+          "A partition table",
+        ],
         correct_index: 1,
         explanation: "Packages bundle apps/libraries for the package manager.",
       },
@@ -193,7 +228,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "s1",
         prompt: "Which command restarts a systemd service?",
-        choices: ["systemctl restart <service>", "service kill <service>", "apt restart", "chmod restart"],
+        choices: [
+          "systemctl restart <service>",
+          "service kill <service>",
+          "apt restart",
+          "chmod restart",
+        ],
         correct_index: 0,
         explanation: "`systemctl restart` stops and starts the unit.",
       },
@@ -249,7 +289,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "c1",
         prompt: "A solid Linux admin workflow often includes…",
-        choices: ["Guessing only", "Terminal skills, files, users, packages, services, networking", "Avoiding logs", "Disabling all networking"],
+        choices: [
+          "Guessing only",
+          "Terminal skills, files, users, packages, services, networking",
+          "Avoiding logs",
+          "Disabling all networking",
+        ],
         correct_index: 1,
         explanation: "Those are the core foundations covered in this course.",
       },
@@ -263,7 +308,12 @@ export const LESSON_QUIZZES: Record<string, BuiltInLessonQuiz> = {
       {
         id: "c3",
         prompt: "After finishing lessons, a good next step is…",
-        choices: ["Ignore quizzes", "Take the practice quiz and keep using the Lab", "Uninstall Linux", "Disable the terminal"],
+        choices: [
+          "Ignore quizzes",
+          "Take the practice quiz and keep using the Lab",
+          "Uninstall Linux",
+          "Disable the terminal",
+        ],
         correct_index: 1,
         explanation: "Practice quizzes and Lab drills lock in the skills.",
       },

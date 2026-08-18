@@ -36,7 +36,9 @@ export function FileUploadField({ label, hint, accept, currentUrl, busy, onFile,
 
   return (
     <div className="space-y-2">
-      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</label>
+      <label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+        {label}
+      </label>
       <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
@@ -44,7 +46,11 @@ export function FileUploadField({ label, hint, accept, currentUrl, busy, onFile,
           onClick={() => inputRef.current?.click()}
           className="inline-flex items-center gap-2 rounded-lg border border-dashed border-primary/40 bg-primary/5 px-3 py-2 text-sm font-medium text-primary hover:bg-primary/10 disabled:opacity-50"
         >
-          {uploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileUp className="h-4 w-4" />}
+          {uploading ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <FileUp className="h-4 w-4" />
+          )}
           {uploading ? "Uploading…" : "Upload from device"}
         </button>
         {currentUrl && onClear && (

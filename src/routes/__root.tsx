@@ -79,9 +79,17 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { title: "AfroKernel — Free AI-Powered Linux Administration Learning" },
-      { name: "description", content: "Learn Linux from beginner to expert with free interactive lessons, browser-based labs, AI tutoring, and hands-on projects. Linux. Simplified." },
+      {
+        name: "description",
+        content:
+          "Learn Linux from beginner to expert with free interactive lessons, browser-based labs, AI tutoring, and hands-on projects. Linux. Simplified.",
+      },
       { property: "og:title", content: "AfroKernel — Learn. Administer. Master." },
-      { property: "og:description", content: "The world's best free AI-powered Linux learning platform. Real terminals, structured paths, AI mentor — 100% free." },
+      {
+        property: "og:description",
+        content:
+          "The world's best free AI-powered Linux learning platform. Real terminals, structured paths, AI mentor — 100% free.",
+      },
       { property: "og:type", content: "website" },
       { property: "og:image", content: "/afrokernel-logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -93,7 +101,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "apple-touch-icon", href: "/afrokernel-logo.png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" },
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap",
+      },
     ],
   }),
   shellComponent: RootShell,

@@ -2,7 +2,10 @@ const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 
 function getApiKey(customKey?: string) {
   const k = customKey || process.env.LOVABLE_API_KEY;
-  if (!k) throw new Error("Missing AI API Key. Please configure it in the Admin Dashboard or as LOVABLE_API_KEY.");
+  if (!k)
+    throw new Error(
+      "Missing AI API Key. Please configure it in the Admin Dashboard or as LOVABLE_API_KEY.",
+    );
   return k;
 }
 
@@ -43,7 +46,8 @@ export async function chat(messages: ChatMessage[], customApiKey?: string): Prom
   if (!res.ok) {
     const body = await res.text();
     if (res.status === 429) throw new Error("AI rate limit reached. Please try again shortly.");
-    if (res.status === 402) throw new Error("AI credits exhausted. Please add credits to continue.");
+    if (res.status === 402)
+      throw new Error("AI credits exhausted. Please add credits to continue.");
     throw new Error(`AI request failed: ${res.status} ${body}`);
   }
   const data = await res.json();

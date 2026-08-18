@@ -1,5 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Disc, Search, X, Check, ExternalLink, Download, Scale, Sparkles, Filter, ChevronRight, Layers } from "lucide-react";
+import {
+  Disc,
+  Search,
+  X,
+  Check,
+  ExternalLink,
+  Download,
+  Scale,
+  Sparkles,
+  Filter,
+  ChevronRight,
+  Layers,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
 
@@ -70,7 +82,8 @@ function DistrosIndex() {
           </div>
           <h1 className="text-4xl font-display font-bold">Linux Distributions</h1>
           <p className="text-muted-foreground text-base max-w-2xl mt-1">
-            Browse, filter, and compare Linux distributions side-by-side on difficulty, desktop environments, package managers, and hardware requirements.
+            Browse, filter, and compare Linux distributions side-by-side on difficulty, desktop
+            environments, package managers, and hardware requirements.
           </p>
         </div>
         <Link
@@ -174,9 +187,14 @@ function DistrosIndex() {
       {/* Results Count & Clear */}
       <div className="flex items-center justify-between mb-6 text-xs text-muted-foreground">
         <span>
-          Showing <strong className="text-foreground">{filteredDistros.length}</strong> of {DISTROS_DATA.length} distributions
+          Showing <strong className="text-foreground">{filteredDistros.length}</strong> of{" "}
+          {DISTROS_DATA.length} distributions
         </span>
-        {(searchQuery || selectedBase !== "All" || selectedDifficulty !== "All" || selectedRelease !== "All" || showOldHardwareOnly) && (
+        {(searchQuery ||
+          selectedBase !== "All" ||
+          selectedDifficulty !== "All" ||
+          selectedRelease !== "All" ||
+          showOldHardwareOnly) && (
           <button
             onClick={() => {
               setSearchQuery("");
@@ -197,7 +215,9 @@ function DistrosIndex() {
         <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-card/30">
           <Disc className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
           <h3 className="text-lg font-semibold">No distributions match your filters</h3>
-          <p className="text-sm text-muted-foreground mt-1">Try resetting or broadening your criteria.</p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Try resetting or broadening your criteria.
+          </p>
         </div>
       ) : (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -213,7 +233,9 @@ function DistrosIndex() {
                     <div className="flex items-center gap-3">
                       <span className="text-3xl p-1 rounded-xl bg-primary/10">{d.logo}</span>
                       <div>
-                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition">{d.name}</h3>
+                        <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition">
+                          {d.name}
+                        </h3>
                         <span className="text-xs text-muted-foreground">{d.base} base</span>
                       </div>
                     </div>
@@ -224,7 +246,9 @@ function DistrosIndex() {
                     )}
                   </div>
 
-                  <p className="text-xs text-muted-foreground line-clamp-3 mb-4 leading-relaxed">{d.tagline}</p>
+                  <p className="text-xs text-muted-foreground line-clamp-3 mb-4 leading-relaxed">
+                    {d.tagline}
+                  </p>
 
                   <div className="space-y-1.5 py-3 border-y border-border/60 text-xs">
                     <div className="flex justify-between">
@@ -242,8 +266,8 @@ function DistrosIndex() {
                           d.difficulty === "Beginner"
                             ? "text-emerald-500"
                             : d.difficulty === "Intermediate"
-                            ? "text-amber-500"
-                            : "text-rose-500"
+                              ? "text-amber-500"
+                              : "text-rose-500"
                         }`}
                       >
                         {d.difficulty}
@@ -274,7 +298,11 @@ function DistrosIndex() {
                       }`}
                       title={isCompared ? "Remove from comparison" : "Add to comparison (up to 3)"}
                     >
-                      {isCompared ? <Check className="h-3.5 w-3.5" /> : <Scale className="h-3.5 w-3.5" />}
+                      {isCompared ? (
+                        <Check className="h-3.5 w-3.5" />
+                      ) : (
+                        <Scale className="h-3.5 w-3.5" />
+                      )}
                     </button>
                   </div>
                 </div>
@@ -289,12 +317,20 @@ function DistrosIndex() {
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-2xl px-4 animate-in slide-in-from-bottom-5">
           <div className="rounded-2xl border border-primary/40 bg-card/95 p-4 shadow-2xl backdrop-blur-md flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">Comparing ({compareIds.length}/3):</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Comparing ({compareIds.length}/3):
+              </span>
               <div className="flex items-center gap-2">
                 {comparedDistros.map((d) => (
-                  <span key={d.id} className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-xs font-semibold text-foreground">
+                  <span
+                    key={d.id}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-xs font-semibold text-foreground"
+                  >
                     {d.logo} {d.name}
-                    <button onClick={() => toggleCompare(d.id)} className="text-muted-foreground hover:text-foreground">
+                    <button
+                      onClick={() => toggleCompare(d.id)}
+                      className="text-muted-foreground hover:text-foreground"
+                    >
                       <X className="h-3 w-3" />
                     </button>
                   </span>
@@ -329,15 +365,23 @@ function DistrosIndex() {
                 <Scale className="h-6 w-6 text-primary" />
                 <h2 className="text-2xl font-bold">Side-by-Side Distro Comparison</h2>
               </div>
-              <button onClick={() => setIsCompareModalOpen(false)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setIsCompareModalOpen(false)}
+                className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6">
-              <div className={`grid gap-4 ${comparedDistros.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}>
+              <div
+                className={`grid gap-4 ${comparedDistros.length === 2 ? "grid-cols-2" : "grid-cols-3"}`}
+              >
                 {comparedDistros.map((d) => (
-                  <div key={d.id} className="rounded-2xl border border-border bg-background/60 p-5 space-y-4">
+                  <div
+                    key={d.id}
+                    className="rounded-2xl border border-border bg-background/60 p-5 space-y-4"
+                  >
                     <div className="flex items-center gap-3">
                       <span className="text-4xl">{d.logo}</span>
                       <div>
@@ -366,7 +410,9 @@ function DistrosIndex() {
                       </div>
                       <div className="flex justify-between py-1 border-b border-border/40">
                         <span className="text-muted-foreground">Min / Rec RAM</span>
-                        <span>{d.minRamGb}GB / {d.recommendedRamGb}GB</span>
+                        <span>
+                          {d.minRamGb}GB / {d.recommendedRamGb}GB
+                        </span>
                       </div>
                       <div className="flex justify-between py-1 border-b border-border/40">
                         <span className="text-muted-foreground">Gaming Score</span>
@@ -418,15 +464,22 @@ function DistrosIndex() {
                   <p className="text-xs text-muted-foreground">{viewingDistro.tagline}</p>
                 </div>
               </div>
-              <button onClick={() => setViewingDistro(null)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setViewingDistro(null)}
+                className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
             <div className="p-6 overflow-y-auto space-y-6">
               <div>
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">Overview</h4>
-                <p className="text-sm text-foreground/90 leading-relaxed">{viewingDistro.description}</p>
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                  Overview
+                </h4>
+                <p className="text-sm text-foreground/90 leading-relaxed">
+                  {viewingDistro.description}
+                </p>
               </div>
 
               {/* Specs Grid */}
@@ -451,14 +504,20 @@ function DistrosIndex() {
 
               {/* Install Command */}
               <div className="p-4 rounded-xl border border-border bg-background">
-                <span className="text-xs font-semibold text-muted-foreground block mb-1">Package Install Command Syntax:</span>
-                <code className="font-mono text-xs text-primary">{viewingDistro.packageManagerCmd}</code>
+                <span className="text-xs font-semibold text-muted-foreground block mb-1">
+                  Package Install Command Syntax:
+                </span>
+                <code className="font-mono text-xs text-primary">
+                  {viewingDistro.packageManagerCmd}
+                </code>
               </div>
 
               {/* Pros & Cons */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="p-4 rounded-xl border border-emerald-500/20 bg-emerald-500/5 space-y-2">
-                  <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider block">Pros / Strengths</span>
+                  <span className="text-xs font-bold text-emerald-500 uppercase tracking-wider block">
+                    Pros / Strengths
+                  </span>
                   <ul className="text-xs space-y-1.5 text-foreground/90">
                     {viewingDistro.pros.map((p, i) => (
                       <li key={i} className="flex gap-2">
@@ -469,7 +528,9 @@ function DistrosIndex() {
                   </ul>
                 </div>
                 <div className="p-4 rounded-xl border border-rose-500/20 bg-rose-500/5 space-y-2">
-                  <span className="text-xs font-bold text-rose-500 uppercase tracking-wider block">Considerations / Cons</span>
+                  <span className="text-xs font-bold text-rose-500 uppercase tracking-wider block">
+                    Considerations / Cons
+                  </span>
                   <ul className="text-xs space-y-1.5 text-foreground/90">
                     {viewingDistro.cons.map((c, i) => (
                       <li key={i} className="flex gap-2">

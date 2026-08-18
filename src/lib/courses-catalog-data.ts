@@ -41,8 +41,10 @@ export const CATALOG_COURSES: CourseData[] = [
     id: "course-linux-fundamentals",
     slug: "linux",
     title: "Linux Fundamentals & System Administration",
-    subtitle: "Master the Linux command line, filesystem hierarchy, permissions, process management, and systemd services.",
-    description: "The definitive Linux foundation course for developers, sysadmins, and cybersecurity professionals. Learn how Linux operates under the hood with hands-on web terminal exercises.",
+    subtitle:
+      "Master the Linux command line, filesystem hierarchy, permissions, process management, and systemd services.",
+    description:
+      "The definitive Linux foundation course for developers, sysadmins, and cybersecurity professionals. Learn how Linux operates under the hood with hands-on web terminal exercises.",
     category: "Fundamentals",
     difficulty: "beginner",
     duration_hours: 4.5,
@@ -56,13 +58,20 @@ export const CATALOG_COURSES: CourseData[] = [
       "Manage users, groups, file permissions, and access control lists (chmod, chown)",
       "Monitor processes, system resources, and manage daemon background jobs",
       "Control system services and daemon targets with systemctl and systemd",
-      "Automate basic administrative tasks and configure SSH remote access"
+      "Automate basic administrative tasks and configure SSH remote access",
     ],
     prerequisites: [
       "No prior Linux experience required",
-      "Basic computer literacy and curiosity to learn"
+      "Basic computer literacy and curiosity to learn",
     ],
-    skills: ["Bash CLI", "File Permissions", "Systemd", "Process Management", "Package Management (apt/dnf)", "SSH"],
+    skills: [
+      "Bash CLI",
+      "File Permissions",
+      "Systemd",
+      "Process Management",
+      "Package Management (apt/dnf)",
+      "SSH",
+    ],
     lessons: [
       {
         id: "lf-01",
@@ -98,11 +107,12 @@ cat /etc/os-release
             "Render desktop graphical themes",
             "Manage hardware resources, virtual memory, and process scheduling",
             "Write Python web applications",
-            "Act as a web browser"
+            "Act as a web browser",
           ],
           correctIndex: 1,
-          explanation: "The Linux kernel is the bridge between software and hardware, managing CPU scheduling, memory, device drivers, and system calls."
-        }
+          explanation:
+            "The Linux kernel is the bridge between software and hardware, managing CPU scheduling, memory, device drivers, and system calls.",
+        },
       },
       {
         id: "lf-02",
@@ -136,8 +146,9 @@ ls -la
           question: "Which command returns you to your previous working directory in Linux?",
           choices: ["cd ..", "cd -", "cd ~", "back"],
           correctIndex: 1,
-          explanation: "`cd -` switches back to the previous directory using the $OLDPWD environment variable."
-        }
+          explanation:
+            "`cd -` switches back to the previous directory using the $OLDPWD environment variable.",
+        },
       },
       {
         id: "lf-03",
@@ -171,8 +182,9 @@ find /var/log -name "*.log" -size +10M
           question: "Where are system-wide configuration files stored on a Linux distribution?",
           choices: ["/var", "/bin", "/etc", "/dev"],
           correctIndex: 2,
-          explanation: "/etc contains all host-specific system configuration files and service configs."
-        }
+          explanation:
+            "/etc contains all host-specific system configuration files and service configs.",
+        },
       },
       {
         id: "lf-04",
@@ -202,8 +214,8 @@ sudo usermod -aG sudo learner
           question: "What octal number corresponds to permissions 'rwxr-xr-x'?",
           choices: ["644", "777", "755", "700"],
           correctIndex: 2,
-          explanation: "rwx = 4+2+1=7, r-x = 4+0+1=5, r-x = 4+0+1=5 -> 755."
-        }
+          explanation: "rwx = 4+2+1=7, r-x = 4+0+1=5, r-x = 4+0+1=5 -> 755.",
+        },
       },
       {
         id: "lf-05",
@@ -230,11 +242,13 @@ sudo apt autoremove -y   # Clean up unused dependencies
 \`\`\`
 `,
         quiz: {
-          question: "Which command updates the local repository package index list on Ubuntu/Debian?",
+          question:
+            "Which command updates the local repository package index list on Ubuntu/Debian?",
           choices: ["apt upgrade", "apt update", "apt install", "apt refresh"],
           correctIndex: 1,
-          explanation: "`apt update` downloads latest package lists from repositories, while `apt upgrade` installs available updates."
-        }
+          explanation:
+            "`apt update` downloads latest package lists from repositories, while `apt upgrade` installs available updates.",
+        },
       },
       {
         id: "lf-06",
@@ -260,11 +274,18 @@ sudo journalctl -u nginx -f     # Stream live systemd logs for unit
 \`\`\`
 `,
         quiz: {
-          question: "How do you configure a service to start automatically during system boot with systemd?",
-          choices: ["systemctl run <service>", "systemctl enable <service>", "systemctl start <service>", "systemctl boot <service>"],
+          question:
+            "How do you configure a service to start automatically during system boot with systemd?",
+          choices: [
+            "systemctl run <service>",
+            "systemctl enable <service>",
+            "systemctl start <service>",
+            "systemctl boot <service>",
+          ],
           correctIndex: 1,
-          explanation: "`systemctl enable` creates symbolic links to ensure the unit starts upon booting target."
-        }
+          explanation:
+            "`systemctl enable` creates symbolic links to ensure the unit starts upon booting target.",
+        },
       },
       {
         id: "lf-07",
@@ -286,11 +307,13 @@ Every program running in Linux is allocated a Unique Process ID (**PID**).
 - \`nice -n 10 command\` — Run with altered scheduling priority.
 `,
         quiz: {
-          question: "Which signal requests a graceful shutdown of a process allowing it to save state?",
+          question:
+            "Which signal requests a graceful shutdown of a process allowing it to save state?",
           choices: ["SIGKILL (9)", "SIGTERM (15)", "SIGSTOP (19)", "SIGHUP (1)"],
           correctIndex: 1,
-          explanation: "SIGTERM (15) asks the process to shut down cleanly, while SIGKILL (9) abruptly terminates it."
-        }
+          explanation:
+            "SIGTERM (15) asks the process to shut down cleanly, while SIGKILL (9) abruptly terminates it.",
+        },
       },
       {
         id: "lf-08",
@@ -322,17 +345,20 @@ ssh user@192.168.1.100
           question: "Which command shows all listening TCP and UDP sockets with port numbers?",
           choices: ["ss -tulwn", "ping -a", "ip route", "traceroute"],
           correctIndex: 0,
-          explanation: "`ss -tulwn` displays (t)cp, (u)dp, (l)istening, (w)ide, and (n)umeric port formats."
-        }
-      }
-    ]
+          explanation:
+            "`ss -tulwn` displays (t)cp, (u)dp, (l)istening, (w)ide, and (n)umeric port formats.",
+        },
+      },
+    ],
   },
   {
     id: "course-cybersecurity",
     slug: "security",
     title: "Cybersecurity & Linux Hardening",
-    subtitle: "Reconnaissance with Nmap, packet analysis with Wireshark, iptables/UFW firewalls, and server hardening.",
-    description: "Learn offensive reconnaissance and defensive server hardening techniques on Linux. Secure SSH, configure fail2ban, audit logs, and inspect network traffic.",
+    subtitle:
+      "Reconnaissance with Nmap, packet analysis with Wireshark, iptables/UFW firewalls, and server hardening.",
+    description:
+      "Learn offensive reconnaissance and defensive server hardening techniques on Linux. Secure SSH, configure fail2ban, audit logs, and inspect network traffic.",
     category: "Cybersecurity",
     difficulty: "intermediate",
     duration_hours: 5.0,
@@ -346,10 +372,17 @@ ssh user@192.168.1.100
       "Analyze raw PCAP packet captures and detect anomalies with Wireshark & tcpdump",
       "Harden Linux servers with UFW, iptables, Fail2Ban, and SSH key policies",
       "Audit security events, authentication failures, and system integrity logs",
-      "Understand the OWASP Top 10 vulnerabilities in infrastructure"
+      "Understand the OWASP Top 10 vulnerabilities in infrastructure",
     ],
     prerequisites: ["Linux Fundamentals completion or comfort with terminal commands"],
-    skills: ["Nmap Scanning", "Packet Analysis (tcpdump)", "UFW / iptables", "Fail2Ban", "SSH Hardening", "Log Auditing"],
+    skills: [
+      "Nmap Scanning",
+      "Packet Analysis (tcpdump)",
+      "UFW / iptables",
+      "Fail2Ban",
+      "SSH Hardening",
+      "Log Auditing",
+    ],
     lessons: [
       {
         id: "cs-01",
@@ -375,8 +408,9 @@ Nmap (**Network Mapper**) is the gold standard tool for discovery and security a
           question: "Which Nmap scan flag enables service version detection on open ports?",
           choices: ["-sS", "-sV", "-O", "-Pn"],
           correctIndex: 1,
-          explanation: "-sV queries open ports using probes to determine what software and version is listening."
-        }
+          explanation:
+            "-sV queries open ports using probes to determine what software and version is listening.",
+        },
       },
       {
         id: "cs-02",
@@ -397,11 +431,13 @@ sudo tcpdump -r web_traffic.pcap -c 10
 \`\`\`
 `,
         quiz: {
-          question: "Which tcpdump flag prevents resolving IP addresses to DNS names for faster inspection?",
+          question:
+            "Which tcpdump flag prevents resolving IP addresses to DNS names for faster inspection?",
           choices: ["-v", "-n", "-s", "-X"],
           correctIndex: 1,
-          explanation: "`-n` tells tcpdump not to convert addresses to hostnames, avoiding slow DNS reverse lookups."
-        }
+          explanation:
+            "`-n` tells tcpdump not to convert addresses to hostnames, avoiding slow DNS reverse lookups.",
+        },
       },
       {
         id: "cs-03",
@@ -421,11 +457,18 @@ sudo tcpdump -r web_traffic.pcap -c 10
 5. Restrict Allowed Users: \`AllowUsers admin devops\`
 `,
         quiz: {
-          question: "Which sshd_config directive disables password authentication to enforce SSH key only access?",
-          choices: ["PasswordAuthentication no", "DisablePassword yes", "PermitEmptyPasswords no", "AuthMethod keys_only"],
+          question:
+            "Which sshd_config directive disables password authentication to enforce SSH key only access?",
+          choices: [
+            "PasswordAuthentication no",
+            "DisablePassword yes",
+            "PermitEmptyPasswords no",
+            "AuthMethod keys_only",
+          ],
           correctIndex: 0,
-          explanation: "`PasswordAuthentication no` prevents brute force password attacks and requires SSH keypairs."
-        }
+          explanation:
+            "`PasswordAuthentication no` prevents brute force password attacks and requires SSH keypairs.",
+        },
       },
       {
         id: "cs-04",
@@ -450,8 +493,9 @@ sudo ufw status verbose
           question: "What is the recommended default inbound traffic policy for a secure server?",
           choices: ["Allow all incoming", "Deny all incoming", "Forward all", "Reject outgoing"],
           correctIndex: 1,
-          explanation: "A default deny incoming policy blocks all ports by default, requiring admins to explicitly whitelist necessary services."
-        }
+          explanation:
+            "A default deny incoming policy blocks all ports by default, requiring admins to explicitly whitelist necessary services.",
+        },
       },
       {
         id: "cs-05",
@@ -473,11 +517,18 @@ sudo fail2ban-client status sshd
 \`\`\`
 `,
         quiz: {
-          question: "What does Fail2ban do when it detects multiple failed login attempts from an IP address?",
-          choices: ["Shuts down the server", "Dynamically bans the attacker's IP address in the firewall", "Deletes user accounts", "Sends an unencrypted email"],
+          question:
+            "What does Fail2ban do when it detects multiple failed login attempts from an IP address?",
+          choices: [
+            "Shuts down the server",
+            "Dynamically bans the attacker's IP address in the firewall",
+            "Deletes user accounts",
+            "Sends an unencrypted email",
+          ],
           correctIndex: 1,
-          explanation: "Fail2ban automatically adds a temporary or permanent firewall drop rule for offending IP addresses."
-        }
+          explanation:
+            "Fail2ban automatically adds a temporary or permanent firewall drop rule for offending IP addresses.",
+        },
       },
       {
         id: "cs-06",
@@ -501,17 +552,20 @@ lastb      # Show bad login attempts
           question: "Which command shows recent successful user logins and reboot events on Linux?",
           choices: ["whoami", "last", "w", "uptime"],
           correctIndex: 1,
-          explanation: "`last` reads `/var/log/wtmp` to show history of user logins, logouts, and system boots."
-        }
-      }
-    ]
+          explanation:
+            "`last` reads `/var/log/wtmp` to show history of user logins, logouts, and system boots.",
+        },
+      },
+    ],
   },
   {
     id: "course-devops-containers",
     slug: "devops",
     title: "DevOps, Docker & Kubernetes Engineering",
-    subtitle: "Container architecture, multi-stage Dockerfiles, Docker Compose, Kubernetes Pods/Deployments, and CI/CD pipelines.",
-    description: "Learn modern containerized software delivery from scratch. Build optimized lightweight containers, orchestrate multi-container services, and deploy resilient workloads on Kubernetes clusters.",
+    subtitle:
+      "Container architecture, multi-stage Dockerfiles, Docker Compose, Kubernetes Pods/Deployments, and CI/CD pipelines.",
+    description:
+      "Learn modern containerized software delivery from scratch. Build optimized lightweight containers, orchestrate multi-container services, and deploy resilient workloads on Kubernetes clusters.",
     category: "DevOps",
     difficulty: "intermediate",
     duration_hours: 5.5,
@@ -525,10 +579,17 @@ lastb      # Show bad login attempts
       "Author secure, multi-stage production Dockerfiles with minimal attack surfaces",
       "Orchestrate complex multi-tier applications using Docker Compose",
       "Deploy and scale microservices with Kubernetes Pods, Deployments, and Services",
-      "Implement automated CI/CD test and deployment pipelines with GitHub Actions"
+      "Implement automated CI/CD test and deployment pipelines with GitHub Actions",
     ],
     prerequisites: ["Linux Fundamentals knowledge and basic command line comfort"],
-    skills: ["Docker", "Kubernetes (kubectl)", "Docker Compose", "Multi-stage Builds", "CI/CD Pipelines", "Helm"],
+    skills: [
+      "Docker",
+      "Kubernetes (kubectl)",
+      "Docker Compose",
+      "Multi-stage Builds",
+      "CI/CD Pipelines",
+      "Helm",
+    ],
     lessons: [
       {
         id: "do-01",
@@ -550,11 +611,13 @@ Containers are not virtual machines. A container is simply a standard Linux proc
 - **Cgroups**: Limits CPU quotas, memory ceilings, and disk I/O rates.
 `,
         quiz: {
-          question: "Which Linux kernel feature enforces CPU and Memory resource limits on containers?",
+          question:
+            "Which Linux kernel feature enforces CPU and Memory resource limits on containers?",
           choices: ["Namespaces", "Control Groups (cgroups)", "Chroot jail", "SELinux"],
           correctIndex: 1,
-          explanation: "Control groups (cgroups) allocate and throttle hardware resource consumption (CPU, RAM, disk I/O) for process groups."
-        }
+          explanation:
+            "Control groups (cgroups) allocate and throttle hardware resource consumption (CPU, RAM, disk I/O) for process groups.",
+        },
       },
       {
         id: "do-02",
@@ -595,11 +658,12 @@ CMD ["node", "dist/server.js"]
             "Makes images drastically smaller and more secure by excluding build tools",
             "Slows down builds intentionally",
             "Allows running Windows software on Linux",
-            "Automatically buys domain names"
+            "Automatically buys domain names",
           ],
           correctIndex: 0,
-          explanation: "Multi-stage builds allow separating build tools from production runtime, shrinking image sizes by up to 90% and eliminating vulnerability surfaces."
-        }
+          explanation:
+            "Multi-stage builds allow separating build tools from production runtime, shrinking image sizes by up to 90% and eliminating vulnerability surfaces.",
+        },
       },
       {
         id: "do-03",
@@ -634,11 +698,18 @@ volumes:
 \`\`\`
 `,
         quiz: {
-          question: "How do containers in the same Docker Compose network communicate with each other?",
-          choices: ["Using the service name as the DNS hostname", "By their public IP address", "Via USB cables", "Using Bluetooth"],
+          question:
+            "How do containers in the same Docker Compose network communicate with each other?",
+          choices: [
+            "Using the service name as the DNS hostname",
+            "By their public IP address",
+            "Via USB cables",
+            "Using Bluetooth",
+          ],
           correctIndex: 0,
-          explanation: "Docker's embedded DNS server automatically resolves service names (e.g. `http://db:5432`) to the container's private bridge IP."
-        }
+          explanation:
+            "Docker's embedded DNS server automatically resolves service names (e.g. `http://db:5432`) to the container's private bridge IP.",
+        },
       },
       {
         id: "do-04",
@@ -666,8 +737,9 @@ volumes:
           question: "What is the atomic, smallest deployable unit of computing in Kubernetes?",
           choices: ["A Container", "A Pod", "A Node", "A Cluster"],
           correctIndex: 1,
-          explanation: "A Pod is the smallest unit in Kubernetes, encapsulating one or more co-located containers sharing storage and network IP."
-        }
+          explanation:
+            "A Pod is the smallest unit in Kubernetes, encapsulating one or more co-located containers sharing storage and network IP.",
+        },
       },
       {
         id: "do-05",
@@ -714,11 +786,13 @@ spec:
 \`\`\`
 `,
         quiz: {
-          question: "Which Kubernetes resource guarantees zero-downtime rolling updates and replica management?",
+          question:
+            "Which Kubernetes resource guarantees zero-downtime rolling updates and replica management?",
           choices: ["Deployment", "ConfigMap", "Secret", "Namespace"],
           correctIndex: 0,
-          explanation: "Deployments manage ReplicaSets and orchestrate seamless rolling updates without service interruptions."
-        }
+          explanation:
+            "Deployments manage ReplicaSets and orchestrate seamless rolling updates without service interruptions.",
+        },
       },
       {
         id: "do-06",
@@ -756,20 +830,23 @@ jobs:
             "Automatically validate, test, and merge code frequently to prevent merge conflicts and bugs",
             "Manually write software once every year",
             "Delete old git repositories",
-            "Send marketing emails"
+            "Send marketing emails",
           ],
           correctIndex: 0,
-          explanation: "CI automates testing and building with every commit to detect bugs early and maintain codebase stability."
-        }
-      }
-    ]
+          explanation:
+            "CI automates testing and building with every commit to detect bugs early and maintain codebase stability.",
+        },
+      },
+    ],
   },
   {
     id: "course-shell-scripting",
     slug: "scripting",
     title: "Advanced Bash Scripting & Automation",
-    subtitle: "Master strict mode, regex parsing with awk/sed, exit codes, traps, and automation crons.",
-    description: "Transform from typing one-off terminal commands to writing bulletproof, production-ready Bash automation scripts. Learn regex text processing, system health check daemons, and error handling.",
+    subtitle:
+      "Master strict mode, regex parsing with awk/sed, exit codes, traps, and automation crons.",
+    description:
+      "Transform from typing one-off terminal commands to writing bulletproof, production-ready Bash automation scripts. Learn regex text processing, system health check daemons, and error handling.",
     category: "Scripting",
     difficulty: "intermediate",
     duration_hours: 4.0,
@@ -782,10 +859,17 @@ jobs:
       "Write resilient Bash scripts using strict mode (set -euo pipefail)",
       "Process structured log streams with awk, sed, cut, and jq",
       "Implement robust error trapping, exit code propagation, and log rotation",
-      "Automate server health reporting, backup pipelines, and cron triggers"
+      "Automate server health reporting, backup pipelines, and cron triggers",
     ],
     prerequisites: ["Familiarity with basic Linux commands"],
-    skills: ["Bash Strict Mode", "Awk & Sed", "Cron Automation", "Regex Parsing", "Exit Codes & Traps", "Jq"],
+    skills: [
+      "Bash Strict Mode",
+      "Awk & Sed",
+      "Cron Automation",
+      "Regex Parsing",
+      "Exit Codes & Traps",
+      "Jq",
+    ],
     lessons: [
       {
         id: "bs-01",
@@ -809,10 +893,16 @@ IFS=$'\n\t'
 `,
         quiz: {
           question: "What does 'set -e' do in a Bash script?",
-          choices: ["Executes the script in echo mode", "Exits immediately if any command returns a non-zero exit status", "Encrypts the script", "Enables emoji output"],
+          choices: [
+            "Executes the script in echo mode",
+            "Exits immediately if any command returns a non-zero exit status",
+            "Encrypts the script",
+            "Enables emoji output",
+          ],
           correctIndex: 1,
-          explanation: "`set -e` ensures errors are not silently ignored by stopping execution immediately upon command failure."
-        }
+          explanation:
+            "`set -e` ensures errors are not silently ignored by stopping execution immediately upon command failure.",
+        },
       },
       {
         id: "bs-02",
@@ -836,11 +926,12 @@ awk '{print $1}' access.log | sort | uniq -c | sort -nr | head -n 10
 \`\`\`
 `,
         quiz: {
-          question: "Which Awk variable holds the total number of fields in the current input record/line?",
+          question:
+            "Which Awk variable holds the total number of fields in the current input record/line?",
           choices: ["NR", "NF", "FS", "$0"],
           correctIndex: 1,
-          explanation: "`NF` represents the Number of Fields on the current line."
-        }
+          explanation: "`NF` represents the Number of Fields on the current line.",
+        },
       },
       {
         id: "bs-03",
@@ -864,10 +955,16 @@ trap cleanup EXIT
 `,
         quiz: {
           question: "When is a Bash function assigned to 'trap cleanup EXIT' executed?",
-          choices: ["Only when an error occurs", "Whenever the script terminates for any reason", "Only when killed by SIGKILL", "Never"],
+          choices: [
+            "Only when an error occurs",
+            "Whenever the script terminates for any reason",
+            "Only when killed by SIGKILL",
+            "Never",
+          ],
           correctIndex: 1,
-          explanation: "The pseudo-signal EXIT runs the specified handler when the shell script exits under any condition."
-        }
+          explanation:
+            "The pseudo-signal EXIT runs the specified handler when the shell script exits under any condition.",
+        },
       },
       {
         id: "bs-04",
@@ -899,8 +996,8 @@ echo "Backup completed successfully: $TAR_FILE"
           question: "Which tar command flags create a gzip-compressed archive file?",
           choices: ["-czf", "-xvf", "-tvf", "-rf"],
           correctIndex: 0,
-          explanation: "-c (create), -z (gzip compress), -f (specify archive filename)."
-        }
+          explanation: "-c (create), -z (gzip compress), -f (specify archive filename).",
+        },
       },
       {
         id: "bs-05",
@@ -926,19 +1023,26 @@ Example: \`0 2 * * * /usr/local/bin/backup.sh\` runs every day at 2:00 AM.
 `,
         quiz: {
           question: "What does the cron schedule '*/15 * * * *' specify?",
-          choices: ["At 15:00 every day", "Every 15 minutes", "On the 15th of every month", "Every 15 hours"],
+          choices: [
+            "At 15:00 every day",
+            "Every 15 minutes",
+            "On the 15th of every month",
+            "Every 15 hours",
+          ],
           correctIndex: 1,
-          explanation: "*/15 in the minute position executes the job every 15 minutes."
-        }
-      }
-    ]
+          explanation: "*/15 in the minute position executes the job every 15 minutes.",
+        },
+      },
+    ],
   },
   {
     id: "course-networking",
     slug: "networking",
     title: "Enterprise Linux Network Administration",
-    subtitle: "TCP/IP subnetting, routing tables, DNS resolution with BIND/systemd-resolved, and socket debugging.",
-    description: "Deep dive into Linux networking fundamentals: understand OSI and TCP/IP models, CIDR subnet calculation, iptables NAT masquerading, DNS troubleshooting, and packet routing.",
+    subtitle:
+      "TCP/IP subnetting, routing tables, DNS resolution with BIND/systemd-resolved, and socket debugging.",
+    description:
+      "Deep dive into Linux networking fundamentals: understand OSI and TCP/IP models, CIDR subnet calculation, iptables NAT masquerading, DNS troubleshooting, and packet routing.",
     category: "Networking",
     difficulty: "advanced",
     duration_hours: 4.5,
@@ -951,10 +1055,17 @@ Example: \`0 2 * * * /usr/local/bin/backup.sh\` runs every day at 2:00 AM.
       "Calculate IPv4 CIDR subnets, broadcast addresses, and netmasks",
       "Configure static routing tables and default gateway metrics with ip route",
       "Diagnose DNS latency and delegation chains with dig, drill, and host",
-      "Manage Linux network bridges and virtual ethernet (veth) pairs"
+      "Manage Linux network bridges and virtual ethernet (veth) pairs",
     ],
     prerequisites: ["Linux Fundamentals completion"],
-    skills: ["TCP/IP Stack", "Subnetting / CIDR", "DNS Diagnostics (dig)", "Routing Tables", "Linux Bridges", "Socket Stats"],
+    skills: [
+      "TCP/IP Stack",
+      "Subnetting / CIDR",
+      "DNS Diagnostics (dig)",
+      "Routing Tables",
+      "Linux Bridges",
+      "Socket Stats",
+    ],
     lessons: [
       {
         id: "net-01",
@@ -975,8 +1086,9 @@ Example: \`0 2 * * * /usr/local/bin/backup.sh\` runs every day at 2:00 AM.
           question: "How many usable host IP addresses are available in a /24 IPv4 subnet?",
           choices: ["256", "254", "128", "512"],
           correctIndex: 1,
-          explanation: "A /24 subnet has 256 total addresses, minus network address (0) and broadcast address (255) = 254 usable host addresses."
-        }
+          explanation:
+            "A /24 subnet has 256 total addresses, minus network address (0) and broadcast address (255) = 254 usable host addresses.",
+        },
       },
       {
         id: "net-02",
@@ -999,8 +1111,9 @@ sudo ip route add 10.0.0.0/8 via 192.168.1.1 dev eth0
           question: "Which modern command replaces legacy 'ifconfig' on Linux?",
           choices: ["ip addr / ip link", "netstat", "route", "ping"],
           correctIndex: 0,
-          explanation: "`ip` from the `iproute2` package replaces deprecated `ifconfig` and `route` tools."
-        }
+          explanation:
+            "`ip` from the `iproute2` package replaces deprecated `ifconfig` and `route` tools.",
+        },
       },
       {
         id: "net-03",
@@ -1025,11 +1138,12 @@ resolvectl status # Systemd-resolved DNS status
             "Performs an iterative query starting from the root nameservers down to the authoritative zone",
             "Pings the target 100 times",
             "Encrypts DNS traffic",
-            "Clears the DNS cache"
+            "Clears the DNS cache",
           ],
           correctIndex: 0,
-          explanation: "`dig +trace` traces the full hierarchical resolution path from Root (.) -> TLD -> Authoritative DNS servers."
-        }
+          explanation:
+            "`dig +trace` traces the full hierarchical resolution path from Root (.) -> TLD -> Authoritative DNS servers.",
+        },
       },
       {
         id: "net-04",
@@ -1051,10 +1165,16 @@ sudo ip link set veth-blue netns blue
 `,
         quiz: {
           question: "What is a veth pair in Linux networking?",
-          choices: ["A virtual bidirectional ethernet cable connecting two network namespaces", "A physical PCIe card", "A Wi-Fi antenna", "A Bluetooth receiver"],
+          choices: [
+            "A virtual bidirectional ethernet cable connecting two network namespaces",
+            "A physical PCIe card",
+            "A Wi-Fi antenna",
+            "A Bluetooth receiver",
+          ],
           correctIndex: 0,
-          explanation: "Virtual ethernet (veth) devices act like a software patch cable: packets transmitted on one peer arrive on the other."
-        }
+          explanation:
+            "Virtual ethernet (veth) devices act like a software patch cable: packets transmitted on one peer arrive on the other.",
+        },
       },
       {
         id: "net-05",
@@ -1073,20 +1193,29 @@ sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80
 \`\`\`
 `,
         quiz: {
-          question: "Which kernel sysctl setting must be enabled for a Linux machine to forward packets between interfaces as a router?",
-          choices: ["net.ipv4.ip_forward=1", "net.ipv4.icmp_echo_ignore_all=1", "net.core.somaxconn=1024", "fs.file-max=100000"],
+          question:
+            "Which kernel sysctl setting must be enabled for a Linux machine to forward packets between interfaces as a router?",
+          choices: [
+            "net.ipv4.ip_forward=1",
+            "net.ipv4.icmp_echo_ignore_all=1",
+            "net.core.somaxconn=1024",
+            "fs.file-max=100000",
+          ],
           correctIndex: 0,
-          explanation: "`net.ipv4.ip_forward=1` allows the Linux kernel to route packets between different network interfaces."
-        }
-      }
-    ]
+          explanation:
+            "`net.ipv4.ip_forward=1` allows the Linux kernel to route packets between different network interfaces.",
+        },
+      },
+    ],
   },
   {
     id: "course-cloud-infrastructure",
     slug: "cloud",
     title: "Cloud Infrastructure with Linux & Terraform",
-    subtitle: "Cloud-init automation, AWS/GCP Linux instances, IAM security, S3 storage, and Infrastructure as Code.",
-    description: "Build robust cloud architecture on public clouds with Linux VMs, declarative Terraform configuration, cloud-init provisioning, and object storage integrations.",
+    subtitle:
+      "Cloud-init automation, AWS/GCP Linux instances, IAM security, S3 storage, and Infrastructure as Code.",
+    description:
+      "Build robust cloud architecture on public clouds with Linux VMs, declarative Terraform configuration, cloud-init provisioning, and object storage integrations.",
     category: "Cloud",
     difficulty: "intermediate",
     duration_hours: 4.5,
@@ -1099,10 +1228,17 @@ sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80
       "Provision Linux VMs automatically using cloud-init YAML user-data scripts",
       "Write declarative Infrastructure as Code (IaC) with Terraform",
       "Configure IAM roles, security groups, and virtual private clouds (VPC)",
-      "Automate disk volume attachments and object storage syncing"
+      "Automate disk volume attachments and object storage syncing",
     ],
     prerequisites: ["Linux Fundamentals knowledge"],
-    skills: ["Cloud-init", "Terraform", "AWS / GCP Linux", "IAM Security", "VPC & Security Groups", "S3 / Object Storage"],
+    skills: [
+      "Cloud-init",
+      "Terraform",
+      "AWS / GCP Linux",
+      "IAM Security",
+      "VPC & Security Groups",
+      "S3 / Object Storage",
+    ],
     lessons: [
       {
         id: "cl-01",
@@ -1133,10 +1269,16 @@ runcmd:
 `,
         quiz: {
           question: "When does cloud-init execute its user-data configuration scripts?",
-          choices: ["On every user login", "During the initial boot of a new cloud instance", "When the computer shuts down", "Only on Sundays"],
+          choices: [
+            "On every user login",
+            "During the initial boot of a new cloud instance",
+            "When the computer shuts down",
+            "Only on Sundays",
+          ],
           correctIndex: 1,
-          explanation: "Cloud-init runs during early instance boot to configure hostnames, SSH keys, users, packages, and startup commands."
-        }
+          explanation:
+            "Cloud-init runs during early instance boot to configure hostnames, SSH keys, users, packages, and startup commands.",
+        },
       },
       {
         id: "cl-02",
@@ -1171,11 +1313,13 @@ terraform apply -auto-approve
 \`\`\`
 `,
         quiz: {
-          question: "Which Terraform command previews the execution plan without making actual cloud changes?",
+          question:
+            "Which Terraform command previews the execution plan without making actual cloud changes?",
           choices: ["terraform apply", "terraform plan", "terraform init", "terraform destroy"],
           correctIndex: 1,
-          explanation: "`terraform plan` compares desired state in .tf files with current cloud state and shows proposed additions/modifications."
-        }
+          explanation:
+            "`terraform plan` compares desired state in .tf files with current cloud state and shows proposed additions/modifications.",
+        },
       },
       {
         id: "cl-03",
@@ -1190,16 +1334,18 @@ terraform apply -auto-approve
 Never use root cloud accounts for daily administration. Attach scoped instance profiles instead of hardcoding API keys in code.
 `,
         quiz: {
-          question: "What is the recommended practice for authenticating applications running on cloud VMs to access cloud services?",
+          question:
+            "What is the recommended practice for authenticating applications running on cloud VMs to access cloud services?",
           choices: [
             "Attach IAM Instance Roles instead of hardcoding secret access keys",
             "Commit access keys to public GitHub repositories",
             "Disable all security",
-            "Use plaintext passwords"
+            "Use plaintext passwords",
           ],
           correctIndex: 0,
-          explanation: "IAM Instance Roles provide temporary, automatically rotated STS credentials with zero hardcoded secret keys."
-        }
+          explanation:
+            "IAM Instance Roles provide temporary, automatically rotated STS credentials with zero hardcoded secret keys.",
+        },
       },
       {
         id: "cl-04",
@@ -1217,16 +1363,18 @@ aws s3 sync /var/backups s3://my-cloud-backup-bucket/daily --delete
 \`\`\`
 `,
         quiz: {
-          question: "What is the key advantage of object storage (e.g. S3) compared to traditional block storage (EBS)?",
+          question:
+            "What is the key advantage of object storage (e.g. S3) compared to traditional block storage (EBS)?",
           choices: [
             "Virtually infinite scalability, high durability (99.999999999%), and accessible via HTTP API",
             "Faster boot drive access",
             "Runs Windows exe files directly",
-            "Only works on local networks"
+            "Only works on local networks",
           ],
           correctIndex: 0,
-          explanation: "Object storage is designed for massive scale, durability, and cost-effective unstructured data storage via REST APIs."
-        }
+          explanation:
+            "Object storage is designed for massive scale, durability, and cost-effective unstructured data storage via REST APIs.",
+        },
       },
       {
         id: "cl-05",
@@ -1242,14 +1390,21 @@ aws s3 sync /var/backups s3://my-cloud-backup-bucket/daily --delete
 - **Private Subnet**: No direct internet access; routes outbound traffic via NAT Gateway for databases and internal microservices.
 `,
         quiz: {
-          question: "Where should production databases be deployed inside a VPC for optimal security?",
-          choices: ["Public subnet with open 0.0.0.0/0 access", "Isolated private subnet with no direct public IP", "In the Internet Gateway", "On an unencrypted USB stick"],
+          question:
+            "Where should production databases be deployed inside a VPC for optimal security?",
+          choices: [
+            "Public subnet with open 0.0.0.0/0 access",
+            "Isolated private subnet with no direct public IP",
+            "In the Internet Gateway",
+            "On an unencrypted USB stick",
+          ],
           correctIndex: 1,
-          explanation: "Databases should always reside in private subnets with strictly limited access from application tiers only."
-        }
-      }
-    ]
-  }
+          explanation:
+            "Databases should always reside in private subnets with strictly limited access from application tiers only.",
+        },
+      },
+    ],
+  },
 ];
 
 export function getCourseBySlug(slug: string): CourseData | undefined {

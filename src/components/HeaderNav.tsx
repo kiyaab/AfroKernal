@@ -64,7 +64,9 @@ export function HeaderNav() {
             >
               <button className="flex items-center gap-1 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition">
                 <span>Courses</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${coursesOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${coursesOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {coursesOpen && (
@@ -77,8 +79,12 @@ export function HeaderNav() {
                     >
                       <span className="text-xl p-1.5 rounded-lg bg-primary/10">🐧</span>
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Linux Fundamentals 2026</div>
-                        <div className="text-[11px] text-muted-foreground">38 tutorials · Core system admin</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Linux Fundamentals 2026
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          38 tutorials · Core system admin
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -88,8 +94,12 @@ export function HeaderNav() {
                     >
                       <span className="text-xl p-1.5 rounded-lg bg-primary/10">🔒</span>
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Cybersecurity Fundamentals</div>
-                        <div className="text-[11px] text-muted-foreground">Nmap, Wireshark, hardening & pentest</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Cybersecurity Fundamentals
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Nmap, Wireshark, hardening & pentest
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -99,8 +109,12 @@ export function HeaderNav() {
                     >
                       <span className="text-xl p-1.5 rounded-lg bg-primary/10">⚙️</span>
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">DevOps & Containers</div>
-                        <div className="text-[11px] text-muted-foreground">Docker, Kubernetes, CI/CD & Ansible</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          DevOps & Containers
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Docker, Kubernetes, CI/CD & Ansible
+                        </div>
                       </div>
                     </Link>
                     <div className="pt-2 border-t border-border mt-1">
@@ -126,7 +140,9 @@ export function HeaderNav() {
             >
               <button className="flex items-center gap-1 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition">
                 <span>Explore</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${exploreOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${exploreOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {exploreOpen && (
@@ -139,8 +155,12 @@ export function HeaderNav() {
                     >
                       <Disc className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Linux Distributions</div>
-                        <div className="text-[11px] text-muted-foreground">Browse & compare 16+ distros side-by-side</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Linux Distributions
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Browse & compare 16+ distros side-by-side
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -150,8 +170,12 @@ export function HeaderNav() {
                     >
                       <AppWindow className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">App Alternatives</div>
-                        <div className="text-[11px] text-muted-foreground">Windows & Mac software mapped to Linux</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          App Alternatives
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Windows & Mac software mapped to Linux
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -161,8 +185,12 @@ export function HeaderNav() {
                     >
                       <Gamepad2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Gaming on Linux</div>
-                        <div className="text-[11px] text-muted-foreground">Steam Proton & live Anti-Cheat matrix</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Gaming on Linux
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Steam Proton & live Anti-Cheat matrix
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -172,8 +200,12 @@ export function HeaderNav() {
                     >
                       <Cpu className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Hardware Compatibility</div>
-                        <div className="text-[11px] text-muted-foreground">GPUs, Wi-Fi chips, laptops & diagnostic commands</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Hardware Compatibility
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          GPUs, Wi-Fi chips, laptops & diagnostic commands
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -183,8 +215,12 @@ export function HeaderNav() {
                     >
                       <ArrowRightLeft className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Migration Guides</div>
-                        <div className="text-[11px] text-muted-foreground">Step-by-step Windows & Mac transition checklists</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Migration Guides
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Step-by-step Windows & Mac transition checklists
+                        </div>
                       </div>
                     </Link>
                   </div>
@@ -200,7 +236,9 @@ export function HeaderNav() {
             >
               <button className="flex items-center gap-1 px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition">
                 <span>Tools</span>
-                <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`} />
+                <ChevronDown
+                  className={`h-3.5 w-3.5 transition-transform duration-200 ${toolsOpen ? "rotate-180" : ""}`}
+                />
               </button>
 
               {toolsOpen && (
@@ -213,8 +251,12 @@ export function HeaderNav() {
                     >
                       <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Distro Finder Quiz</div>
-                        <div className="text-[11px] text-muted-foreground">5-question smart matching engine</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Distro Finder Quiz
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          5-question smart matching engine
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -224,8 +266,12 @@ export function HeaderNav() {
                     >
                       <Terminal className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Command Translator</div>
-                        <div className="text-[11px] text-muted-foreground">Windows CMD / PowerShell to Linux Bash</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Command Translator
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Windows CMD / PowerShell to Linux Bash
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -235,8 +281,12 @@ export function HeaderNav() {
                     >
                       <Calculator className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Permissions Calculator</div>
-                        <div className="text-[11px] text-muted-foreground">Visual chmod octal & symbolic calculator</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Permissions Calculator
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Visual chmod octal & symbolic calculator
+                        </div>
                       </div>
                     </Link>
                     <Link
@@ -246,8 +296,12 @@ export function HeaderNav() {
                     >
                       <Clock className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">Cron Builder & Explainer</div>
-                        <div className="text-[11px] text-muted-foreground">Visual schedule builder with English translation</div>
+                        <div className="font-semibold text-xs text-foreground group-hover:text-primary">
+                          Cron Builder & Explainer
+                        </div>
+                        <div className="text-[11px] text-muted-foreground">
+                          Visual schedule builder with English translation
+                        </div>
                       </div>
                     </Link>
                   </div>
@@ -291,7 +345,9 @@ export function HeaderNav() {
             >
               <Search className="h-3.5 w-3.5" />
               <span>Quick search...</span>
-              <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">⌘K</kbd>
+              <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px] font-mono">
+                ⌘K
+              </kbd>
             </button>
 
             <ThemeToggle />
@@ -359,44 +415,94 @@ export function HeaderNav() {
               <span className="flex items-center gap-2">
                 <Search className="h-4 w-4" /> Search distros, commands, cheat sheets...
               </span>
-              <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">⌘K</kbd>
+              <kbd className="rounded border border-border bg-muted px-1.5 py-0.5 text-[10px]">
+                ⌘K
+              </kbd>
             </button>
 
             <div className="grid grid-cols-2 gap-2 text-xs font-medium">
-              <Link to="/tutorials" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/tutorials"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 📚 Courses & Tutorials
               </Link>
-              <Link to="/distros" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/distros"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 💿 Distro Directory
               </Link>
-              <Link to="/distro-finder" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/distro-finder"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 ✨ Distro Finder Quiz
               </Link>
-              <Link to="/apps" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/apps"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 🪟 App Alternatives
               </Link>
-              <Link to="/gaming" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/gaming"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 🎮 Gaming on Linux
               </Link>
-              <Link to="/hardware-compatibility" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/hardware-compatibility"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 💻 Hardware Checker
               </Link>
-              <Link to="/tools/command-translator" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/tools/command-translator"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 ⌨️ Command Translator
               </Link>
-              <Link to="/tools/permissions-calculator" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/tools/permissions-calculator"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 🛡️ Permissions Calculator
               </Link>
-              <Link to="/tools/cron-builder" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/tools/cron-builder"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 ⏰ Cron Builder
               </Link>
-              <Link to="/migration-guides" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/migration-guides"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 🔄 Migration Guides
               </Link>
-              <Link to="/cheat-sheets" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/cheat-sheets"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 📄 Cheat Sheets
               </Link>
-              <Link to="/certification" onClick={() => setMobileMenuOpen(false)} className="p-3 rounded-xl bg-background border border-border">
+              <Link
+                to="/certification"
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-3 rounded-xl bg-background border border-border"
+              >
                 🏆 Certifications
               </Link>
             </div>

@@ -7,10 +7,7 @@ export const MASTER_ADMIN_EMAIL = "admin@ak.com";
 export const MASTER_ADMIN_PASS = "admin1234";
 
 export function isMasterAdmin(email: string, password: string): boolean {
-  return (
-    email.trim().toLowerCase() === MASTER_ADMIN_EMAIL &&
-    password === MASTER_ADMIN_PASS
-  );
+  return email.trim().toLowerCase() === MASTER_ADMIN_EMAIL && password === MASTER_ADMIN_PASS;
 }
 
 export function unlockLocalAdmin(email = MASTER_ADMIN_EMAIL) {

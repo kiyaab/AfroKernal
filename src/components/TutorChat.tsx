@@ -2,11 +2,28 @@ import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { askTutor, saveConversation } from "@/lib/rag.functions";
 import { supabase } from "@/integrations/supabase/client";
-import { Send, Sparkles, User, Loader2, BookOpen, ChevronDown, ChevronUp, ExternalLink, X, MessageCircle } from "lucide-react";
+import {
+  Send,
+  Sparkles,
+  User,
+  Loader2,
+  BookOpen,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  X,
+  MessageCircle,
+} from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import ReactMarkdown from "react-markdown";
 
-type Source = { name: string; slug: string; short_desc?: string; excerpt?: string; matchedTerms?: string[] };
+type Source = {
+  name: string;
+  slug: string;
+  short_desc?: string;
+  excerpt?: string;
+  matchedTerms?: string[];
+};
 type Msg = { role: "user" | "assistant"; content: string; sources?: Source[] };
 
 export type TutorLessonContext = {
@@ -27,7 +44,9 @@ function getApiKey() {
 
 function highlight(text: string, terms: string[] = []): React.ReactNode[] {
   if (!text) return [""];
-  const clean = terms.filter((t) => t && t.length > 1).map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
+  const clean = terms
+    .filter((t) => t && t.length > 1)
+    .map((t) => t.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
   if (clean.length === 0) return [text];
   const rx = new RegExp(`(${clean.join("|")})`, "gi");
   const parts = text.split(rx);
@@ -46,14 +65,24 @@ function SourceList({ sources }: { sources: Source[] }) {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Cited from AfroKernel docs</p>
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+        Cited from AfroKernel docs
+      </p>
       {sources.map((s, i) => {
         const open = openIdx === i;
         return (
-          <div key={s.slug + i} className="overflow-hidden rounded-lg border border-primary/25 bg-primary/5">
-            <button onClick={() => setOpenIdx(open ? null : i)} className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-primary/10">
+          <div
+            key={s.slug + i}
+            className="overflow-hidden rounded-lg border border-primary/25 bg-primary/5"
+          >
+            <button
+              onClick={() => setOpenIdx(open ? null : i)}
+              className="flex w-full items-center gap-2 px-3 py-2 text-left hover:bg-primary/10"
+            >
               <span className="font-mono text-sm text-primary">{s.name}</span>
-              {s.short_desc && <span className="truncate text-xs text-muted-foreground">— {s.short_desc}</span>}
+              {s.short_desc && (
+                <span className="truncate text-xs text-muted-foreground">— {s.short_desc}</span>
+              )}
               <span className="flex-1" />
               <Link
                 to="/docs/$command"
@@ -63,7 +92,11 @@ function SourceList({ sources }: { sources: Source[] }) {
               >
                 Open <ExternalLink className="h-3 w-3" />
               </Link>
-              {open ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />}
+              {open ? (
+                <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+              )}
             </button>
             {open && s.excerpt && (
               <div className="border-t border-primary/20 bg-background/40 px-3 py-2 text-xs leading-relaxed text-foreground/90">
@@ -126,7 +159,10 @@ export function TutorChat({
         },
       }),
     onSuccess: async (res, question) => {
-      setMessages((m) => [...m, { role: "assistant", content: res.answer, sources: res.sources as Source[] }]);
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", content: res.answer, sources: res.sources as Source[] },
+      ]);
       try {
         const { data } = await supabase.auth.getUser();
         if (data.user) await saveConversation({ data: { question, answer: res.answer } });
@@ -135,7 +171,13 @@ export function TutorChat({
       }
     },
     onError: (err) => {
-      setMessages((m) => [...m, { role: "assistant", content: `⚠️ ${err instanceof Error ? err.message : "Request failed"}` }]);
+      setMessages((m) => [
+        ...m,
+        {
+          role: "assistant",
+          content: `⚠️ ${err instanceof Error ? err.message : "Request failed"}`,
+        },
+      ]);
     },
   });
 
@@ -175,7 +217,9 @@ export function TutorChat({
   return (
     <div
       className={`flex flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-xl ${
-        compact ? "fixed bottom-6 right-6 z-50 h-[min(560px,70vh)] w-[min(400px,calc(100vw-2rem))]" : "min-h-[420px]"
+        compact
+          ? "fixed bottom-6 right-6 z-50 h-[min(560px,70vh)] w-[min(400px,calc(100vw-2rem))]"
+          : "min-h-[420px]"
       } ${className}`}
     >
       <div className="flex items-center justify-between border-b border-border/60 bg-primary/5 px-4 py-3">
@@ -186,18 +230,28 @@ export function TutorChat({
           <div>
             <p className="text-sm font-semibold">AfroKernel AI Tutor</p>
             {lessonContext?.lessonTitle && (
-              <p className="text-[11px] text-muted-foreground truncate max-w-[240px]">Helping with: {lessonContext.lessonTitle}</p>
+              <p className="text-[11px] text-muted-foreground truncate max-w-[240px]">
+                Helping with: {lessonContext.lessonTitle}
+              </p>
             )}
           </div>
         </div>
         <div className="flex items-center gap-2">
           {!compact && (
-            <Link to="/docs" className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1">
+            <Link
+              to="/docs"
+              className="text-xs text-muted-foreground hover:text-primary inline-flex items-center gap-1"
+            >
               <BookOpen className="h-3 w-3" /> Docs
             </Link>
           )}
           {compact && (
-            <button type="button" onClick={() => setOpen(false)} className="rounded-lg p-1.5 hover:bg-accent" aria-label="Close tutor">
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="rounded-lg p-1.5 hover:bg-accent"
+              aria-label="Close tutor"
+            >
               <X className="h-4 w-4" />
             </button>
           )}
@@ -235,10 +289,16 @@ export function TutorChat({
                   m.role === "user" ? "bg-accent" : "bg-primary/10 text-primary"
                 }`}
               >
-                {m.role === "user" ? <User className="h-3.5 w-3.5" /> : <Sparkles className="h-3.5 w-3.5" />}
+                {m.role === "user" ? (
+                  <User className="h-3.5 w-3.5" />
+                ) : (
+                  <Sparkles className="h-3.5 w-3.5" />
+                )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="mb-1 text-[11px] font-semibold text-muted-foreground">{m.role === "user" ? "You" : "Tutor"}</p>
+                <p className="mb-1 text-[11px] font-semibold text-muted-foreground">
+                  {m.role === "user" ? "You" : "Tutor"}
+                </p>
                 <div className="prose prose-sm dark:prose-invert max-w-none prose-pre:bg-[oklch(0.11_0.01_260)] prose-pre:text-[oklch(0.97_0.01_90)] prose-code:text-primary prose-code:before:content-none prose-code:after:content-none">
                   <ReactMarkdown>{m.content}</ReactMarkdown>
                 </div>

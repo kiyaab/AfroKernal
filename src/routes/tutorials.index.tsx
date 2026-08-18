@@ -1,5 +1,19 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { BookOpen, Search, Terminal, Shield, Settings, Network, Cloud, Container, FileCode, CheckCircle2, ArrowRight, Sparkles, Award } from "lucide-react";
+import {
+  BookOpen,
+  Search,
+  Terminal,
+  Shield,
+  Settings,
+  Network,
+  Cloud,
+  Container,
+  FileCode,
+  CheckCircle2,
+  ArrowRight,
+  Sparkles,
+  Award,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 
 export const Route = createFileRoute("/tutorials/")({
@@ -22,76 +36,126 @@ const LEARNING_PATHS: LearningPath[] = [
   {
     slug: "linux",
     name: "Linux Fundamentals 2026",
-    description: "From the command line to enterprise system administration. Master file structures, permissions, bash navigation, and systemd.",
+    description:
+      "From the command line to enterprise system administration. Master file structures, permissions, bash navigation, and systemd.",
     icon: "🐧",
     lucideIcon: Terminal,
     tutorialCount: 38,
     badge: "Core Curriculum",
     hasCertificate: true,
-    modules: ["Command Line Basics", "Navigation & Inodes", "Permissions & chmod", "Processes & Signals", "Package Managers", "Systemd Services"]
+    modules: [
+      "Command Line Basics",
+      "Navigation & Inodes",
+      "Permissions & chmod",
+      "Processes & Signals",
+      "Package Managers",
+      "Systemd Services",
+    ],
   },
   {
     slug: "security",
     name: "Cybersecurity Fundamentals",
-    description: "Network scanning with Nmap, Wireshark traffic analysis, Linux system hardening, host firewalls, and penetration testing essentials.",
+    description:
+      "Network scanning with Nmap, Wireshark traffic analysis, Linux system hardening, host firewalls, and penetration testing essentials.",
     icon: "🔒",
     lucideIcon: Shield,
     tutorialCount: 10,
     badge: "Hands-on Labs",
     hasCertificate: true,
-    modules: ["Nmap Port Scanning", "Wireshark Packet Analysis", "SSH Hardening & Keys", "UFW & iptables Firewalls", "OWASP Top 10 Basics"]
+    modules: [
+      "Nmap Port Scanning",
+      "Wireshark Packet Analysis",
+      "SSH Hardening & Keys",
+      "UFW & iptables Firewalls",
+      "OWASP Top 10 Basics",
+    ],
   },
   {
     slug: "devops",
     name: "DevOps Fundamentals",
-    description: "Container architecture, CI/CD automated pipelines, multi-stage Docker builds, Kubernetes clusters, and Ansible infrastructure as code.",
+    description:
+      "Container architecture, CI/CD automated pipelines, multi-stage Docker builds, Kubernetes clusters, and Ansible infrastructure as code.",
     icon: "⚙️",
     lucideIcon: Settings,
     tutorialCount: 10,
     badge: "Industry Favorite",
     hasCertificate: true,
-    modules: ["Docker Engine Architecture", "Dockerfile Optimization", "Docker Compose Multi-Container", "GitHub Actions CI/CD", "Ansible Playbooks"]
+    modules: [
+      "Docker Engine Architecture",
+      "Dockerfile Optimization",
+      "Docker Compose Multi-Container",
+      "GitHub Actions CI/CD",
+      "Ansible Playbooks",
+    ],
   },
   {
     slug: "networking",
     name: "Networking Fundamentals",
-    description: "Master TCP/IP protocols, IPv4/IPv6 subnetting, DNS resolution hierarchies, routing tables, and socket debugging with ss and tcpdump.",
+    description:
+      "Master TCP/IP protocols, IPv4/IPv6 subnetting, DNS resolution hierarchies, routing tables, and socket debugging with ss and tcpdump.",
     icon: "🌐",
     lucideIcon: Network,
     tutorialCount: 12,
     hasCertificate: false,
-    modules: ["OSI & TCP/IP Model", "Subnetting & CIDR", "DNS Records & Dig", "Linux Routing & Gateways", "Socket Statistics (ss, netstat)"]
+    modules: [
+      "OSI & TCP/IP Model",
+      "Subnetting & CIDR",
+      "DNS Records & Dig",
+      "Linux Routing & Gateways",
+      "Socket Statistics (ss, netstat)",
+    ],
   },
   {
     slug: "cloud",
     name: "Cloud & Infrastructure",
-    description: "AWS, GCP, and Azure cloud computing essentials: virtual machines, cloud-init provisioning, IAM security, and Terraform IaC.",
+    description:
+      "AWS, GCP, and Azure cloud computing essentials: virtual machines, cloud-init provisioning, IAM security, and Terraform IaC.",
     icon: "☁️",
     lucideIcon: Cloud,
     tutorialCount: 11,
     hasCertificate: false,
-    modules: ["Cloud Compute & VMs", "Cloud Storage & S3", "IAM Roles & Security", "Terraform Provider Basics", "Cloud-Init Automation"]
+    modules: [
+      "Cloud Compute & VMs",
+      "Cloud Storage & S3",
+      "IAM Roles & Security",
+      "Terraform Provider Basics",
+      "Cloud-Init Automation",
+    ],
   },
   {
     slug: "containers",
     name: "Containers & Kubernetes",
-    description: "Deep dive into OCI runtimes, cgroups, namespaces, Kubernetes Pods, Services, Deployments, Persistent Volumes, and Ingress controllers.",
+    description:
+      "Deep dive into OCI runtimes, cgroups, namespaces, Kubernetes Pods, Services, Deployments, Persistent Volumes, and Ingress controllers.",
     icon: "🐳",
     lucideIcon: Container,
     tutorialCount: 11,
     hasCertificate: false,
-    modules: ["Linux Namespaces & Cgroups", "Kubernetes Architecture", "Pods, Deployments & ReplicaSets", "K8s Services & ClusterIP", "Helm Package Manager"]
+    modules: [
+      "Linux Namespaces & Cgroups",
+      "Kubernetes Architecture",
+      "Pods, Deployments & ReplicaSets",
+      "K8s Services & ClusterIP",
+      "Helm Package Manager",
+    ],
   },
   {
     slug: "scripting",
     name: "Scripting & Automation",
-    description: "Advanced Bash scripting, Python for sysadmins, regex text parsing with awk/sed, cron scheduling, and error-handling pipelines.",
+    description:
+      "Advanced Bash scripting, Python for sysadmins, regex text parsing with awk/sed, cron scheduling, and error-handling pipelines.",
     icon: "📜",
     lucideIcon: FileCode,
     tutorialCount: 11,
     hasCertificate: false,
-    modules: ["Bash Strict Mode & Traps", "Python Automation Scripts", "Awk & Sed Text Processing", "Cron & Systemd Timers", "Error Handling & Logging"]
-  }
+    modules: [
+      "Bash Strict Mode & Traps",
+      "Python Automation Scripts",
+      "Awk & Sed Text Processing",
+      "Cron & Systemd Timers",
+      "Error Handling & Logging",
+    ],
+  },
 ];
 
 function TutorialsIndex() {
@@ -118,7 +182,8 @@ function TutorialsIndex() {
           </div>
           <h1 className="text-4xl font-display font-bold">Linux Courses & Tutorials</h1>
           <p className="text-muted-foreground text-base max-w-2xl mt-1">
-            Structured hands-on tracks with interactive lessons, command line practice, quizzes, and verifiable certifications. 100% free.
+            Structured hands-on tracks with interactive lessons, command line practice, quizzes, and
+            verifiable certifications. 100% free.
           </p>
         </div>
 
@@ -163,7 +228,9 @@ function TutorialsIndex() {
                 <h2 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition">
                   {path.name}
                 </h2>
-                <p className="text-xs text-muted-foreground leading-relaxed mb-6">{path.description}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed mb-6">
+                  {path.description}
+                </p>
 
                 <div className="space-y-1.5 py-4 border-t border-border/60">
                   <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground block mb-2">

@@ -4,7 +4,10 @@ const MAX_PDF_BYTES = 25 * 1024 * 1024;
 const MAX_NOTE_BYTES = 2 * 1024 * 1024;
 
 function safeName(name: string) {
-  return name.replace(/[^a-zA-Z0-9._-]+/g, "-").replace(/-+/g, "-").toLowerCase();
+  return name
+    .replace(/[^a-zA-Z0-9._-]+/g, "-")
+    .replace(/-+/g, "-")
+    .toLowerCase();
 }
 
 /** Upload a PDF (or other binary lesson file) to Supabase Storage. Falls back to a data URL if storage isn't ready. */

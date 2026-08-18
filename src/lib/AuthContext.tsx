@@ -61,7 +61,9 @@ interface AuthContextType {
   updateLearnerProfile: (data: Partial<LearnerRecord>) => void;
   enrollCourse: (courseSlug: string) => void;
   markLessonCompleted: (courseId: string, lessonId: string, xpReward?: number) => Promise<void>;
-  saveExamResult: (submission: Omit<PracticeExamSubmission, "id" | "userId" | "submittedAt">) => Promise<PracticeExamSubmission>;
+  saveExamResult: (
+    submission: Omit<PracticeExamSubmission, "id" | "userId" | "submittedAt">,
+  ) => Promise<PracticeExamSubmission>;
   isEnrolled: (courseSlug: string) => boolean;
   isLessonCompleted: (lessonId: string) => boolean;
   refreshUserData: () => Promise<void>;
@@ -83,7 +85,7 @@ const AuthContext = createContext<AuthContextType>({
   updateLearnerProfile: () => {},
   enrollCourse: () => {},
   markLessonCompleted: async () => {},
-  saveExamResult: async () => ({} as PracticeExamSubmission),
+  saveExamResult: async () => ({}) as PracticeExamSubmission,
   isEnrolled: () => false,
   isLessonCompleted: () => false,
   refreshUserData: async () => {},
@@ -102,12 +104,16 @@ export function getAllLearnerRecords(): LearnerRecord[] {
 }
 
 /** Helper to upsert a learner record into global local registry */
-export function upsertLearnerRecord(record: Partial<LearnerRecord> & { id: string; email: string }) {
+export function upsertLearnerRecord(
+  record: Partial<LearnerRecord> & { id: string; email: string },
+) {
   if (typeof window === "undefined") return;
   try {
     const list = getAllLearnerRecords();
     const existingIdx = list.findIndex(
-      (u) => u.id === record.id || (u.email && record.email && u.email.toLowerCase() === record.email.toLowerCase())
+      (u) =>
+        u.id === record.id ||
+        (u.email && record.email && u.email.toLowerCase() === record.email.toLowerCase()),
     );
 
     const now = new Date().toISOString();
@@ -139,9 +145,21 @@ export function upsertLearnerRecord(record: Partial<LearnerRecord> & { id: strin
       list[existingIdx] = {
         ...list[existingIdx],
         ...record,
-        enrolledCourses: Array.from(new Set([...(list[existingIdx].enrolledCourses || []), ...(record.enrolledCourses || [])])),
-        completedLessons: Array.from(new Set([...(list[existingIdx].completedLessons || []), ...(record.completedLessons || [])])),
-        examSubmissions: record.examSubmissions ? record.examSubmissions : list[existingIdx].examSubmissions,
+        enrolledCourses: Array.from(
+          new Set([
+            ...(list[existingIdx].enrolledCourses || []),
+            ...(record.enrolledCourses || []),
+          ]),
+        ),
+        completedLessons: Array.from(
+          new Set([
+            ...(list[existingIdx].completedLessons || []),
+            ...(record.completedLessons || []),
+          ]),
+        ),
+        examSubmissions: record.examSubmissions
+          ? record.examSubmissions
+          : list[existingIdx].examSubmissions,
         xp: record.xp !== undefined ? record.xp : list[existingIdx].xp,
         level: record.level !== undefined ? record.level : list[existingIdx].level,
         streak: record.streak !== undefined ? record.streak : list[existingIdx].streak,
@@ -180,7 +198,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const allLearners = getAllLearnerRecords();
       const match = allLearners.find(
-        (l) => l.id === userId || (userEmail && l.email.toLowerCase() === userEmail.toLowerCase())
+        (l) => l.id === userId || (userEmail && l.email.toLowerCase() === userEmail.toLowerCase()),
       );
 
       if (match) {
@@ -223,7 +241,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       // Try fetching remote Supabase stats if available
       try {
-        const { data: dbStats } = await supabase.from("user_stats").select("*").eq("user_id", userId).maybeSingle();
+        const { data: dbStats } = await supabase
+          .from("user_stats")
+          .select("*")
+          .eq("user_id", userId)
+          .maybeSingle();
         if (dbStats) {
           setStats((prev) => ({
             xp: Math.max(prev.xp, dbStats.xp ?? 0),
@@ -357,7 +379,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               lesson_id: lessonId,
               completed: true,
               completed_at: new Date().toISOString(),
-            } as never)
+            } as never),
           ).catch(() => {});
 
           Promise.resolve(
@@ -367,7 +389,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               level: newLevel,
               streak_days: newStreak,
               updated_at: new Date().toISOString(),
-            } as never)
+            } as never),
           ).catch(() => {});
         } catch {}
       }
@@ -376,7 +398,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
-  const saveExamResult = async (submission: Omit<PracticeExamSubmission, "id" | "userId" | "submittedAt">): Promise<PracticeExamSubmission> => {
+  const saveExamResult = async (
+    submission: Omit<PracticeExamSubmission, "id" | "userId" | "submittedAt">,
+  ): Promise<PracticeExamSubmission> => {
     const fullRecord: PracticeExamSubmission = {
       id: `exam-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
       userId: user?.id || "guest-learner",
@@ -408,7 +432,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
               xp: newXp,
               level: newLevel,
               updated_at: new Date().toISOString(),
-            } as never)
+            } as never),
           ).catch(() => {});
         } catch {}
       }

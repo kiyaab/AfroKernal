@@ -1,5 +1,20 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Award, Clock, CheckCircle2, XCircle, RefreshCw, ArrowRight, ArrowLeft, ShieldCheck, Sparkles, HelpCircle, Check, Lock, UserCheck, Flame } from "lucide-react";
+import {
+  Award,
+  Clock,
+  CheckCircle2,
+  XCircle,
+  RefreshCw,
+  ArrowRight,
+  ArrowLeft,
+  ShieldCheck,
+  Sparkles,
+  HelpCircle,
+  Check,
+  Lock,
+  UserCheck,
+  Flame,
+} from "lucide-react";
 import { useState, useEffect } from "react";
 import { EXAM_QUESTIONS, ExamQuestion } from "@/lib/exam-questions-data";
 import { useAuth } from "@/lib/AuthContext";
@@ -10,7 +25,11 @@ export const Route = createFileRoute("/exam/practice")({
   head: () => ({
     meta: [
       { title: "Linux Practice Certification Exam — AfroKernel" },
-      { name: "description", content: "Test your Linux administration, cybersecurity, and DevOps knowledge with timed practice questions, instant grading, and explanations." },
+      {
+        name: "description",
+        content:
+          "Test your Linux administration, cybersecurity, and DevOps knowledge with timed practice questions, instant grading, and explanations.",
+      },
       { property: "og:title", content: "AfroKernel Linux Practice Exam" },
     ],
   }),
@@ -31,7 +50,7 @@ function ExamPracticePage() {
   const [timeLeftSeconds, setTimeLeftSeconds] = useState(600); // 10 minutes
 
   const questions: ExamQuestion[] = EXAM_QUESTIONS.filter(
-    (q) => selectedTrack === "all" || q.track === selectedTrack
+    (q) => selectedTrack === "all" || q.track === selectedTrack,
   );
 
   const currentQ = questions[currentIndex] || questions[0];
@@ -135,9 +154,13 @@ function ExamPracticePage() {
             <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
               <Award className="h-7 w-7" />
             </div>
-            <h1 className="text-4xl font-display font-black text-foreground">Linux Practice Exam</h1>
+            <h1 className="text-4xl font-display font-black text-foreground">
+              Linux Practice Exam
+            </h1>
             <p className="text-muted-foreground text-sm sm:text-base max-w-xl">
-              Test your knowledge with real multiple-choice questions before taking official certification. Instant scoring, explanations, and results saved to your profile and admin dashboard.
+              Test your knowledge with real multiple-choice questions before taking official
+              certification. Instant scoring, explanations, and results saved to your profile and
+              admin dashboard.
             </p>
           </div>
         )}
@@ -147,14 +170,36 @@ function ExamPracticePage() {
           <div className="rounded-3xl border border-border bg-card p-6 md:p-10 shadow-xl space-y-8 animate-in fade-in">
             <div>
               <h2 className="text-xl font-bold mb-2">Select Exam Specialization Track</h2>
-              <p className="text-xs text-muted-foreground mb-4">Choose a track to test your specific skills:</p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Choose a track to test your specific skills:
+              </p>
 
               <div className="grid sm:grid-cols-2 gap-3">
                 {[
-                  { id: "all", label: "Comprehensive (All Domains)", icon: "🎯", desc: "Mix of Linux, Security & DevOps" },
-                  { id: "linux", label: "Linux Fundamentals", icon: "🐧", desc: "Commands, Permissions, Filesystem & Systemd" },
-                  { id: "security", label: "Cybersecurity Fundamentals", icon: "🔒", desc: "Nmap, Wireshark, Hardening & Firewalls" },
-                  { id: "devops", label: "DevOps & Containers", icon: "⚙️", desc: "Docker, Kubernetes, CI/CD & Automation" },
+                  {
+                    id: "all",
+                    label: "Comprehensive (All Domains)",
+                    icon: "🎯",
+                    desc: "Mix of Linux, Security & DevOps",
+                  },
+                  {
+                    id: "linux",
+                    label: "Linux Fundamentals",
+                    icon: "🐧",
+                    desc: "Commands, Permissions, Filesystem & Systemd",
+                  },
+                  {
+                    id: "security",
+                    label: "Cybersecurity Fundamentals",
+                    icon: "🔒",
+                    desc: "Nmap, Wireshark, Hardening & Firewalls",
+                  },
+                  {
+                    id: "devops",
+                    label: "DevOps & Containers",
+                    icon: "⚙️",
+                    desc: "Docker, Kubernetes, CI/CD & Automation",
+                  },
                 ].map((t) => (
                   <button
                     key={t.id}
@@ -204,11 +249,17 @@ function ExamPracticePage() {
                     <Lock className="h-4 w-4" /> Sign Up / Sign In to Start Exam
                   </div>
                   <p className="text-muted-foreground mt-1">
-                    Your exam answers and certificate readiness will be automatically saved to your profile and admin records.
+                    Your exam answers and certificate readiness will be automatically saved to your
+                    profile and admin records.
                   </p>
                 </div>
                 <button
-                  onClick={() => navigate({ to: "/auth", search: { redirect: "/exam/practice", mode: "signup" } })}
+                  onClick={() =>
+                    navigate({
+                      to: "/auth",
+                      search: { redirect: "/exam/practice", mode: "signup" },
+                    })
+                  }
                   className="px-6 py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 shrink-0 shadow-[var(--shadow-glow)]"
                 >
                   Sign Up Free & Start
@@ -218,7 +269,9 @@ function ExamPracticePage() {
               <div className="flex justify-between items-center pt-4 border-t border-border">
                 <div className="text-xs text-muted-foreground flex items-center gap-2">
                   <UserCheck className="h-4 w-4 text-emerald-500" />
-                  <span>Ready as <strong className="text-foreground">{user.email}</strong></span>
+                  <span>
+                    Ready as <strong className="text-foreground">{user.email}</strong>
+                  </span>
                 </div>
                 <button
                   onClick={handleStartExam}
@@ -271,8 +324,8 @@ function ExamPracticePage() {
                       isCurrent
                         ? "border-primary bg-primary text-primary-foreground shadow-sm"
                         : isAnswered
-                        ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
-                        : "border-border bg-background text-muted-foreground hover:border-primary/40"
+                          ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-500"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/40"
                     }`}
                   >
                     {idx + 1}
@@ -283,7 +336,9 @@ function ExamPracticePage() {
 
             {/* Question Body */}
             <div className="space-y-6">
-              <h2 className="text-xl font-bold text-foreground leading-snug">{currentQ.question}</h2>
+              <h2 className="text-xl font-bold text-foreground leading-snug">
+                {currentQ.question}
+              </h2>
 
               <div className="space-y-3">
                 {currentQ.options.map((optionText, optIdx) => {
@@ -302,7 +357,9 @@ function ExamPracticePage() {
                         <span className="h-6 w-6 rounded-full border border-border flex items-center justify-center font-mono text-xs text-muted-foreground group-hover:text-primary">
                           {String.fromCharCode(65 + optIdx)}
                         </span>
-                        <span className={`text-sm font-medium ${isSelected ? "text-primary font-bold" : "text-foreground"}`}>
+                        <span
+                          className={`text-sm font-medium ${isSelected ? "text-primary font-bold" : "text-foreground"}`}
+                        >
                           {optionText}
                         </span>
                       </div>
@@ -325,7 +382,9 @@ function ExamPracticePage() {
 
               {currentIndex < questions.length - 1 ? (
                 <button
-                  onClick={() => setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))}
+                  onClick={() =>
+                    setCurrentIndex((prev) => Math.min(questions.length - 1, prev + 1))
+                  }
                   className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground text-xs font-bold hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-1.5"
                 >
                   Next Question <ArrowRight className="h-4 w-4" />
@@ -377,7 +436,8 @@ function ExamPracticePage() {
                   </div>
 
                   <p className="text-sm text-muted-foreground">
-                    You answered <strong className="text-foreground">{correct}</strong> out of {total} questions correctly.
+                    You answered <strong className="text-foreground">{correct}</strong> out of{" "}
+                    {total} questions correctly.
                     {passed
                       ? " You have demonstrated solid command-line fundamentals and earned +150 XP!"
                       : " A score of 70% or higher is required to pass. Review the explanations below and try again."}
@@ -448,15 +508,21 @@ function ExamPracticePage() {
 
                           let style = "border-border bg-background/50 text-muted-foreground";
                           if (isThisCorrect) {
-                            style = "border-emerald-500 bg-emerald-500/10 text-emerald-500 font-bold";
+                            style =
+                              "border-emerald-500 bg-emerald-500/10 text-emerald-500 font-bold";
                           } else if (isThisUserChoice && !isThisCorrect) {
                             style = "border-rose-500 bg-rose-500/10 text-rose-500 line-through";
                           }
 
                           return (
-                            <div key={optIdx} className={`p-2.5 rounded-xl border flex items-center justify-between ${style}`}>
+                            <div
+                              key={optIdx}
+                              className={`p-2.5 rounded-xl border flex items-center justify-between ${style}`}
+                            >
                               <span>{opt}</span>
-                              {isThisCorrect && <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0" />}
+                              {isThisCorrect && (
+                                <Check className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
+                              )}
                             </div>
                           );
                         })}

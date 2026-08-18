@@ -1,6 +1,15 @@
 import { useState, useEffect, useMemo } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Search, X, Disc, Terminal, AppWindow, FileText, ArrowRight, CornerDownLeft } from "lucide-react";
+import {
+  Search,
+  X,
+  Disc,
+  Terminal,
+  AppWindow,
+  FileText,
+  ArrowRight,
+  CornerDownLeft,
+} from "lucide-react";
 import { DISTROS_DATA } from "@/lib/distros-data";
 import { APPS_DATA } from "@/lib/apps-data";
 import { COMMANDS_DATA } from "@/lib/commands-data";
@@ -36,13 +45,16 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
     const q = query.toLowerCase();
 
     const distros = DISTROS_DATA.filter(
-      (d) => d.name.toLowerCase().includes(q) || d.tagline.toLowerCase().includes(q) || d.base.toLowerCase().includes(q)
+      (d) =>
+        d.name.toLowerCase().includes(q) ||
+        d.tagline.toLowerCase().includes(q) ||
+        d.base.toLowerCase().includes(q),
     ).slice(0, 3);
 
     const apps = APPS_DATA.flatMap((app) => {
       const matchApp = app.name.toLowerCase().includes(q) || app.category.toLowerCase().includes(q);
       const matchedAlts = app.alternatives.filter(
-        (alt) => alt.name.toLowerCase().includes(q) || alt.description.toLowerCase().includes(q)
+        (alt) => alt.name.toLowerCase().includes(q) || alt.description.toLowerCase().includes(q),
       );
       if (matchApp || matchedAlts.length > 0) {
         return [{ app, matchedAlts }];
@@ -54,11 +66,11 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
       (c) =>
         c.windowsCmd.toLowerCase().includes(q) ||
         c.linuxCmd.toLowerCase().includes(q) ||
-        c.description.toLowerCase().includes(q)
+        c.description.toLowerCase().includes(q),
     ).slice(0, 4);
 
     const cheatsheets = CHEATSHEETS_DATA.filter(
-      (cs) => cs.title.toLowerCase().includes(q) || cs.summary.toLowerCase().includes(q)
+      (cs) => cs.title.toLowerCase().includes(q) || cs.summary.toLowerCase().includes(q),
     ).slice(0, 2);
 
     return { distros, apps, commands, cheatsheets };
@@ -84,7 +96,10 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground outline-none text-base"
           />
           {query && (
-            <button onClick={() => setQuery("")} className="p-1 rounded-md text-muted-foreground hover:text-foreground">
+            <button
+              onClick={() => setQuery("")}
+              className="p-1 rounded-md text-muted-foreground hover:text-foreground"
+            >
               <X className="h-4 w-4" />
             </button>
           )}
@@ -102,15 +117,17 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             <div className="py-8 text-center text-sm text-muted-foreground">
               <p className="font-medium text-foreground mb-1">Quick Suggestions</p>
               <div className="flex flex-wrap justify-center gap-2 mt-3">
-                {["Ubuntu", "chmod", "Photoshop", "Vim", "Distro Finder", "Cron Builder"].map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setQuery(s)}
-                    className="rounded-lg border border-border bg-secondary/50 px-3 py-1.5 text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition"
-                  >
-                    {s}
-                  </button>
-                ))}
+                {["Ubuntu", "chmod", "Photoshop", "Vim", "Distro Finder", "Cron Builder"].map(
+                  (s) => (
+                    <button
+                      key={s}
+                      onClick={() => setQuery(s)}
+                      className="rounded-lg border border-border bg-secondary/50 px-3 py-1.5 text-xs font-medium hover:bg-primary/10 hover:text-primary hover:border-primary/40 transition"
+                    >
+                      {s}
+                    </button>
+                  ),
+                )}
               </div>
             </div>
           )}
@@ -136,9 +153,13 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                             {cmd.windowsCmd}
                           </span>
                           <span className="text-xs text-muted-foreground">→</span>
-                          <span className="font-mono text-xs font-semibold text-primary">{cmd.linuxCmd}</span>
+                          <span className="font-mono text-xs font-semibold text-primary">
+                            {cmd.linuxCmd}
+                          </span>
                         </div>
-                        <span className="text-xs text-muted-foreground truncate max-w-xs">{cmd.description}</span>
+                        <span className="text-xs text-muted-foreground truncate max-w-xs">
+                          {cmd.description}
+                        </span>
                       </Link>
                     ))}
                   </div>
@@ -161,7 +182,9 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                       >
                         <span className="text-2xl">{d.logo}</span>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium text-sm text-foreground group-hover:text-primary">{d.name}</div>
+                          <div className="font-medium text-sm text-foreground group-hover:text-primary">
+                            {d.name}
+                          </div>
                           <div className="text-xs text-muted-foreground truncate">{d.tagline}</div>
                         </div>
                       </Link>
@@ -188,7 +211,9 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                           <span className="text-xl">{app.icon}</span>
                           <div>
                             <span className="text-sm font-medium text-foreground">{app.name}</span>
-                            <span className="ml-2 text-xs text-muted-foreground">({app.alternatives.length} Linux alts)</span>
+                            <span className="ml-2 text-xs text-muted-foreground">
+                              ({app.alternatives.length} Linux alts)
+                            </span>
                           </div>
                         </div>
                         <div className="flex items-center gap-1 text-xs text-primary">
@@ -217,7 +242,9 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                       >
                         <span className="text-2xl">{cs.icon}</span>
                         <div className="min-w-0 flex-1">
-                          <div className="font-medium text-sm text-foreground group-hover:text-primary">{cs.title}</div>
+                          <div className="font-medium text-sm text-foreground group-hover:text-primary">
+                            {cs.title}
+                          </div>
                           <div className="text-xs text-muted-foreground truncate">{cs.summary}</div>
                         </div>
                       </Link>
@@ -232,7 +259,9 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
                 results.commands.length === 0 &&
                 results.cheatsheets.length === 0 && (
                   <div className="py-8 text-center text-sm text-muted-foreground">
-                    No results found for <span className="font-semibold text-foreground">"{query}"</span>. Try another keyword or browse courses.
+                    No results found for{" "}
+                    <span className="font-semibold text-foreground">"{query}"</span>. Try another
+                    keyword or browse courses.
                   </div>
                 )}
             </>
@@ -243,8 +272,13 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         <div className="flex items-center justify-between border-t border-border bg-muted/40 px-4 py-2.5 text-xs text-muted-foreground">
           <div className="flex items-center gap-3">
             <span className="flex items-center gap-1">
-              <kbd className="rounded border border-border bg-card px-1.5 py-0.5 text-[10px]">↑</kbd>
-              <kbd className="rounded border border-border bg-card px-1.5 py-0.5 text-[10px]">↓</kbd> navigate
+              <kbd className="rounded border border-border bg-card px-1.5 py-0.5 text-[10px]">
+                ↑
+              </kbd>
+              <kbd className="rounded border border-border bg-card px-1.5 py-0.5 text-[10px]">
+                ↓
+              </kbd>{" "}
+              navigate
             </span>
             <span className="flex items-center gap-1">
               <CornerDownLeft className="h-3 w-3" /> select

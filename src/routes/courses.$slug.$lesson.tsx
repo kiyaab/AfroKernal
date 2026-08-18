@@ -34,7 +34,10 @@ export const Route = createFileRoute("/courses/$slug/$lesson")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.lesson} — ${params.slug.toUpperCase()} | AfroKernel` },
-      { name: "description", content: `Interactive Linux lesson: ${params.lesson} in ${params.slug}.` },
+      {
+        name: "description",
+        content: `Interactive Linux lesson: ${params.lesson} in ${params.slug}.`,
+      },
       { property: "og:title", content: `AfroKernel Lesson — ${params.lesson}` },
     ],
   }),
@@ -71,9 +74,14 @@ function LessonPage() {
   const { data: lessonData } = useQuery({
     queryKey: ["public-lesson-view", slug, lessonSlug],
     queryFn: async () => {
-      const catalogLesson = courseMeta.lessons.find((l) => l.slug === lessonSlug) || courseMeta.lessons[0];
+      const catalogLesson =
+        courseMeta.lessons.find((l) => l.slug === lessonSlug) || courseMeta.lessons[0];
       try {
-        const { data: dbCourse } = await supabase.from("courses").select("id").eq("slug", slug).maybeSingle();
+        const { data: dbCourse } = await supabase
+          .from("courses")
+          .select("id")
+          .eq("slug", slug)
+          .maybeSingle();
         if (dbCourse) {
           const { data: dbL } = await supabase
             .from("lessons")
@@ -90,7 +98,9 @@ function LessonPage() {
               content: dbL.content || catalogLesson.content,
               video_url: dbL.video_url || catalogLesson.video_url,
               xp_reward: dbL.xp_reward || catalogLesson.xp_reward,
-              lesson_type: (dbL.lesson_type as "video" | "notes" | "lab" | "quiz") || catalogLesson.lesson_type,
+              lesson_type:
+                (dbL.lesson_type as "video" | "notes" | "lab" | "quiz") ||
+                catalogLesson.lesson_type,
             };
           }
         }
@@ -147,10 +157,16 @@ function LessonPage() {
           </div>
           <h2 className="text-xl font-bold font-display">Authentication Required</h2>
           <p className="text-xs text-muted-foreground">
-            Please sign in or create a free account to access this lesson, interact with labs, and earn XP.
+            Please sign in or create a free account to access this lesson, interact with labs, and
+            earn XP.
           </p>
           <button
-            onClick={() => navigate({ to: "/auth", search: { redirect: `/courses/${slug}/${lessonSlug}`, mode: "signup" } })}
+            onClick={() =>
+              navigate({
+                to: "/auth",
+                search: { redirect: `/courses/${slug}/${lessonSlug}`, mode: "signup" },
+              })
+            }
             className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-[var(--shadow-glow)]"
           >
             Sign In or Create Account
@@ -166,7 +182,11 @@ function LessonPage() {
       <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-4">
-            <Link to="/courses/$slug" params={{ slug }} className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+            <Link
+              to="/courses/$slug"
+              params={{ slug }}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">Course Syllabus</span>
             </Link>
@@ -198,7 +218,9 @@ function LessonPage() {
           </div>
           <div>
             <h4 className="font-bold text-xs text-emerald-500">Lesson Completed!</h4>
-            <p className="text-[11px] text-muted-foreground">+{currentLesson.xp_reward} XP awarded to your profile!</p>
+            <p className="text-[11px] text-muted-foreground">
+              +{currentLesson.xp_reward} XP awarded to your profile!
+            </p>
           </div>
         </div>
       )}
@@ -269,7 +291,8 @@ function LessonPage() {
                   <BookOpen className="h-10 w-10 text-primary" />
                   <h3 className="font-bold text-base">Reading & Hands-on Lab Lesson</h3>
                   <p className="text-xs text-muted-foreground max-w-md">
-                    This lesson is structured around reading materials, commands documentation, and interactive terminal exercises.
+                    This lesson is structured around reading materials, commands documentation, and
+                    interactive terminal exercises.
                   </p>
                   <button
                     onClick={() => setActiveTab("notes")}
@@ -298,7 +321,9 @@ function LessonPage() {
             <div className="flex items-center justify-between pb-3 border-b border-border">
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="font-mono text-xs font-bold text-foreground">Interactive Linux Terminal Sandbox</span>
+                <span className="font-mono text-xs font-bold text-foreground">
+                  Interactive Linux Terminal Sandbox
+                </span>
               </div>
               <Link
                 to="/lab"
@@ -316,9 +341,13 @@ function LessonPage() {
                 <div className="space-y-1">
                   <p className="text-muted-foreground"># Try typing commands for this lesson:</p>
                   <p className="text-foreground font-bold">learner@afrokernel:~$ uname -a</p>
-                  <p className="text-muted-foreground">Linux afrokernel-node1 6.6.0-afrokernel #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux</p>
+                  <p className="text-muted-foreground">
+                    Linux afrokernel-node1 6.6.0-afrokernel #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux
+                  </p>
                   <p className="text-foreground font-bold">learner@afrokernel:~$ ls -la /etc</p>
-                  <p className="text-muted-foreground">drwxr-xr-x  85 root root 4096 Aug 14 09:30 .</p>
+                  <p className="text-muted-foreground">
+                    drwxr-xr-x 85 root root 4096 Aug 14 09:30 .
+                  </p>
                 </div>
               </div>
 
@@ -343,7 +372,8 @@ function LessonPage() {
                 Knowledge Check Quiz
               </span>
               <h2 className="text-xl font-bold text-foreground">
-                {currentLesson.quiz?.question || "What is the primary role of this Linux component?"}
+                {currentLesson.quiz?.question ||
+                  "What is the primary role of this Linux component?"}
               </h2>
             </div>
 
@@ -362,8 +392,10 @@ function LessonPage() {
 
                 let cardStyle = "border-border bg-secondary/30 hover:border-primary/40";
                 if (quizSubmitted) {
-                  if (isCorrect) cardStyle = "border-emerald-500 bg-emerald-500/10 text-emerald-500 font-bold";
-                  else if (isSelected && !isCorrect) cardStyle = "border-rose-500 bg-rose-500/10 text-rose-500";
+                  if (isCorrect)
+                    cardStyle = "border-emerald-500 bg-emerald-500/10 text-emerald-500 font-bold";
+                  else if (isSelected && !isCorrect)
+                    cardStyle = "border-rose-500 bg-rose-500/10 text-rose-500";
                 } else if (isSelected) {
                   cardStyle = "border-primary bg-primary/10 shadow-sm";
                 }
@@ -410,7 +442,10 @@ function LessonPage() {
                 </p>
                 <div className="pt-2 flex gap-3">
                   <button
-                    onClick={() => { setQuizSubmitted(false); setSelectedAnswer(null); }}
+                    onClick={() => {
+                      setQuizSubmitted(false);
+                      setSelectedAnswer(null);
+                    }}
                     className="text-xs text-primary font-semibold hover:underline"
                   >
                     Try Again

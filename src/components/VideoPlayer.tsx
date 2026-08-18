@@ -1,5 +1,15 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Play, Pause, Volume2, VolumeX, Maximize, RotateCcw, Clock, HelpCircle, CheckCircle2 } from "lucide-react";
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  RotateCcw,
+  Clock,
+  HelpCircle,
+  CheckCircle2,
+} from "lucide-react";
 
 export interface TimestampQuiz {
   timestamp: number; // in seconds
@@ -27,7 +37,7 @@ export function VideoPlayer({
 }: VideoPlayerProps) {
   const isYoutube = videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be");
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -62,10 +72,7 @@ export function VideoPlayer({
 
     // Check for timestamp quiz prompts
     timestampQuizzes.forEach((q) => {
-      if (
-        Math.abs(curr - q.timestamp) < 0.8 &&
-        !triggeredQuizzes.has(q.timestamp)
-      ) {
+      if (Math.abs(curr - q.timestamp) < 0.8 && !triggeredQuizzes.has(q.timestamp)) {
         // Trigger quiz prompt!
         videoRef.current?.pause();
         setIsPlaying(false);
@@ -203,7 +210,10 @@ export function VideoPlayer({
           {/* Video Control Bar */}
           <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent p-3 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity z-20 text-white text-xs">
             <div className="flex items-center gap-3">
-              <button onClick={togglePlay} className="p-1.5 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition">
+              <button
+                onClick={togglePlay}
+                className="p-1.5 rounded-lg bg-primary/20 hover:bg-primary/40 text-primary transition"
+              >
                 {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
               </button>
               <div className="flex items-center gap-2">
@@ -254,7 +264,8 @@ export function VideoPlayer({
           <div className="w-full max-w-lg bg-card/90 border border-primary/40 rounded-2xl p-6 shadow-2xl text-foreground">
             <div className="flex items-center justify-between border-b border-border pb-3 mb-4">
               <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-                <HelpCircle className="w-4 h-4" /> Timestamp Quiz Prompt · {formatTime(activeQuiz.timestamp)}
+                <HelpCircle className="w-4 h-4" /> Timestamp Quiz Prompt ·{" "}
+                {formatTime(activeQuiz.timestamp)}
               </div>
               <span className="text-xs text-muted-foreground">{activeQuiz.title}</span>
             </div>
@@ -269,7 +280,8 @@ export function VideoPlayer({
                 let btnStyle = "border-border hover:bg-accent";
                 if (quizSubmitted) {
                   if (isCorrect) btnStyle = "border-green-500 bg-green-500/15 text-green-400";
-                  else if (isSelected) btnStyle = "border-destructive bg-destructive/15 text-destructive";
+                  else if (isSelected)
+                    btnStyle = "border-destructive bg-destructive/15 text-destructive";
                 } else if (isSelected) {
                   btnStyle = "border-primary bg-primary/10 text-primary font-medium";
                 }
@@ -282,8 +294,12 @@ export function VideoPlayer({
                     className={`w-full text-left px-4 py-3 rounded-xl border text-xs transition flex items-center justify-between ${btnStyle}`}
                   >
                     <span>{choice}</span>
-                    {isSelected && !quizSubmitted && <span className="w-2 h-2 rounded-full bg-primary" />}
-                    {quizSubmitted && isCorrect && <CheckCircle2 className="w-4 h-4 text-green-400" />}
+                    {isSelected && !quizSubmitted && (
+                      <span className="w-2 h-2 rounded-full bg-primary" />
+                    )}
+                    {quizSubmitted && isCorrect && (
+                      <CheckCircle2 className="w-4 h-4 text-green-400" />
+                    )}
                   </button>
                 );
               })}
@@ -323,7 +339,8 @@ export function VideoPlayer({
 function getYoutubeEmbedUrl(url: string): string {
   try {
     const u = new URL(url);
-    if (u.hostname.includes("youtu.be")) return `https://www.youtube.com/embed${u.pathname}?enablejsapi=1`;
+    if (u.hostname.includes("youtu.be"))
+      return `https://www.youtube.com/embed${u.pathname}?enablejsapi=1`;
     const id = u.searchParams.get("v");
     if (id) return `https://www.youtube.com/embed/${id}?enablejsapi=1`;
     if (u.pathname.startsWith("/embed/")) return `${url}?enablejsapi=1`;

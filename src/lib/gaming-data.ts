@@ -1,6 +1,14 @@
 export interface AntiCheatGame {
   name: string;
-  antiCheat: "Easy Anti-Cheat" | "BattlEye" | "Easy Anti-Cheat / BattlEye" | "Ricochet" | "Vanguard" | "VAC" | "None / Custom" | string;
+  antiCheat:
+    | "Easy Anti-Cheat"
+    | "BattlEye"
+    | "Easy Anti-Cheat / BattlEye"
+    | "Ricochet"
+    | "Vanguard"
+    | "VAC"
+    | "None / Custom"
+    | string;
   status: "Supported" | "Playable (Tweaks Required)" | "Unsupported (Blocked by Anti-Cheat)";
   protonTier: "Native" | "Platinum" | "Gold" | "Silver" | "Borked";
   notes: string;
@@ -20,8 +28,9 @@ export const ANTI_CHEAT_GAMES: AntiCheatGame[] = [
     antiCheat: "VAC",
     status: "Supported",
     protonTier: "Native",
-    notes: "Native Linux client built by Valve on Vulkan. Runs flawlessly with maximum performance.",
-    launchOptions: "-novid -high"
+    notes:
+      "Native Linux client built by Valve on Vulkan. Runs flawlessly with maximum performance.",
+    launchOptions: "-novid -high",
   },
   {
     name: "Apex Legends",
@@ -29,15 +38,16 @@ export const ANTI_CHEAT_GAMES: AntiCheatGame[] = [
     status: "Supported",
     protonTier: "Platinum",
     notes: "EAC Linux module enabled by EA/Respawn. Works out of the box with Proton Experimental.",
-    launchOptions: "gamemoderun %command%"
+    launchOptions: "gamemoderun %command%",
   },
   {
     name: "Elden Ring",
     antiCheat: "Easy Anti-Cheat",
     status: "Supported",
     protonTier: "Platinum",
-    notes: "Valve patched shader stuttering on Linux before Windows received the fix. Runs smooth 60fps.",
-    launchOptions: "PROTON_ENABLE_NVAPI=1 %command%"
+    notes:
+      "Valve patched shader stuttering on Linux before Windows received the fix. Runs smooth 60fps.",
+    launchOptions: "PROTON_ENABLE_NVAPI=1 %command%",
   },
   {
     name: "Cyberpunk 2077",
@@ -45,7 +55,7 @@ export const ANTI_CHEAT_GAMES: AntiCheatGame[] = [
     status: "Supported",
     protonTier: "Platinum",
     notes: "Full ray tracing, DLSS / FSR 3, and Phantom Liberty support via Proton GE.",
-    launchOptions: "PROTON_ENABLE_NVAPI=1 VKD3D_CONFIG=dxr11 %command%"
+    launchOptions: "PROTON_ENABLE_NVAPI=1 VKD3D_CONFIG=dxr11 %command%",
   },
   {
     name: "Helldivers 2",
@@ -53,21 +63,23 @@ export const ANTI_CHEAT_GAMES: AntiCheatGame[] = [
     status: "Supported",
     protonTier: "Gold",
     notes: "nProtect GameGuard anti-cheat was updated to support Proton. Fully playable in co-op.",
-    launchOptions: "gamemoderun %command%"
+    launchOptions: "gamemoderun %command%",
   },
   {
     name: "Fortnite",
     antiCheat: "Easy Anti-Cheat / BattlEye",
     status: "Unsupported (Blocked by Anti-Cheat)",
     protonTier: "Borked",
-    notes: "Epic Games explicitly refuses to enable the Linux EAC toggle. Playable only via Xbox Cloud Gaming / GeForce NOW.",
+    notes:
+      "Epic Games explicitly refuses to enable the Linux EAC toggle. Playable only via Xbox Cloud Gaming / GeForce NOW.",
   },
   {
     name: "Valorant",
     antiCheat: "Vanguard",
     status: "Unsupported (Blocked by Anti-Cheat)",
     protonTier: "Borked",
-    notes: "Riot Vanguard requires kernel-level ring 0 Windows drivers with TPM 2.0. Incompatible with Linux.",
+    notes:
+      "Riot Vanguard requires kernel-level ring 0 Windows drivers with TPM 2.0. Incompatible with Linux.",
   },
   {
     name: "Call of Duty: Warzone",
@@ -89,7 +101,7 @@ export const ANTI_CHEAT_GAMES: AntiCheatGame[] = [
     status: "Supported",
     protonTier: "Platinum",
     notes: "Digital Extremes actively tests and supports Steam Deck and Linux Proton.",
-    launchOptions: "gamemoderun %command%"
+    launchOptions: "gamemoderun %command%",
   },
   {
     name: "Dota 2",
@@ -104,8 +116,8 @@ export const ANTI_CHEAT_GAMES: AntiCheatGame[] = [
     status: "Supported",
     protonTier: "Gold",
     notes: "Rockstar enabled BattlEye Proton support. Story mode and online lobbies functional.",
-    launchOptions: "gamemoderun %command%"
-  }
+    launchOptions: "gamemoderun %command%",
+  },
 ];
 
 export const GPU_DRIVER_GUIDES = [
@@ -115,15 +127,18 @@ export const GPU_DRIVER_GUIDES = [
     ubuntu: "sudo ubuntu-drivers install  # or: sudo apt install nvidia-driver-550",
     fedora: "sudo dnf install akmod-nvidia xorg-x11-drv-nvidia-cuda",
     arch: "sudo pacman -S nvidia nvidia-utils nvidia-settings lib32-nvidia-utils",
-    notes: "Ensure Secure Boot is either disabled or custom MOK keys are enrolled during driver compilation."
+    notes:
+      "Ensure Secure Boot is either disabled or custom MOK keys are enrolled during driver compilation.",
   },
   {
     gpu: "AMD Radeon (RX 7000, 6000, 5000, Vega, Polaris)",
-    description: "AMD drivers (AMDGPU + Mesa RADV) are built directly into the Linux kernel and Mesa.",
+    description:
+      "AMD drivers (AMDGPU + Mesa RADV) are built directly into the Linux kernel and Mesa.",
     ubuntu: "sudo apt install mesa-vulkan-drivers libvulkan1 vulkan-tools",
     fedora: "sudo dnf install mesa-vulkan-drivers.x86_64 mesa-vulkan-drivers.i686",
     arch: "sudo pacman -S vulkan-radeon lib32-vulkan-radeon mesa lib32-mesa",
-    notes: "AMD gives the smoothest out-of-the-box Linux experience with zero proprietary driver hassles."
+    notes:
+      "AMD gives the smoothest out-of-the-box Linux experience with zero proprietary driver hassles.",
   },
   {
     gpu: "Intel Arc & Iris Xe Graphics",
@@ -131,6 +146,6 @@ export const GPU_DRIVER_GUIDES = [
     ubuntu: "sudo apt install intel-media-va-driver-non-free mesa-vulkan-drivers",
     fedora: "sudo dnf install mesa-vulkan-drivers.x86_64 intel-media-driver",
     arch: "sudo pacman -S vulkan-intel lib32-vulkan-intel intel-media-driver",
-    notes: "Requires modern kernel 6.6+ for optimal Arc A770/A750 power management."
-  }
+    notes: "Requires modern kernel 6.6+ for optimal Arc A770/A750 power management.",
+  },
 ];

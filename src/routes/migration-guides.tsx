@@ -1,5 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { ArrowRightLeft, Search, CheckCircle2, AlertTriangle, Lightbulb, Copy, Check, Terminal, Sparkles, Clock, ShieldCheck } from "lucide-react";
+import {
+  ArrowRightLeft,
+  Search,
+  CheckCircle2,
+  AlertTriangle,
+  Lightbulb,
+  Copy,
+  Check,
+  Terminal,
+  Sparkles,
+  Clock,
+  ShieldCheck,
+} from "lucide-react";
 import { useState } from "react";
 import { MIGRATION_GUIDES, MigrationGuide } from "@/lib/migration-data";
 
@@ -49,7 +61,8 @@ function MigrationGuides() {
         </div>
         <h1 className="text-4xl font-display font-bold">Operating System Migration Guides</h1>
         <p className="text-muted-foreground text-base max-w-2xl">
-          Step-by-step interactive checklists to safely transition your workflow, files, and applications from Windows or macOS to Linux.
+          Step-by-step interactive checklists to safely transition your workflow, files, and
+          applications from Windows or macOS to Linux.
         </p>
       </div>
 
@@ -139,7 +152,9 @@ function MigrationGuides() {
                   </button>
 
                   <div className="space-y-3 flex-1">
-                    <h3 className={`text-base font-bold transition ${isChecked ? "line-through text-muted-foreground" : "text-foreground"}`}>
+                    <h3
+                      className={`text-base font-bold transition ${isChecked ? "line-through text-muted-foreground" : "text-foreground"}`}
+                    >
                       {step.title}
                     </h3>
                     <p className="text-xs text-muted-foreground leading-relaxed">{step.desc}</p>
@@ -147,14 +162,21 @@ function MigrationGuides() {
                     {step.commands && step.commands.length > 0 && (
                       <div className="space-y-1.5 pt-1">
                         {step.commands.map((cmd, cIdx) => (
-                          <div key={cIdx} className="flex items-center justify-between p-3 rounded-xl bg-card border border-border font-mono text-xs">
+                          <div
+                            key={cIdx}
+                            className="flex items-center justify-between p-3 rounded-xl bg-card border border-border font-mono text-xs"
+                          >
                             <span className="text-primary truncate">{cmd}</span>
                             <button
                               onClick={() => copyToClipboard(cmd)}
                               className="p-1 text-muted-foreground hover:text-foreground shrink-0 transition"
                               title="Copy command"
                             >
-                              {copiedCmd === cmd ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                              {copiedCmd === cmd ? (
+                                <Check className="h-4 w-4 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-4 w-4" />
+                              )}
                             </button>
                           </div>
                         ))}
@@ -164,14 +186,18 @@ function MigrationGuides() {
                     {step.warning && (
                       <div className="flex items-start gap-2 p-3 rounded-xl border border-rose-500/30 bg-rose-500/10 text-rose-500 text-xs">
                         <AlertTriangle className="h-4 w-4 shrink-0 mt-0.5" />
-                        <span><strong>Warning:</strong> {step.warning}</span>
+                        <span>
+                          <strong>Warning:</strong> {step.warning}
+                        </span>
                       </div>
                     )}
 
                     {step.tip && (
                       <div className="flex items-start gap-2 p-3 rounded-xl border border-primary/30 bg-primary/10 text-primary text-xs">
                         <Lightbulb className="h-4 w-4 shrink-0 mt-0.5" />
-                        <span><strong>Pro-Tip:</strong> {step.tip}</span>
+                        <span>
+                          <strong>Pro-Tip:</strong> {step.tip}
+                        </span>
                       </div>
                     )}
                   </div>

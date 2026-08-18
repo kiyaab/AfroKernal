@@ -1,13 +1,7 @@
 import { useEffect, useState } from "react";
 import { BookOpen, ExternalLink, FileDown, Maximize2, Minimize2, X } from "lucide-react";
 
-export function PdfReader({
-  title,
-  url,
-}: {
-  title: string;
-  url: string;
-}) {
+export function PdfReader({ title, url }: { title: string; url: string }) {
   const [reading, setReading] = useState(false);
 
   useEffect(() => {
@@ -31,7 +25,9 @@ export function PdfReader({
             <BookOpen className="h-4 w-4 shrink-0 text-primary" />
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold">{title}</p>
-              <p className="text-[11px] text-muted-foreground">PDF study material · Reading mode available</p>
+              <p className="text-[11px] text-muted-foreground">
+                PDF study material · Reading mode available
+              </p>
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
@@ -60,7 +56,11 @@ export function PdfReader({
           </div>
         </div>
         <div className="bg-[oklch(0.16_0.01_260)]">
-          <iframe title={`${title} PDF`} src={url} className="h-[min(70vh,640px)] w-full border-0" />
+          <iframe
+            title={`${title} PDF`}
+            src={url}
+            className="h-[min(70vh,640px)] w-full border-0"
+          />
         </div>
       </div>
 
@@ -97,7 +97,11 @@ export function PdfReader({
               </button>
             </div>
           </div>
-          <iframe title={`${title} reading mode`} src={url} className="min-h-0 flex-1 w-full border-0" />
+          <iframe
+            title={`${title} reading mode`}
+            src={url}
+            className="min-h-0 flex-1 w-full border-0"
+          />
         </div>
       )}
     </>

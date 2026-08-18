@@ -1,5 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { AppWindow, Search, ThumbsUp, Copy, Check, ExternalLink, Plus, Filter, Sparkles, X } from "lucide-react";
+import {
+  AppWindow,
+  Search,
+  ThumbsUp,
+  Copy,
+  Check,
+  ExternalLink,
+  Plus,
+  Filter,
+  Sparkles,
+  X,
+} from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { APPS_DATA, WindowsApp, AppAlternative } from "@/lib/apps-data";
 
@@ -13,7 +24,9 @@ function AppsDirectory() {
   const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
 
   // Community votes tracking in local storage
-  const [votesState, setVotesState] = useState<Record<string, { count: number; userVoted: boolean }>>(() => {
+  const [votesState, setVotesState] = useState<
+    Record<string, { count: number; userVoted: boolean }>
+  >(() => {
     const initial: Record<string, { count: number; userVoted: boolean }> = {};
     APPS_DATA.forEach((app) => {
       app.alternatives.forEach((alt) => {
@@ -26,10 +39,26 @@ function AppsDirectory() {
 
   // Suggest modal state
   const [isSuggestModalOpen, setIsSuggestModalOpen] = useState(false);
-  const [suggestForm, setSuggestForm] = useState({ windowsApp: "", linuxAlt: "", category: "Graphics", website: "", notes: "" });
+  const [suggestForm, setSuggestForm] = useState({
+    windowsApp: "",
+    linuxAlt: "",
+    category: "Graphics",
+    website: "",
+    notes: "",
+  });
   const [suggestSubmitted, setSuggestSubmitted] = useState(false);
 
-  const categories = ["All", "Graphics", "Office", "Media", "Development", "Communication", "Utilities", "Gaming", "Security"];
+  const categories = [
+    "All",
+    "Graphics",
+    "Office",
+    "Media",
+    "Development",
+    "Communication",
+    "Utilities",
+    "Gaming",
+    "Security",
+  ];
 
   const handleVote = (appId: string, altName: string) => {
     const key = `${appId}_${altName}`;
@@ -57,7 +86,9 @@ function AppsDirectory() {
         app.name.toLowerCase().includes(q) ||
         app.summary.toLowerCase().includes(q) ||
         app.category.toLowerCase().includes(q) ||
-        app.alternatives.some((alt) => alt.name.toLowerCase().includes(q) || alt.description.toLowerCase().includes(q));
+        app.alternatives.some(
+          (alt) => alt.name.toLowerCase().includes(q) || alt.description.toLowerCase().includes(q),
+        );
 
       const matchesCat = selectedCategory === "All" || app.category === selectedCategory;
       return matchesSearch && matchesCat;
@@ -74,7 +105,9 @@ function AppsDirectory() {
           </div>
           <h1 className="text-4xl font-display font-bold">Linux App Alternatives</h1>
           <p className="text-muted-foreground text-base max-w-2xl mt-1">
-            Find the best free and open-source Linux replacements for proprietary Windows and macOS software. Compare features, upvote community favorites, and get instant terminal install commands.
+            Find the best free and open-source Linux replacements for proprietary Windows and macOS
+            software. Compare features, upvote community favorites, and get instant terminal install
+            commands.
           </p>
         </div>
         <button
@@ -121,11 +154,16 @@ function AppsDirectory() {
           <div className="text-center py-20 border border-dashed border-border rounded-2xl bg-card/30">
             <AppWindow className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
             <h3 className="text-lg font-semibold">No applications found</h3>
-            <p className="text-sm text-muted-foreground mt-1">Try searching for a different app or submit a suggestion.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Try searching for a different app or submit a suggestion.
+            </p>
           </div>
         ) : (
           filteredApps.map((app) => (
-            <div key={app.id} className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm">
+            <div
+              key={app.id}
+              className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm"
+            >
               {/* Windows App Title Header */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-6 border-b border-border">
                 <div className="flex items-center gap-3">
@@ -150,7 +188,8 @@ function AppsDirectory() {
                 {app.alternatives.map((alt) => {
                   const voteKey = `${app.id}_${alt.name}`;
                   const currentVote = votesState[voteKey] || { count: alt.votes, userVoted: false };
-                  const bestInstallCmd = alt.installCmds.flatpak || alt.installCmds.apt || alt.installCmds.pacman || "";
+                  const bestInstallCmd =
+                    alt.installCmds.flatpak || alt.installCmds.apt || alt.installCmds.pacman || "";
 
                   return (
                     <div
@@ -160,8 +199,12 @@ function AppsDirectory() {
                       <div>
                         <div className="flex items-start justify-between gap-2 mb-2">
                           <div>
-                            <h3 className="font-bold text-base text-foreground group-hover:text-primary transition">{alt.name}</h3>
-                            <span className="text-[10px] font-semibold text-emerald-500">{alt.license}</span>
+                            <h3 className="font-bold text-base text-foreground group-hover:text-primary transition">
+                              {alt.name}
+                            </h3>
+                            <span className="text-[10px] font-semibold text-emerald-500">
+                              {alt.license}
+                            </span>
                           </div>
                           <button
                             onClick={() => handleVote(app.id, alt.name)}
@@ -177,11 +220,16 @@ function AppsDirectory() {
                           </button>
                         </div>
 
-                        <p className="text-xs text-muted-foreground leading-relaxed mb-4">{alt.description}</p>
+                        <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                          {alt.description}
+                        </p>
 
                         <div className="flex flex-wrap gap-1 mb-4">
                           {alt.packageTypes.map((pkg) => (
-                            <span key={pkg} className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
+                            <span
+                              key={pkg}
+                              className="text-[10px] font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground"
+                            >
                               {pkg}
                             </span>
                           ))}
@@ -197,7 +245,11 @@ function AppsDirectory() {
                               className="p-1 rounded text-muted-foreground hover:text-primary shrink-0 transition"
                               title="Copy install command"
                             >
-                              {copiedCmd === bestInstallCmd ? <Check className="h-3.5 w-3.5 text-emerald-500" /> : <Copy className="h-3.5 w-3.5" />}
+                              {copiedCmd === bestInstallCmd ? (
+                                <Check className="h-3.5 w-3.5 text-emerald-500" />
+                              ) : (
+                                <Copy className="h-3.5 w-3.5" />
+                              )}
                             </button>
                           </div>
                         )}
@@ -226,9 +278,14 @@ function AppsDirectory() {
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-border">
               <div>
                 <h3 className="text-xl font-bold">Suggest an App Alternative</h3>
-                <p className="text-xs text-muted-foreground mt-0.5">Help fellow Linux users discover great software.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  Help fellow Linux users discover great software.
+                </p>
               </div>
-              <button onClick={() => setIsSuggestModalOpen(false)} className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setIsSuggestModalOpen(false)}
+                className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
@@ -239,7 +296,9 @@ function AppsDirectory() {
                   <Check className="h-6 w-6" />
                 </div>
                 <h4 className="text-lg font-bold">Thank You!</h4>
-                <p className="text-sm text-muted-foreground">Your app suggestion has been recorded for review by the community.</p>
+                <p className="text-sm text-muted-foreground">
+                  Your app suggestion has been recorded for review by the community.
+                </p>
                 <button
                   onClick={() => {
                     setIsSuggestModalOpen(false);
@@ -288,11 +347,13 @@ function AppsDirectory() {
                       onChange={(e) => setSuggestForm({ ...suggestForm, category: e.target.value })}
                       className="w-full rounded-xl border border-border bg-background p-2.5 text-foreground focus:border-primary focus:outline-none"
                     >
-                      {categories.filter((c) => c !== "All").map((c) => (
-                        <option key={c} value={c}>
-                          {c}
-                        </option>
-                      ))}
+                      {categories
+                        .filter((c) => c !== "All")
+                        .map((c) => (
+                          <option key={c} value={c}>
+                            {c}
+                          </option>
+                        ))}
                     </select>
                   </div>
                   <div>
@@ -308,7 +369,9 @@ function AppsDirectory() {
                 </div>
 
                 <div>
-                  <label className="font-semibold block mb-1">Why is this a great alternative?</label>
+                  <label className="font-semibold block mb-1">
+                    Why is this a great alternative?
+                  </label>
                   <textarea
                     rows={3}
                     placeholder="Notes on installation, compatibility, and features..."

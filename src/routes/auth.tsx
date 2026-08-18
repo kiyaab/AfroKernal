@@ -32,16 +32,26 @@ function safeRedirect(path: unknown): string {
 }
 
 export const Route = createFileRoute("/auth")({
-  validateSearch: (s: Record<string, unknown>): { redirect?: string; mode?: "signup" | "signin" } => ({
+  validateSearch: (
+    s: Record<string, unknown>,
+  ): { redirect?: string; mode?: "signup" | "signin" } => ({
     redirect: typeof s.redirect === "string" ? s.redirect : undefined,
     mode: s.mode === "signup" || s.mode === "signin" ? s.mode : undefined,
   }),
   head: () => ({
     meta: [
       { title: "Sign in & Join — AfroKernel" },
-      { name: "description", content: "Sign in or create your free AfroKernel account to unlock Linux courses, take practice exams, earn certificates, and launch browser terminals." },
+      {
+        name: "description",
+        content:
+          "Sign in or create your free AfroKernel account to unlock Linux courses, take practice exams, earn certificates, and launch browser terminals.",
+      },
       { property: "og:title", content: "Join AfroKernel Linux Learning" },
-      { property: "og:description", content: "Save course progress, take timed certification exams, earn XP, and launch browser terminals." },
+      {
+        property: "og:description",
+        content:
+          "Save course progress, take timed certification exams, earn XP, and launch browser terminals.",
+      },
     ],
   }),
   component: AuthPage,
@@ -70,14 +80,19 @@ async function ensureProfile(userId: string, displayName: string, email: string)
   });
 
   try {
-    const withEmail = await supabase.from("profiles").upsert({ ...base, email } as never, { onConflict: "id" });
+    const withEmail = await supabase
+      .from("profiles")
+      .upsert({ ...base, email } as never, { onConflict: "id" });
     if (withEmail.error) {
-      await supabase.from("profiles").upsert({ ...base, headline: email } as never, { onConflict: "id" });
+      await supabase
+        .from("profiles")
+        .upsert({ ...base, headline: email } as never, { onConflict: "id" });
     }
-    await supabase.from("user_stats").upsert(
-      { user_id: userId, xp: 150, level: 1, streak_days: 1 } as never,
-      { onConflict: "user_id" },
-    );
+    await supabase
+      .from("user_stats")
+      .upsert({ user_id: userId, xp: 150, level: 1, streak_days: 1 } as never, {
+        onConflict: "user_id",
+      });
   } catch {
     /* fallback gracefully */
   }
@@ -97,7 +112,9 @@ function AuthPage() {
   const navigate = useNavigate();
   const { redirect, mode: modeFromUrl } = Route.useSearch();
   const { user, setLocalSessionUser } = useAuth();
-  const [mode, setMode] = useState<"signin" | "signup">(modeFromUrl === "signup" ? "signup" : "signin");
+  const [mode, setMode] = useState<"signin" | "signup">(
+    modeFromUrl === "signup" ? "signup" : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
@@ -183,7 +200,10 @@ function AuthPage() {
             userId = sbData.session?.user?.id ?? sbData.user?.id ?? userId;
           }
         } catch (sbErr) {
-          console.warn("Supabase network sign-up unreachable, continuing with local registration:", sbErr);
+          console.warn(
+            "Supabase network sign-up unreachable, continuing with local registration:",
+            sbErr,
+          );
         }
 
         const newUser = {
@@ -263,7 +283,9 @@ function AuthPage() {
       }
 
       // 3️⃣ No record found — tell the user clearly
-      throw new Error("No account found with that email. Please check your credentials or create a new account.");
+      throw new Error(
+        "No account found with that email. Please check your credentials or create a new account.",
+      );
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong during authentication.");
     } finally {
@@ -313,11 +335,13 @@ function AuthPage() {
               100% Free Linux & Cloud Education
             </div>
             <h1 className="mt-5 font-display text-4xl font-black tracking-tight xl:text-5xl">
-              Master Linux,<br />
+              Master Linux,
+              <br />
               <span className="text-gradient">the hands-on way.</span>
             </h1>
             <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-              Join thousands of engineers learning Linux system administration, cybersecurity hardening, and DevOps with real browser terminals.
+              Join thousands of engineers learning Linux system administration, cybersecurity
+              hardening, and DevOps with real browser terminals.
             </p>
           </div>
 
@@ -337,7 +361,9 @@ function AuthPage() {
             <Shield className="h-5 w-5 text-primary shrink-0" />
             <div>
               <span className="font-bold text-foreground block">Enterprise-Grade Security</span>
-              <span className="text-muted-foreground">Encrypted sessions with role-based access control and persistent progress.</span>
+              <span className="text-muted-foreground">
+                Encrypted sessions with role-based access control and persistent progress.
+              </span>
             </div>
           </div>
         </div>
@@ -345,7 +371,9 @@ function AuthPage() {
         {/* Bottom footer */}
         <div className="relative z-10 text-xs text-muted-foreground flex items-center justify-between">
           <span>© {new Date().getFullYear()} AfroKernel Systems</span>
-          <Link to="/terms" className="hover:text-foreground">Privacy & Terms</Link>
+          <Link to="/terms" className="hover:text-foreground">
+            Privacy & Terms
+          </Link>
         </div>
       </div>
 
@@ -386,7 +414,11 @@ function AuthPage() {
           <div className="grid grid-cols-2 rounded-2xl bg-secondary/60 p-1 border border-border">
             <button
               type="button"
-              onClick={() => { setMode("signin"); setError(null); setSuccess(null); }}
+              onClick={() => {
+                setMode("signin");
+                setError(null);
+                setSuccess(null);
+              }}
               className={`rounded-xl py-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5 ${
                 mode === "signin"
                   ? "bg-card text-foreground shadow-sm border border-border"
@@ -397,7 +429,11 @@ function AuthPage() {
             </button>
             <button
               type="button"
-              onClick={() => { setMode("signup"); setError(null); setSuccess(null); }}
+              onClick={() => {
+                setMode("signup");
+                setError(null);
+                setSuccess(null);
+              }}
               className={`rounded-xl py-2.5 text-xs font-bold transition flex items-center justify-center gap-1.5 ${
                 mode === "signup"
                   ? "bg-primary text-primary-foreground shadow-sm"

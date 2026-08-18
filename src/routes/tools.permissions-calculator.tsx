@@ -1,5 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Shield, Calculator, Copy, Check, Info, Sparkles, FolderLock, FileCode, KeyRound, Globe, Users } from "lucide-react";
+import {
+  Shield,
+  Calculator,
+  Copy,
+  Check,
+  Info,
+  Sparkles,
+  FolderLock,
+  FileCode,
+  KeyRound,
+  Globe,
+  Users,
+} from "lucide-react";
 import { useState } from "react";
 
 export const Route = createFileRoute("/tools/permissions-calculator")({
@@ -24,47 +36,49 @@ const PRESETS: Preset[] = [
     octal: "755",
     desc: "Owner has full access (rwx); Group & Others can read and enter directory (r-x).",
     icon: Globe,
-    recommendedFor: "/var/www/html, public web directories"
+    recommendedFor: "/var/www/html, public web directories",
   },
   {
     label: "Standard Document / Config",
     octal: "644",
     desc: "Owner can read & write (rw-); Group & Others can only read (r--).",
     icon: FileCode,
-    recommendedFor: "HTML, CSS, JSON, text configs"
+    recommendedFor: "HTML, CSS, JSON, text configs",
   },
   {
     label: "SSH Private Key",
     octal: "600",
     desc: "Read & write exclusively for owner (rw-); zero access for group or others (---).",
     icon: KeyRound,
-    recommendedFor: "~/.ssh/id_rsa, ~/.ssh/id_ed25519"
+    recommendedFor: "~/.ssh/id_rsa, ~/.ssh/id_ed25519",
   },
   {
     label: "Private User Folder",
     octal: "700",
     desc: "Full access for owner (rwx); completely locked to all other users (---).",
     icon: FolderLock,
-    recommendedFor: "~/.ssh directory, private backups"
+    recommendedFor: "~/.ssh directory, private backups",
   },
   {
     label: "Team Collaboration Folder",
     octal: "775",
     desc: "Owner and group members have full access (rwx); others can read & execute (r-x).",
     icon: Users,
-    recommendedFor: "Shared team project directories"
+    recommendedFor: "Shared team project directories",
   },
   {
     label: "SUID Root Executable",
     octal: "4755",
     desc: "Executes with permissions of file owner (root) regardless of calling user.",
     icon: Shield,
-    recommendedFor: "passwd, sudo, ping binaries"
-  }
+    recommendedFor: "passwd, sudo, ping binaries",
+  },
 ];
 
 function PermissionsCalculator() {
-  const [permissions, setPermissions] = useState<Record<PermissionTarget, Record<PermissionType, boolean>>>({
+  const [permissions, setPermissions] = useState<
+    Record<PermissionTarget, Record<PermissionType, boolean>>
+  >({
     owner: { read: true, write: true, execute: true },
     group: { read: true, write: false, execute: true },
     others: { read: true, write: false, execute: true },
@@ -150,9 +164,21 @@ function PermissionsCalculator() {
           sticky: (specialNum & 1) !== 0,
         });
         setPermissions({
-          owner: { read: (ownerNum & 4) !== 0, write: (ownerNum & 2) !== 0, execute: (ownerNum & 1) !== 0 },
-          group: { read: (groupNum & 4) !== 0, write: (groupNum & 2) !== 0, execute: (groupNum & 1) !== 0 },
-          others: { read: (othersNum & 4) !== 0, write: (othersNum & 2) !== 0, execute: (othersNum & 1) !== 0 },
+          owner: {
+            read: (ownerNum & 4) !== 0,
+            write: (ownerNum & 2) !== 0,
+            execute: (ownerNum & 1) !== 0,
+          },
+          group: {
+            read: (groupNum & 4) !== 0,
+            write: (groupNum & 2) !== 0,
+            execute: (groupNum & 1) !== 0,
+          },
+          others: {
+            read: (othersNum & 4) !== 0,
+            write: (othersNum & 2) !== 0,
+            execute: (othersNum & 1) !== 0,
+          },
         });
       }
     }
@@ -179,7 +205,9 @@ function PermissionsCalculator() {
         </div>
         <h1 className="text-4xl font-display font-bold">Linux Permissions Calculator</h1>
         <p className="text-muted-foreground text-base max-w-2xl">
-          Visual interactive <span className="font-mono text-primary font-semibold">chmod</span> builder. Toggle read, write, execute, and special bits to generate octal and symbolic commands instantly.
+          Visual interactive <span className="font-mono text-primary font-semibold">chmod</span>{" "}
+          builder. Toggle read, write, execute, and special bits to generate octal and symbolic
+          commands instantly.
         </p>
       </div>
 
@@ -206,11 +234,15 @@ function PermissionsCalculator() {
             {/* Standard Permissions Rows */}
             <div className="space-y-6">
               {targets.map(({ key, label, desc }) => (
-                <div key={key} className="space-y-2 pb-5 border-b border-border/50 last:border-0 last:pb-0">
+                <div
+                  key={key}
+                  className="space-y-2 pb-5 border-b border-border/50 last:border-0 last:pb-0"
+                >
                   <div className="flex justify-between items-center">
                     <span className="font-semibold text-sm text-foreground">{label}</span>
                     <span className="text-xs font-mono px-2 py-0.5 rounded bg-muted text-muted-foreground">
-                      Digit: <strong className="text-primary">{getTargetDigit(key)}</strong> ({getSymbolicTarget(key)})
+                      Digit: <strong className="text-primary">{getTargetDigit(key)}</strong> (
+                      {getSymbolicTarget(key)})
                     </span>
                   </div>
                   <p className="text-xs text-muted-foreground">{desc}</p>
@@ -259,7 +291,9 @@ function PermissionsCalculator() {
                     <span className="text-xs font-bold">SUID (+4000)</span>
                     <span className="text-[10px] font-mono">u+s</span>
                   </div>
-                  <p className="text-[10px] leading-tight text-muted-foreground">Run as file owner</p>
+                  <p className="text-[10px] leading-tight text-muted-foreground">
+                    Run as file owner
+                  </p>
                 </button>
 
                 <button
@@ -275,7 +309,9 @@ function PermissionsCalculator() {
                     <span className="text-xs font-bold">SGID (+2000)</span>
                     <span className="text-[10px] font-mono">g+s</span>
                   </div>
-                  <p className="text-[10px] leading-tight text-muted-foreground">Inherit folder group</p>
+                  <p className="text-[10px] leading-tight text-muted-foreground">
+                    Inherit folder group
+                  </p>
                 </button>
 
                 <button
@@ -291,7 +327,9 @@ function PermissionsCalculator() {
                     <span className="text-xs font-bold">Sticky Bit (+1000)</span>
                     <span className="text-[10px] font-mono">+t</span>
                   </div>
-                  <p className="text-[10px] leading-tight text-muted-foreground">Only owner can delete (like /tmp)</p>
+                  <p className="text-[10px] leading-tight text-muted-foreground">
+                    Only owner can delete (like /tmp)
+                  </p>
                 </button>
               </div>
             </div>
@@ -304,7 +342,9 @@ function PermissionsCalculator() {
           <div className="rounded-2xl border border-primary/30 bg-card p-6 text-center shadow-lg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/10 via-primary to-primary/10" />
 
-            <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Calculated Octal Value</span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+              Calculated Octal Value
+            </span>
             <div className="my-3 font-mono text-7xl font-extrabold text-primary tracking-wider glow-yellow">
               {octalValue}
             </div>
@@ -314,7 +354,9 @@ function PermissionsCalculator() {
 
             {/* Target Filename Input */}
             <div className="mt-6 pt-5 border-t border-border text-left">
-              <label className="text-xs font-semibold text-muted-foreground block mb-1">Target File / Folder Name:</label>
+              <label className="text-xs font-semibold text-muted-foreground block mb-1">
+                Target File / Folder Name:
+              </label>
               <input
                 type="text"
                 value={filename}
@@ -327,30 +369,46 @@ function PermissionsCalculator() {
             <div className="mt-4 space-y-3 text-left">
               {/* Command 1: Octal */}
               <div>
-                <span className="text-[11px] font-semibold text-muted-foreground">Octal Command:</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Octal Command:
+                </span>
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border font-mono text-xs mt-1">
-                  <span className="text-primary truncate">chmod {octalValue} {filename}</span>
+                  <span className="text-primary truncate">
+                    chmod {octalValue} {filename}
+                  </span>
                   <button
                     onClick={() => copyToClipboard(`chmod ${octalValue} ${filename}`)}
                     className="p-1 rounded text-muted-foreground hover:text-primary shrink-0 transition"
                     title="Copy command"
                   >
-                    {copiedText === `chmod ${octalValue} ${filename}` ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedText === `chmod ${octalValue} ${filename}` ? (
+                      <Check className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
 
               {/* Command 2: Recursive */}
               <div>
-                <span className="text-[11px] font-semibold text-muted-foreground">Recursive Directory Command:</span>
+                <span className="text-[11px] font-semibold text-muted-foreground">
+                  Recursive Directory Command:
+                </span>
                 <div className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border font-mono text-xs mt-1">
-                  <span className="text-muted-foreground truncate">chmod -R {octalValue} {filename}/</span>
+                  <span className="text-muted-foreground truncate">
+                    chmod -R {octalValue} {filename}/
+                  </span>
                   <button
                     onClick={() => copyToClipboard(`chmod -R ${octalValue} ${filename}/`)}
                     className="p-1 rounded text-muted-foreground hover:text-primary shrink-0 transition"
                     title="Copy recursive command"
                   >
-                    {copiedText === `chmod -R ${octalValue} ${filename}/` ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedText === `chmod -R ${octalValue} ${filename}/` ? (
+                      <Check className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -365,7 +423,8 @@ function PermissionsCalculator() {
             <div className="space-y-2.5">
               {PRESETS.map((preset) => {
                 const Icon = preset.icon;
-                const isCurrent = standardThreeDigit === preset.octal || octalValue === preset.octal;
+                const isCurrent =
+                  standardThreeDigit === preset.octal || octalValue === preset.octal;
                 return (
                   <button
                     key={preset.label}
@@ -381,7 +440,9 @@ function PermissionsCalculator() {
                       <div>
                         <div className="flex items-center gap-2">
                           <span className="text-xs font-bold text-foreground">{preset.label}</span>
-                          <span className="font-mono text-xs font-extrabold text-primary">({preset.octal})</span>
+                          <span className="font-mono text-xs font-extrabold text-primary">
+                            ({preset.octal})
+                          </span>
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-0.5">{preset.desc}</p>
                       </div>

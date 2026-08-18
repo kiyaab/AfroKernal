@@ -1,5 +1,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Award, CheckCircle2, ShieldCheck, Download, Calendar, User, ArrowLeft, ExternalLink } from "lucide-react";
+import {
+  Award,
+  CheckCircle2,
+  ShieldCheck,
+  Download,
+  Calendar,
+  User,
+  ArrowLeft,
+  ExternalLink,
+} from "lucide-react";
 import { useState } from "react";
 import jsPDF from "jspdf";
 
@@ -64,7 +73,12 @@ function CertificateVerification() {
       doc.setTextColor(203, 213, 225);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(14);
-      doc.text("for successfully demonstrating mastery and passing the rigorous exam for", 148.5, 105, { align: "center" });
+      doc.text(
+        "for successfully demonstrating mastery and passing the rigorous exam for",
+        148.5,
+        105,
+        { align: "center" },
+      );
 
       // Track Name
       doc.setTextColor(234, 179, 8);
@@ -75,7 +89,12 @@ function CertificateVerification() {
       // Score & Date
       doc.setTextColor(148, 163, 184);
       doc.setFontSize(11);
-      doc.text(`Score: ${certDetails.score}% | Date Issued: ${certDetails.issuedDate}`, 148.5, 145, { align: "center" });
+      doc.text(
+        `Score: ${certDetails.score}% | Date Issued: ${certDetails.issuedDate}`,
+        148.5,
+        145,
+        { align: "center" },
+      );
       doc.text(`Credential ID: ${certDetails.uuid}`, 148.5, 155, { align: "center" });
 
       // Issuer footer
@@ -94,7 +113,10 @@ function CertificateVerification() {
   return (
     <div className="mx-auto max-w-4xl px-6 py-16">
       <div className="mb-6">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> Back to Home
         </Link>
       </div>
@@ -138,7 +160,9 @@ function CertificateVerification() {
             <span className="text-xs text-muted-foreground block flex items-center gap-1">
               <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Examination Score
             </span>
-            <span className="font-bold text-base text-emerald-500">{certDetails.score}% (Passed with Distinction)</span>
+            <span className="font-bold text-base text-emerald-500">
+              {certDetails.score}% (Passed with Distinction)
+            </span>
           </div>
 
           <div className="p-4 rounded-2xl border border-border bg-background/50 space-y-1">
@@ -161,7 +185,8 @@ function CertificateVerification() {
               disabled={downloading}
               className="px-6 py-2.5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
             >
-              <Download className="h-4 w-4" /> {downloading ? "Generating PDF..." : "Download Official PDF"}
+              <Download className="h-4 w-4" />{" "}
+              {downloading ? "Generating PDF..." : "Download Official PDF"}
             </button>
           </div>
         </div>

@@ -10,13 +10,25 @@ export const getDashboard = createServerFn({ method: "GET" })
       supabase.from("user_stats").select("*").eq("user_id", userId).maybeSingle(),
       supabase
         .from("lesson_progress")
-        .select("id,lesson_id,completed,completed_at,lessons(id,title,slug,course_id,courses(title,slug))")
+        .select(
+          "id,lesson_id,completed,completed_at,lessons(id,title,slug,course_id,courses(title,slug))",
+        )
         .eq("user_id", userId)
         .eq("completed", true)
         .order("completed_at", { ascending: false })
         .limit(10),
-      supabase.from("quiz_results").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5),
-      supabase.from("terminal_sessions").select("*").eq("user_id", userId).order("created_at", { ascending: false }).limit(5),
+      supabase
+        .from("quiz_results")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(5),
+      supabase
+        .from("terminal_sessions")
+        .select("*")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false })
+        .limit(5),
     ]);
     return {
       profile: profile.data,

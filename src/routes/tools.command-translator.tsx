@@ -1,5 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { Terminal, Search, ArrowRight, Copy, Check, Sparkles, Filter, Code2, BookOpen, Layers } from "lucide-react";
+import {
+  Terminal,
+  Search,
+  ArrowRight,
+  Copy,
+  Check,
+  Sparkles,
+  Filter,
+  Code2,
+  BookOpen,
+  Layers,
+} from "lucide-react";
 import { useState, useMemo } from "react";
 import { COMMANDS_DATA, CommandTranslation } from "@/lib/commands-data";
 
@@ -87,7 +98,8 @@ function CommandTranslator() {
         </div>
         <h1 className="text-4xl font-display font-bold">Windows to Linux Command Translator</h1>
         <p className="text-muted-foreground text-base max-w-2xl">
-          Convert Windows CMD and PowerShell commands directly to their native Linux Bash equivalents with detailed syntax breakdowns.
+          Convert Windows CMD and PowerShell commands directly to their native Linux Bash
+          equivalents with detailed syntax breakdowns.
         </p>
       </div>
 
@@ -97,7 +109,8 @@ function CommandTranslator() {
           <Sparkles className="h-4 w-4" /> AI Natural Language Translator
         </div>
         <p className="text-xs text-muted-foreground mb-4">
-          Type what you want to achieve in plain English (e.g. "Find all files older than 30 days and delete them" or "Check which service is using port 80"):
+          Type what you want to achieve in plain English (e.g. "Find all files older than 30 days
+          and delete them" or "Check which service is using port 80"):
         </p>
 
         <div className="flex flex-col sm:flex-row gap-3">
@@ -122,14 +135,20 @@ function CommandTranslator() {
           <div className="mt-4 p-4 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-between gap-3 animate-in fade-in">
             <div className="flex items-center gap-2 overflow-hidden">
               <span className="text-primary font-mono font-bold">$</span>
-              <code className="font-mono text-xs text-foreground font-semibold truncate">{nlResult}</code>
+              <code className="font-mono text-xs text-foreground font-semibold truncate">
+                {nlResult}
+              </code>
             </div>
             <button
               onClick={() => copyToClipboard(nlResult)}
               className="p-1.5 rounded-lg border border-primary/30 bg-card text-primary hover:bg-primary/20 shrink-0 transition"
               title="Copy command"
             >
-              {copiedText === nlResult ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+              {copiedText === nlResult ? (
+                <Check className="h-4 w-4 text-emerald-500" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </button>
           </div>
         )}
@@ -171,7 +190,9 @@ function CommandTranslator() {
           <div className="text-center py-16 border border-dashed border-border rounded-2xl bg-card/30">
             <Terminal className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-30" />
             <h3 className="text-lg font-semibold">No command mappings found</h3>
-            <p className="text-sm text-muted-foreground mt-1">Try another search query or use the natural language translator above.</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              Try another search query or use the natural language translator above.
+            </p>
           </div>
         ) : (
           filteredCommands.map((cmd) => (
@@ -183,12 +204,16 @@ function CommandTranslator() {
                 {/* Command transformation row */}
                 <div className="flex items-center gap-3">
                   <div className="p-2.5 rounded-xl bg-secondary border border-border font-mono text-xs font-bold text-muted-foreground">
-                    <span className="text-[10px] text-muted-foreground block uppercase font-sans tracking-wider">Windows</span>
+                    <span className="text-[10px] text-muted-foreground block uppercase font-sans tracking-wider">
+                      Windows
+                    </span>
                     {cmd.windowsCmd}
                   </div>
                   <ArrowRight className="h-4 w-4 text-primary shrink-0" />
                   <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/30 font-mono text-xs font-bold text-primary">
-                    <span className="text-[10px] text-primary/80 block uppercase font-sans tracking-wider">Linux Bash</span>
+                    <span className="text-[10px] text-primary/80 block uppercase font-sans tracking-wider">
+                      Linux Bash
+                    </span>
                     {cmd.linuxCmd}
                   </div>
                 </div>
@@ -202,7 +227,11 @@ function CommandTranslator() {
                     className="p-2 rounded-xl border border-border bg-background hover:bg-muted text-muted-foreground hover:text-foreground transition"
                     title="Copy Linux Command"
                   >
-                    {copiedText === cmd.linuxCmd ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                    {copiedText === cmd.linuxCmd ? (
+                      <Check className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Copy className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -210,7 +239,9 @@ function CommandTranslator() {
               {/* Description & Examples */}
               <div className="pt-4 grid md:grid-cols-2 gap-4 text-xs">
                 <div>
-                  <span className="font-semibold text-muted-foreground block mb-1">Function Description:</span>
+                  <span className="font-semibold text-muted-foreground block mb-1">
+                    Function Description:
+                  </span>
                   <p className="text-foreground/90 leading-relaxed">{cmd.description}</p>
                   {cmd.notes && (
                     <p className="text-[11px] text-primary/90 mt-2 bg-primary/5 p-2 rounded-lg border border-primary/15">
@@ -221,11 +252,15 @@ function CommandTranslator() {
 
                 <div className="space-y-2">
                   <div className="p-2.5 rounded-xl bg-background border border-border font-mono">
-                    <span className="text-[10px] text-muted-foreground block font-sans">Windows Example:</span>
+                    <span className="text-[10px] text-muted-foreground block font-sans">
+                      Windows Example:
+                    </span>
                     <span className="text-muted-foreground">{cmd.windowsExample}</span>
                   </div>
                   <div className="p-2.5 rounded-xl bg-background border border-border font-mono">
-                    <span className="text-[10px] text-primary block font-sans font-semibold">Linux Equivalent Example:</span>
+                    <span className="text-[10px] text-primary block font-sans font-semibold">
+                      Linux Equivalent Example:
+                    </span>
                     <span className="text-primary font-semibold">$ {cmd.linuxExample}</span>
                   </div>
                 </div>

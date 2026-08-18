@@ -18,8 +18,7 @@ export function useRequireAuth() {
 
   useEffect(() => {
     if (!loading && !user) {
-      const currentPath =
-        typeof window !== "undefined" ? window.location.pathname : "/";
+      const currentPath = typeof window !== "undefined" ? window.location.pathname : "/";
       navigate({
         to: "/auth",
         search: { redirect: currentPath },

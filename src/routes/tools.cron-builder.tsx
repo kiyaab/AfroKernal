@@ -14,16 +14,66 @@ interface CronPreset {
 }
 
 const PRESETS: CronPreset[] = [
-  { label: "Every Minute", expression: "* * * * *", desc: "Runs every minute continuously", category: "Frequent" },
-  { label: "Every 5 Minutes", expression: "*/5 * * * *", desc: "Runs at minute 0, 5, 10, 15...", category: "Frequent" },
-  { label: "Every 15 Minutes", expression: "*/15 * * * *", desc: "Runs four times per hour", category: "Frequent" },
-  { label: "Every Hour on the Hour", expression: "0 * * * *", desc: "Runs at the start of every hour", category: "Hourly" },
-  { label: "Every 6 Hours", expression: "0 */6 * * *", desc: "Runs at 00:00, 06:00, 12:00, 18:00", category: "Hourly" },
-  { label: "Daily at Midnight", expression: "0 0 * * *", desc: "Runs once per day at 00:00 UTC", category: "Daily" },
-  { label: "Daily at 3:00 AM (Nightly Backup)", expression: "0 3 * * *", desc: "Ideal for system backups & maintenance", category: "Daily" },
-  { label: "Weekdays at 9:00 AM", expression: "0 9 * * 1-5", desc: "Runs Monday through Friday morning", category: "Weekly" },
-  { label: "Every Sunday at Midnight", expression: "0 0 * * 0", desc: "Runs once a week on Sunday", category: "Weekly" },
-  { label: "First Day of Every Month", expression: "0 0 1 * *", desc: "Monthly billing or reporting job", category: "Monthly" },
+  {
+    label: "Every Minute",
+    expression: "* * * * *",
+    desc: "Runs every minute continuously",
+    category: "Frequent",
+  },
+  {
+    label: "Every 5 Minutes",
+    expression: "*/5 * * * *",
+    desc: "Runs at minute 0, 5, 10, 15...",
+    category: "Frequent",
+  },
+  {
+    label: "Every 15 Minutes",
+    expression: "*/15 * * * *",
+    desc: "Runs four times per hour",
+    category: "Frequent",
+  },
+  {
+    label: "Every Hour on the Hour",
+    expression: "0 * * * *",
+    desc: "Runs at the start of every hour",
+    category: "Hourly",
+  },
+  {
+    label: "Every 6 Hours",
+    expression: "0 */6 * * *",
+    desc: "Runs at 00:00, 06:00, 12:00, 18:00",
+    category: "Hourly",
+  },
+  {
+    label: "Daily at Midnight",
+    expression: "0 0 * * *",
+    desc: "Runs once per day at 00:00 UTC",
+    category: "Daily",
+  },
+  {
+    label: "Daily at 3:00 AM (Nightly Backup)",
+    expression: "0 3 * * *",
+    desc: "Ideal for system backups & maintenance",
+    category: "Daily",
+  },
+  {
+    label: "Weekdays at 9:00 AM",
+    expression: "0 9 * * 1-5",
+    desc: "Runs Monday through Friday morning",
+    category: "Weekly",
+  },
+  {
+    label: "Every Sunday at Midnight",
+    expression: "0 0 * * 0",
+    desc: "Runs once a week on Sunday",
+    category: "Weekly",
+  },
+  {
+    label: "First Day of Every Month",
+    expression: "0 0 1 * *",
+    desc: "Monthly billing or reporting job",
+    category: "Monthly",
+  },
 ];
 
 function CronBuilder() {
@@ -65,7 +115,15 @@ function CronBuilder() {
     if (dom !== "*") desc += `on day ${dom} of the month `;
     if (mon !== "*") desc += `in month ${mon} `;
     if (dow !== "*") {
-      const dayNames = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+      const dayNames = [
+        "Sunday",
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+      ];
       if (dow === "1-5") desc += "on weekdays (Mon–Fri) ";
       else if (dayNames[parseInt(dow, 10)]) desc += `on ${dayNames[parseInt(dow, 10)]} `;
       else desc += `on weekday ${dow} `;
@@ -79,7 +137,10 @@ function CronBuilder() {
     const now = new Date();
     const times: string[] = [];
     for (let i = 1; i <= 5; i++) {
-      const next = new Date(now.getTime() + i * 3600 * 1000 * (hour.startsWith("*/") ? parseInt(hour.replace("*/", ""), 10) : 1));
+      const next = new Date(
+        now.getTime() +
+          i * 3600 * 1000 * (hour.startsWith("*/") ? parseInt(hour.replace("*/", ""), 10) : 1),
+      );
       times.push(next.toUTCString().replace("GMT", "UTC"));
     }
     return times;
@@ -105,9 +166,21 @@ function CronBuilder() {
   const fields = [
     { label: "Minute", val: minute, setVal: setMinute, range: "0–59, * */5", eg: "0 or */15" },
     { label: "Hour", val: hour, setVal: setHour, range: "0–23, * */2", eg: "0 or 9 or */6" },
-    { label: "Day of Month", val: dayOfMonth, setVal: setDayOfMonth, range: "1–31, *", eg: "1 or 15 or *" },
+    {
+      label: "Day of Month",
+      val: dayOfMonth,
+      setVal: setDayOfMonth,
+      range: "1–31, *",
+      eg: "1 or 15 or *",
+    },
     { label: "Month", val: month, setVal: setMonth, range: "1–12, *", eg: "1–12 or *" },
-    { label: "Day of Week", val: dayOfWeek, setVal: setDayOfWeek, range: "0–7 (0/7=Sun), 1-5", eg: "1-5 or 0" },
+    {
+      label: "Day of Week",
+      val: dayOfWeek,
+      setVal: setDayOfWeek,
+      range: "0–7 (0/7=Sun), 1-5",
+      eg: "1-5 or 0",
+    },
   ];
 
   return (
@@ -119,7 +192,8 @@ function CronBuilder() {
         </div>
         <h1 className="text-4xl font-display font-bold">Cron Expression Builder & Explainer</h1>
         <p className="text-muted-foreground text-base max-w-2xl">
-          Build automated job schedules visually. Translate cryptic cron expressions into human-readable English and generate production crontab entries.
+          Build automated job schedules visually. Translate cryptic cron expressions into
+          human-readable English and generate production crontab entries.
         </p>
       </div>
 
@@ -144,14 +218,18 @@ function CronBuilder() {
                     onChange={(e) => f.setVal(e.target.value)}
                     className="w-full rounded-xl border border-border bg-background py-3 text-center font-mono text-xl font-bold text-primary focus:border-primary focus:outline-none"
                   />
-                  <span className="text-[10px] text-muted-foreground block text-center truncate">{f.range}</span>
+                  <span className="text-[10px] text-muted-foreground block text-center truncate">
+                    {f.range}
+                  </span>
                 </div>
               ))}
             </div>
 
             {/* Target Script Input */}
             <div className="pt-4 border-t border-border space-y-2">
-              <label className="text-xs font-semibold text-muted-foreground block">Command / Script to Execute:</label>
+              <label className="text-xs font-semibold text-muted-foreground block">
+                Command / Script to Execute:
+              </label>
               <input
                 type="text"
                 value={commandScript}
@@ -202,41 +280,65 @@ function CronBuilder() {
           <div className="rounded-2xl border border-primary/30 bg-card p-6 text-center shadow-lg relative overflow-hidden">
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary/10 via-primary to-primary/10" />
 
-            <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">Cron Expression</span>
+            <span className="text-xs uppercase tracking-widest text-muted-foreground font-semibold">
+              Cron Expression
+            </span>
             <div className="my-3 font-mono text-4xl sm:text-5xl font-extrabold text-primary tracking-widest glow-yellow">
               {expression}
             </div>
 
             <div className="p-4 rounded-xl bg-primary/10 border border-primary/20 my-4 text-left">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary block mb-1">Natural English Translation:</span>
-              <p className="text-sm font-semibold text-foreground leading-snug">{describeCron(expression)}</p>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-primary block mb-1">
+                Natural English Translation:
+              </span>
+              <p className="text-sm font-semibold text-foreground leading-snug">
+                {describeCron(expression)}
+              </p>
             </div>
 
             {/* Generated Crontab Line */}
             <div className="space-y-2 text-left">
-              <span className="text-[11px] font-semibold text-muted-foreground">Full Crontab Entry:</span>
+              <span className="text-[11px] font-semibold text-muted-foreground">
+                Full Crontab Entry:
+              </span>
               <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border font-mono text-xs">
-                <span className="text-foreground truncate">{expression} {commandScript}</span>
+                <span className="text-foreground truncate">
+                  {expression} {commandScript}
+                </span>
                 <button
                   onClick={() => copyToClipboard(`${expression} ${commandScript}`)}
                   className="p-1 rounded text-muted-foreground hover:text-primary shrink-0 transition"
                   title="Copy crontab line"
                 >
-                  {copiedText === `${expression} ${commandScript}` ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  {copiedText === `${expression} ${commandScript}` ? (
+                    <Check className="h-4 w-4 text-emerald-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>
 
             <div className="space-y-2 text-left mt-3">
-              <span className="text-[11px] font-semibold text-muted-foreground">Crontab with Log Redirect:</span>
+              <span className="text-[11px] font-semibold text-muted-foreground">
+                Crontab with Log Redirect:
+              </span>
               <div className="flex items-center justify-between p-3 rounded-xl bg-background border border-border font-mono text-xs">
-                <span className="text-muted-foreground truncate">{expression} {commandScript} &gt;&gt; /var/log/cron.log 2&gt;&amp;1</span>
+                <span className="text-muted-foreground truncate">
+                  {expression} {commandScript} &gt;&gt; /var/log/cron.log 2&gt;&amp;1
+                </span>
                 <button
-                  onClick={() => copyToClipboard(`${expression} ${commandScript} >> /var/log/cron.log 2>&1`)}
+                  onClick={() =>
+                    copyToClipboard(`${expression} ${commandScript} >> /var/log/cron.log 2>&1`)
+                  }
                   className="p-1 rounded text-muted-foreground hover:text-primary shrink-0 transition"
                   title="Copy crontab with logs"
                 >
-                  {copiedText === `${expression} ${commandScript} >> /var/log/cron.log 2>&1` ? <Check className="h-4 w-4 text-emerald-500" /> : <Copy className="h-4 w-4" />}
+                  {copiedText === `${expression} ${commandScript} >> /var/log/cron.log 2>&1` ? (
+                    <Check className="h-4 w-4 text-emerald-500" />
+                  ) : (
+                    <Copy className="h-4 w-4" />
+                  )}
                 </button>
               </div>
             </div>

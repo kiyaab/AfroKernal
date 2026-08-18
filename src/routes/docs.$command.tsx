@@ -16,18 +16,28 @@ export const Route = createFileRoute("/docs/$command")({
   head: ({ params }) => ({
     meta: [
       { title: `${params.command} — Linux Command | AfroKernel` },
-      { name: "description", content: `Learn the Linux \`${params.command}\` command with syntax, examples, common mistakes, and AI explanations on AfroKernel.` },
+      {
+        name: "description",
+        content: `Learn the Linux \`${params.command}\` command with syntax, examples, common mistakes, and AI explanations on AfroKernel.`,
+      },
       { property: "og:title", content: `${params.command} — AfroKernel Docs` },
-      { property: "og:description", content: `Interactive reference for the Linux ${params.command} command.` },
+      {
+        property: "og:description",
+        content: `Interactive reference for the Linux ${params.command} command.`,
+      },
     ],
   }),
   loader: ({ context, params }) => context.queryClient.ensureQueryData(cmdQuery(params.command)),
   component: CommandPage,
-  errorComponent: ({ error }) => <div className="p-8 text-destructive">Failed: {error.message}</div>,
+  errorComponent: ({ error }) => (
+    <div className="p-8 text-destructive">Failed: {error.message}</div>
+  ),
   notFoundComponent: () => (
     <div className="p-12 text-center">
       <p className="text-lg font-semibold">Command not found</p>
-      <Link to="/docs" className="text-primary hover:underline mt-2 inline-block">← Back to reference</Link>
+      <Link to="/docs" className="text-primary hover:underline mt-2 inline-block">
+        ← Back to reference
+      </Link>
     </div>
   ),
 });
@@ -37,7 +47,9 @@ function CommandPage() {
     <div className="min-h-screen">
       <header className="border-b border-border/60 sticky top-0 z-40 bg-background/80 backdrop-blur">
         <div className="max-w-4xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/"><Logo /></Link>
+          <Link to="/">
+            <Logo />
+          </Link>
           <div className="flex items-center gap-3">
             <Link to="/docs" className="text-sm hover:text-primary flex items-center gap-1">
               <ArrowLeft className="w-3 h-3" /> All commands
@@ -81,22 +93,31 @@ function Body() {
       </section>
 
       <section className="mt-8">
-        <h2 className="text-sm font-semibold uppercase tracking-wider text-primary mb-2">Description</h2>
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-primary mb-2">
+          Description
+        </h2>
         <p className="text-foreground/90 leading-relaxed whitespace-pre-wrap">{cmd.description}</p>
       </section>
 
       {examples.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-primary mb-3">Examples</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-primary mb-3">
+            Examples
+          </h2>
           <div className="space-y-3">
             {examples.map((ex, i) => (
-              <div key={i} className="rounded-lg bg-[oklch(0.11_0.01_260)] border border-border overflow-hidden">
+              <div
+                key={i}
+                className="rounded-lg bg-[oklch(0.11_0.01_260)] border border-border overflow-hidden"
+              >
                 <div className="px-4 py-2 font-mono text-sm text-[oklch(0.86_0.17_92)] border-b border-white/10">
                   <span className="text-[oklch(0.7_0.2_150)] mr-2">$</span>
                   {ex.cmd}
                 </div>
                 {ex.out && (
-                  <pre className="px-4 py-2 font-mono text-xs text-[oklch(0.85_0.02_260)] whitespace-pre-wrap">{ex.out}</pre>
+                  <pre className="px-4 py-2 font-mono text-xs text-[oklch(0.85_0.02_260)] whitespace-pre-wrap">
+                    {ex.out}
+                  </pre>
                 )}
               </div>
             ))}
@@ -111,7 +132,10 @@ function Body() {
           </h2>
           <ul className="space-y-2">
             {mistakes.map((m, i) => (
-              <li key={i} className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm">
+              <li
+                key={i}
+                className="rounded-lg border border-destructive/30 bg-destructive/5 p-3 text-sm"
+              >
                 {m}
               </li>
             ))}
@@ -121,7 +145,9 @@ function Body() {
 
       {related.length > 0 && (
         <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wider text-primary mb-3">Related</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-primary mb-3">
+            Related
+          </h2>
           <div className="flex flex-wrap gap-2">
             {related.map((r) => (
               <Link
@@ -143,7 +169,8 @@ function Body() {
           <div className="flex-1">
             <h3 className="font-semibold">Ask AfroKernel Tutor</h3>
             <p className="text-sm text-muted-foreground mt-1">
-              Not sure how to use <code className="font-mono text-primary">{cmd.name}</code>? Get a personalized explanation.
+              Not sure how to use <code className="font-mono text-primary">{cmd.name}</code>? Get a
+              personalized explanation.
             </p>
             <Link
               to="/chat"

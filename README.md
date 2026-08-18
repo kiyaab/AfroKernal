@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-=======
 # 🐧 AfroKernal
 
 <div align="center">
@@ -240,6 +238,71 @@ npm run preview
 
 ---
 
+# 🐳 Docker & Containerization
+
+AfroKernal comes with production-ready multi-stage Dockerfiles and Docker Compose configurations.
+
+### 1. Run with Docker Compose (Production)
+
+```bash
+# Copy and configure environment variables
+cp .env.example .env
+
+# Build and start container in detached mode
+docker compose up -d --build
+
+# View container logs
+docker compose logs -f
+
+# Stop container
+docker compose down
+```
+
+Access the application at `http://localhost:3000`.
+
+### 2. Run with Docker Compose (Local Development with Hot-Reload)
+
+```bash
+docker compose -f docker-compose.dev.yml up --build
+```
+
+### 3. Build & Run Docker Image Directly
+
+```bash
+# Build the image
+docker build -t afrokernel:latest .
+
+# Run the container
+docker run -d -p 3000:3000 --name afrokernel-app --env-file .env afrokernel:latest
+```
+
+---
+
+# 🔄 CI/CD Pipelines (GitHub Actions)
+
+AfroKernal includes automated GitHub Actions workflows for continuous integration and delivery.
+
+### 1. Continuous Integration (`.github/workflows/ci.yml`)
+Runs automatically on every Pull Request and push to `main`, `master`, and `develop`:
+* **Code Quality & Linting**: ESLint checks
+* **Type Validation**: TypeScript compiler check (`tsc --noEmit`)
+* **Build Verification**: Production Vite/TanStack build verification
+* **Docker Validation**: Multi-stage Docker build verification with layer caching
+
+### 2. Continuous Delivery (`.github/workflows/cd.yml`)
+Runs on pushes to `main`/`master` or release tags (`v*`):
+* **GHCR Container Registry**: Automatically builds and publishes multi-platform container images to `ghcr.io/<username>/afrokernal`
+* **Automated Tagging**: Generates `latest`, `sha-<commit>`, and semantic version tags (`v1.0.0`, `1.0`)
+* **Deployment Trigger**: Extensible deployment hook for automated deployment rollouts
+
+#### Required GitHub Repository Secrets (Optional for Custom Supabase Config)
+* `VITE_SUPABASE_URL`
+* `VITE_SUPABASE_PUBLISHABLE_KEY`
+* `VITE_SUPABASE_PROJECT_ID`
+* `DEPLOY_WEBHOOK_URL` (optional, for triggering webhook deployment)
+
+---
+
 # 🎓 Learning Roadmap
 
 * Linux Basics
@@ -311,4 +374,3 @@ GitHub: https://github.com/kiyaab
 **Made with ❤️ in Ethiopia**
 
 </div>
->>>>>>> 7246e3cb91f97bbf8bcda346ebc6844737c40c27

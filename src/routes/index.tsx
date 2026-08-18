@@ -1,331 +1,554 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
 import {
-  Terminal,
   BookOpen,
   Sparkles,
-  Cpu,
-  ShieldCheck,
   Award,
-  Container,
-  Network,
-  GitBranch,
-  Server,
-  Code2,
   Zap,
   ArrowRight,
   Check,
-  Layers,
-  Users,
   Search,
-  Disc,
-  AppWindow,
-  Gamepad2,
-  Calculator,
-  Clock,
-  ExternalLink,
-  ChevronRight,
-  Flame,
+  Laptop,
   CheckCircle2,
+  Bot,
+  Star,
+  Monitor,
+  Shield,
+  Smile,
+  Compass,
+  ArrowUpRight,
+  ExternalLink,
+  ChevronDown,
+  Layers,
+  FileText,
+  Lock,
+  Download,
+  Flame,
+  GraduationCap,
+  Heart,
+  TrendingUp,
+  Cpu,
+  Globe,
+  FolderOpen,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useAuth } from "@/lib/AuthContext";
-import { DISTROS_DATA } from "@/lib/distros-data";
-import { APPS_DATA } from "@/lib/apps-data";
+import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
 import { GlobalSearchModal } from "@/components/GlobalSearchModal";
-
-const LOGO_URL = "/afrokernel-logo.png";
 
 export const Route = createFileRoute("/")({
   component: Landing,
 });
 
-const paths = [
-  { slug: "linux", icon: "🐧", title: "Linux Fundamentals 2026", lessons: 38, level: "Beginner", desc: "Command line, files, permissions, networking, and system administration with a certificate.", hasCert: true },
-  { slug: "security", icon: "🔒", title: "Cybersecurity Fundamentals", lessons: 10, level: "Intermediate", desc: "Nmap port scanning, Wireshark traffic analysis, system hardening, and penetration testing.", hasCert: true },
-  { slug: "devops", icon: "⚙️", title: "DevOps & Containers", lessons: 10, level: "Advanced", desc: "Docker, Kubernetes, GitHub Actions CI/CD, and Ansible automation with a certificate.", hasCert: true },
-  { slug: "networking", icon: "🌐", title: "Networking Fundamentals", lessons: 12, level: "Intermediate", desc: "TCP/IP, subnetting, DNS hierarchies, routing tables, and socket analysis.", hasCert: false },
-  { slug: "cloud", icon: "☁️", title: "Cloud & Infrastructure", lessons: 11, level: "Advanced", desc: "AWS, GCP, Azure VMs, cloud-init provisioning, IAM security, and Terraform.", hasCert: false },
-  { slug: "containers", icon: "🐳", title: "Containers & Kubernetes", lessons: 11, level: "Advanced", desc: "Namespaces, cgroups, Pods, Deployments, Services, Helm charts, and Ingress.", hasCert: false },
+// Simple 3-step guide for non-tech users
+const EASY_STEPS = [
+  {
+    step: "1",
+    icon: "🌐",
+    title: "100% Browser-Based",
+    desc: "Start learning immediately inside your web browser. No setup, no downloads, and zero risk to your computer.",
+  },
+  {
+    step: "2",
+    icon: "💡",
+    title: "Bite-Sized 5-Minute Lessons",
+    desc: "Plain-English tutorials with interactive exercises, visual explanations, and instant friendly AI guidance.",
+  },
+  {
+    step: "3",
+    icon: "🏆",
+    title: "Verifiable Certificates",
+    desc: "Earn official digital certificates and badges to prove your skills and share on LinkedIn or with employers.",
+  },
+];
+
+// Why Linux for everyday users
+const WHY_LINUX_BENEFITS = [
+  {
+    icon: "⚡",
+    title: "Makes Old PCs Feel Brand New",
+    desc: "Linux uses 70% less memory than Windows. Breathe fresh, high-speed life into older laptops and computers.",
+    badge: "Blazing Fast",
+  },
+  {
+    icon: "🛡️",
+    title: "Virtually Immune to Viruses",
+    desc: "Say goodbye to intrusive antivirus popups, forced restarts, and tracking ads. Clean, private, and secure.",
+    badge: "Private & Safe",
+  },
+  {
+    icon: "💰",
+    title: "100% Free Software Forever",
+    desc: "Never pay for operating system upgrades or expensive office suites. Everything you need is open-source and free.",
+    badge: "Save Money",
+  },
+  {
+    icon: "🚀",
+    title: "Powers 96% of the Modern Web",
+    desc: "From Google and Netflix to smart TVs and cloud servers, Linux runs the world. Learn in-demand career skills.",
+    badge: "Career Booster",
+  },
+];
+
+// Popular Learning Pathways
+const FEATURED_COURSES = [
+  {
+    slug: "linux",
+    icon: "🐧",
+    title: "Linux for Absolute Beginners",
+    lessons: 38,
+    duration: "12 Hours",
+    level: "Beginner Friendly",
+    desc: "Start from zero. Learn computer basics, navigation, files, permissions, and everyday desktop management.",
+    hasCert: true,
+    badgeColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30",
+  },
+  {
+    slug: "security",
+    icon: "🔒",
+    title: "Cybersecurity & Online Safety",
+    lessons: 10,
+    duration: "6 Hours",
+    level: "Easy to Follow",
+    desc: "Learn how the internet works, protect your home network, secure servers, and audit security vulnerabilities.",
+    hasCert: true,
+    badgeColor: "bg-rose-500/10 text-rose-500 border-rose-500/30",
+  },
+  {
+    slug: "devops",
+    icon: "⚙️",
+    title: "Cloud & DevOps Essentials",
+    lessons: 10,
+    duration: "8 Hours",
+    level: "Practical Tech",
+    desc: "Explore modern cloud infrastructure, Docker containers, automated deployments, and server administration.",
+    hasCert: true,
+    badgeColor: "bg-cyan-500/10 text-cyan-500 border-cyan-500/30",
+  },
+];
+
+// Free App Replacements
+const APP_REPLACEMENTS = [
+  {
+    category: "Documents & Office",
+    windowsApp: "Microsoft Word & Excel",
+    linuxApp: "LibreOffice & OnlyOffice",
+    desc: "Complete document, spreadsheet, and slide presentation suite that opens all .docx and .xlsx files for free.",
+    icon: "📄",
+    tag: "Free Word & Excel",
+  },
+  {
+    category: "Photo & Design",
+    windowsApp: "Adobe Photoshop",
+    linuxApp: "GIMP & Krita",
+    desc: "High-quality photo editing, layers, digital painting, and graphic design without any monthly fees.",
+    icon: "🎨",
+    tag: "Free Photo Editor",
+  },
+  {
+    category: "Video Editing",
+    windowsApp: "Adobe Premiere",
+    linuxApp: "Kdenlive & DaVinci Resolve",
+    desc: "Multi-track video editor with visual effects, transitions, and 4K export for YouTube and social content.",
+    icon: "🎬",
+    tag: "Free Video Editor",
+  },
+  {
+    category: "Gaming & Fun",
+    windowsApp: "Windows Gaming / Steam",
+    linuxApp: "Steam Proton & Heroic",
+    desc: "Play thousands of your favorite Steam and PC games smoothly on Linux with 1-click compatibility.",
+    icon: "🎮",
+    tag: "Play Your Games",
+  },
+];
+
+// Simplified Distro Selector Goals
+type SimpleGoal = "windows-like" | "old-laptop" | "gaming" | "career";
+
+interface DistroChoice {
+  id: SimpleGoal;
+  title: string;
+  subtitle: string;
+  emoji: string;
+  distroName: string;
+  distroLogo: string;
+  whyBest: string;
+  difficulty: string;
+  ramReq: string;
+}
+
+const DISTRO_CHOICES: DistroChoice[] = [
+  {
+    id: "windows-like",
+    title: "I want something that feels like Windows",
+    subtitle: "Familiar start menu, taskbar, and 1-click app installers.",
+    emoji: "🪟",
+    distroName: "Linux Mint",
+    distroLogo: "🌿",
+    whyBest:
+      "The friendliest distribution for beginners. Looks and works like Windows 10/11 with zero learning curve.",
+    difficulty: "Easiest for Beginners",
+    ramReq: "2 GB RAM",
+  },
+  {
+    id: "old-laptop",
+    title: "I want to speed up an old slow laptop",
+    subtitle: "Super lightweight system that runs smoothly on 10-year-old hardware.",
+    emoji: "⚡",
+    distroName: "Lubuntu / Zorin Lite",
+    distroLogo: "💨",
+    whyBest:
+      "Blazing fast on older laptops with as little as 1GB of RAM. Extends battery life significantly.",
+    difficulty: "Beginner Friendly",
+    ramReq: "1 GB RAM",
+  },
+  {
+    id: "gaming",
+    title: "I want to play PC & Steam games",
+    subtitle: "Pre-configured graphics drivers for NVIDIA & AMD with Steam ready.",
+    emoji: "🎮",
+    distroName: "Pop!_OS / Bazzite",
+    distroLogo: "🚀",
+    whyBest:
+      "Designed out of the box for gamers. Automatically configures graphic card drivers and game launchers.",
+    difficulty: "Easy & Ready to Play",
+    ramReq: "4 GB RAM",
+  },
+  {
+    id: "career",
+    title: "I want to learn for a high-paying tech career",
+    subtitle: "The worldwide standard used by Google, Amazon, and tech companies.",
+    emoji: "💼",
+    distroName: "Ubuntu / Fedora",
+    distroLogo: "🟠",
+    whyBest:
+      "The global industry standard for cloud engineering, server management, and software development.",
+    difficulty: "Great Starting Point",
+    ramReq: "4 GB RAM",
+  },
+];
+
+// Non-Tech FAQs
+const BEGINNER_FAQS = [
+  {
+    q: "Will learning here affect or harm my current computer?",
+    a: "Not at all! Everything on AfroKernal runs 100% inside your web browser. You can click, explore, and practice freely without altering any files or settings on your computer.",
+  },
+  {
+    q: "Do I need any programming experience or advanced math?",
+    a: "Zero coding or math required. If you know how to browse websites and type on a keyboard, you have everything needed to succeed.",
+  },
+  {
+    q: "Is AfroKernal really 100% free?",
+    a: "Yes, completely free forever. All courses, practice tests, and certificates are available to everyone without paywalls, hidden fees, or subscriptions.",
+  },
+  {
+    q: "How long does it take to learn the basics?",
+    a: "Most learners master the basics in just 2 to 3 days by spending 10–15 minutes a day with our bite-sized lessons and quizzes.",
+  },
+  {
+    q: "Can I use AfroKernal on my phone, iPad, or Chromebook?",
+    a: "Yes! AfroKernal is fully responsive and works smoothly on smartphones, tablets, Chromebooks, Windows, Mac, and Linux computers.",
+  },
 ];
 
 function Landing() {
   const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [terminalCmd, setTerminalCmd] = useState("neofetch");
-  const [terminalOutput, setTerminalOutput] = useState<string>(`       _,met$$$$$gg.          learner@afrokernel
-    ,g$$$$$$$$$$$$$$$P.       ------------------
-  ,g$$P"''       '""Y$$.".    OS: AfroKernel Linux 2026 (x86_64)
- ,$$P'              '$$$.     Kernel: 6.8.0-afrokernel-generic
-',$$P       ,ggs.     '$$b:   Uptime: 14 days, 3 hours
-'d$$'     ,$P"'   .    $$$    Shell: bash 5.2.21
- $$P      d$'     ,    $$P    DE: Open Education Cloud
- $$:      $.   -  ,d$$'       Terminal: Browser Virtual TTY
- $$;      Y$b._   _,d$P'      CPU: Cloud Virtual CPU (4 cores)
- Y$$.    '.'"Y$$$$P"'         Memory: 1024MB / 4096MB
-  '$$b      "-.__             Disk (/): 14.2GB / 50GB (ext4)
-   'Y$$                       Status: All-Access Ready (100% Free)`);
 
-  const runTerminalCommand = (cmd: string) => {
-    setTerminalCmd(cmd);
-    const clean = cmd.trim().toLowerCase();
-    if (clean === "neofetch") {
-      setTerminalOutput(`       _,met$$$$$gg.          learner@afrokernel
-    ,g$$$$$$$$$$$$$$$P.       ------------------
-  ,g$$P"''       '""Y$$.".    OS: AfroKernel Linux 2026 (x86_64)
- ,$$P'              '$$$.     Kernel: 6.8.0-afrokernel-generic
-',$$P       ,ggs.     '$$b:   Uptime: 14 days, 3 hours
-'d$$'     ,$P"'   .    $$$    Shell: bash 5.2.21
- $$P      d$'     ,    $$P    DE: Open Education Cloud
- $$:      $.   -  ,d$$'       Terminal: Browser Virtual TTY
- $$;      Y$b._   _,d$P'      CPU: Cloud Virtual CPU (4 cores)
- Y$$.    '.'"Y$$$$P"'         Memory: 1024MB / 4096MB
-  '$$b      "-.__             Disk (/): 14.2GB / 50GB (ext4)
-   'Y$$                       Status: All-Access Ready (100% Free)`);
-    } else if (clean.startsWith("chmod")) {
-      setTerminalOutput(`[OK] Changed file permissions to 755 (-rwxr-xr-x) for deploy.sh
-Owner: rwx (read, write, execute)
-Group: r-x (read, execute)
-Others: r-x (read, execute)`);
-    } else if (clean.startsWith("docker")) {
-      setTerminalOutput(`CONTAINER ID   IMAGE          COMMAND                  CREATED         STATUS         PORTS
-7c82a1b9f0e1   nginx:alpine   "/docker-entrypoint.…"   2 minutes ago   Up 2 minutes   0.0.0.0:80->80/tcp
-e31c44208a9f   redis:7-alpine "docker-entrypoint.s…"   10 hours ago    Up 10 hours    0.0.0.0:6379->6379/tcp`);
-    } else if (clean.startsWith("nmap")) {
-      setTerminalOutput(`Starting Nmap 7.94 ( https://nmap.org ) at 2026-08-14 12:00 UTC
-Nmap scan report for target.internal (192.168.1.50)
-Host is up (0.00042s latency).
-PORT     STATE SERVICE VERSION
-22/tcp   open  ssh     OpenSSH 9.6p1 Ubuntu
-80/tcp   open  http    nginx/1.24.0
-443/tcp  open  ssl/http nginx/1.24.0
-Nmap done: 1 IP address (1 host up) scanned in 0.48 seconds`);
-    } else {
-      setTerminalOutput(`total 32
-drwxr-xr-x 4 learner learner 4096 Aug 14 12:00 .
-drwxr-xr-x 3 root    root    4096 Aug 14 10:00 ..
--rwxr-xr-x 1 learner learner  248 Aug 14 11:30 deploy.sh
--rw-r--r-- 1 learner learner 1420 Aug 14 11:45 nginx.conf
-drwxr-xr-x 2 learner learner 4096 Aug 14 11:15 src
-drwxr-xr-x 2 learner learner 4096 Aug 14 11:20 tests`);
-    }
-  };
+  // Distro selector state
+  const [selectedGoal, setSelectedGoal] = useState<SimpleGoal>("windows-like");
+  const currentDistro = useMemo(
+    () => DISTRO_CHOICES.find((d) => d.id === selectedGoal) || DISTRO_CHOICES[0],
+    [selectedGoal],
+  );
 
-  const featuredDistros = DISTROS_DATA.slice(0, 4);
-  const featuredApps = APPS_DATA.slice(0, 3);
+  // AI assistant preview state
+  const [aiQuestion, setAiQuestion] = useState(0);
+  const aiAnswers = [
+    {
+      q: "What is Linux in plain English?",
+      a: "Think of Linux like Windows or macOS — it's the engine (operating system) that runs your computer. The big difference? Linux is 100% free, created by a global community, doesn't track you with ads, and powers 96% of the world's internet servers, smart TVs, and supercomputers!",
+    },
+    {
+      q: "Is Linux hard for a normal person to use?",
+      a: "Not anymore! Modern Linux has a beautiful desktop with clickable app icons, start menus, web browsers, Spotify, Zoom, and full office programs. It looks and feels as friendly as Windows or Mac.",
+    },
+    {
+      q: "Why should I learn Linux if I already have Windows?",
+      a: "Linux gives your computer new life, protects your privacy from tracking, saves you hundreds of dollars on software, and opens doors to top-paying tech and IT careers!",
+    },
+  ];
 
   return (
-    <div className="min-h-screen text-foreground flex flex-col bg-background">
-      {/* Mega Navigation Header */}
+    <div className="min-h-screen text-foreground flex flex-col bg-background selection:bg-primary/20 selection:text-primary">
+      {/* Top Navigation */}
       <HeaderNav />
 
-      {/* Hero Section */}
+      {/* Hero Section - Clean, Simple, Modern, No Terminal */}
       <section className="relative overflow-hidden pt-12 pb-20 md:pt-20 md:pb-28 border-b border-border/60">
-        <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
+        {/* Soft Ambient Radial Glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-5xl h-96 bg-gradient-to-b from-primary/15 via-primary/5 to-transparent blur-3xl -z-10 pointer-events-none" />
+        <div className="absolute inset-0 grid-bg opacity-20 pointer-events-none" />
+
         <div className="relative mx-auto max-w-7xl px-6 grid gap-12 lg:grid-cols-[1.1fr_0.9fr] items-center">
-          {/* Hero Left Content */}
-          <div className="space-y-6">
-            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3.5 py-1 text-xs font-bold text-primary shadow-[0_0_15px_-5px_var(--primary)]">
+          {/* Left Column: Hero Content */}
+          <div className="space-y-6 text-center lg:text-left">
+            {/* Friendly Badge */}
+            <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold text-primary shadow-[0_0_20px_-5px_var(--primary)] backdrop-blur-sm">
               <span className="h-2 w-2 rounded-full bg-primary animate-pulse" />
-              <span>Your Home to Learn Linux · 100% Free & Open</span>
+              <span>✨ The Friendly Linux Academy · 100% Free & Open</span>
             </div>
 
-            <h1 className="text-4xl sm:text-6xl lg:text-7xl font-display font-extrabold tracking-tight leading-[1.05]">
-              Master Linux. <br />
-              <span className="text-gradient">From your first command</span> <br />
-              to certified expert.
+            {/* Main Headline */}
+            <h1 className="text-4xl sm:text-6xl font-display font-extrabold tracking-tight leading-[1.08]">
+              Learn Linux <br />
+              <span className="text-gradient">without the complexity.</span> <br />
+              Simple. Fun. Free.
             </h1>
 
-            <p className="text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed">
-              Step-by-step tutorials, interactive tools, app alternatives, distro finders, and verifiable certifications. The complete hands-on Linux learning ecosystem.
+            {/* Subhead */}
+            <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
+              Master modern computing, free software alternatives, and cloud skills with bite-sized
+              lessons, friendly AI guidance, and real certificates. Zero technical experience
+              needed.
             </p>
 
-            {/* CTAs */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            {/* Primary Action Buttons */}
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-3.5 pt-2">
               <Link
                 to={user ? "/courses" : "/auth"}
                 search={user ? undefined : { redirect: "/courses", mode: "signup" }}
-                className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:brightness-110"
+                className="inline-flex items-center gap-2.5 rounded-2xl bg-primary px-7 py-4 text-sm font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:brightness-110 hover:scale-[1.02] active:scale-[0.98]"
               >
-                <Zap className="h-4 w-4" /> Start Learning Free
+                <Zap className="h-4 w-4 fill-current" /> Start Learning Free
               </Link>
               <Link
-                to="/distro-finder"
-                className="inline-flex items-center gap-2 rounded-xl border border-border bg-card px-5 py-3.5 text-sm font-semibold text-foreground hover:bg-muted transition"
+                to="/tutorials"
+                className="inline-flex items-center gap-2 rounded-2xl border border-border bg-card/80 px-6 py-4 text-sm font-semibold text-foreground hover:bg-muted transition hover:border-primary/40 shadow-sm"
               >
-                <Sparkles className="h-4 w-4 text-primary" /> Find Your Distro Quiz
+                <BookOpen className="h-4 w-4 text-primary" /> Browse All Lessons
               </Link>
             </div>
 
-            {/* Hero Quick Search Trigger */}
-            <button
-              onClick={() => setIsSearchOpen(true)}
-              className="w-full max-w-md flex items-center justify-between p-3.5 rounded-2xl border border-border bg-card/60 text-xs text-muted-foreground hover:border-primary/40 transition group"
-            >
-              <span className="flex items-center gap-2.5">
-                <Search className="h-4 w-4 text-primary" />
-                <span>Search 30+ distros, 60+ commands, app alternatives...</span>
-              </span>
-              <kbd className="rounded-md border border-border bg-muted px-2 py-0.5 font-mono text-[10px]">⌘K</kbd>
-            </button>
+            {/* Quick Search Shortcut */}
+            <div className="pt-1 flex justify-center lg:justify-start">
+              <button
+                onClick={() => setIsSearchOpen(true)}
+                className="w-full max-w-md flex items-center justify-between p-3.5 rounded-2xl border border-border/80 bg-card/60 text-xs text-muted-foreground hover:border-primary/50 hover:bg-card/90 transition shadow-sm group"
+              >
+                <span className="flex items-center gap-2.5">
+                  <Search className="h-4 w-4 text-primary transition-transform group-hover:scale-110" />
+                  <span>Looking for a topic? Search tutorials & tools...</span>
+                </span>
+                <kbd className="rounded-md border border-border bg-muted/80 px-2 py-0.5 font-mono text-[10px] text-foreground font-semibold">
+                  ⌘K
+                </kbd>
+              </button>
+            </div>
 
-            {/* Value checklist */}
-            <div className="flex flex-wrap items-center gap-5 pt-3 text-xs font-medium text-muted-foreground">
-              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> No credit card</div>
-              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> No ads or paywalls</div>
-              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Real browser terminal</div>
-              <div className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Verifiable certificate</div>
+            {/* Trust Checklist */}
+            <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center justify-center lg:justify-start gap-y-2 gap-x-6 pt-2 text-xs font-medium text-muted-foreground">
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span>100% Free Forever</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span>Zero Setup Required</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span>24/7 AI Helper</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <CheckCircle2 className="h-4 w-4 text-primary" />
+                <span>Earn Certificates</span>
+              </div>
             </div>
           </div>
 
-          {/* Hero Right: Interactive Mini Terminal Sandbox */}
+          {/* Right Column: Sleek Modern Platform Preview Showcase (No Terminal) */}
           <div className="relative">
-            <div className="rounded-3xl border border-primary/30 bg-card p-2 shadow-2xl backdrop-blur relative overflow-hidden">
-              <div className="rounded-2xl bg-background p-4 sm:p-6 font-mono text-xs space-y-4">
-                {/* Terminal top header */}
-                <div className="flex items-center justify-between pb-3 border-b border-border">
-                  <div className="flex items-center gap-2">
-                    <span className="h-3 w-3 rounded-full bg-rose-500/80" />
-                    <span className="h-3 w-3 rounded-full bg-amber-500/80" />
-                    <span className="h-3 w-3 rounded-full bg-emerald-500/80" />
-                    <span className="ml-2 text-[11px] text-muted-foreground font-semibold">learner@afrokernel-cloud:~</span>
+            <div className="rounded-3xl border border-primary/30 bg-card/95 p-6 sm:p-7 shadow-2xl backdrop-blur-xl relative space-y-5">
+              {/* Card Header with User Status */}
+              <div className="flex items-center justify-between pb-4 border-b border-border">
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-2xl bg-primary/10 text-primary flex items-center justify-center text-xl font-bold shadow-inner">
+                    🐧
                   </div>
-                  <span className="text-[10px] text-primary bg-primary/10 px-2 py-0.5 rounded-full font-bold">Interactive Sandbox</span>
+                  <div>
+                    <h3 className="font-bold text-sm text-foreground">AfroKernel Academy</h3>
+                    <p className="text-xs text-muted-foreground">Interactive Learning Platform</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 text-xs font-bold px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20">
+                  <Flame className="h-3.5 w-3.5 fill-current" />
+                  <span>3-Day Streak</span>
+                </div>
+              </div>
+
+              {/* Course Card Preview */}
+              <div className="rounded-2xl bg-background border border-border/80 p-5 space-y-3.5 shadow-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                    Recommended For You
+                  </span>
+                  <span className="text-xs font-semibold text-muted-foreground">38 Lessons</span>
                 </div>
 
-                {/* Quick command buttons */}
-                <div className="flex flex-wrap gap-1.5 text-[11px]">
-                  <button
-                    onClick={() => runTerminalCommand("neofetch")}
-                    className={`px-2.5 py-1 rounded-lg border transition ${
-                      terminalCmd === "neofetch" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    neofetch
-                  </button>
-                  <button
-                    onClick={() => runTerminalCommand("ls -la")}
-                    className={`px-2.5 py-1 rounded-lg border transition ${
-                      terminalCmd === "ls -la" ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    ls -la
-                  </button>
-                  <button
-                    onClick={() => runTerminalCommand("chmod 755 deploy.sh")}
-                    className={`px-2.5 py-1 rounded-lg border transition ${
-                      terminalCmd.startsWith("chmod") ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    chmod 755
-                  </button>
-                  <button
-                    onClick={() => runTerminalCommand("docker ps")}
-                    className={`px-2.5 py-1 rounded-lg border transition ${
-                      terminalCmd.startsWith("docker") ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    docker ps
-                  </button>
-                  <button
-                    onClick={() => runTerminalCommand("nmap 192.168.1.50")}
-                    className={`px-2.5 py-1 rounded-lg border transition ${
-                      terminalCmd.startsWith("nmap") ? "border-primary bg-primary/10 text-primary font-bold" : "border-border text-muted-foreground hover:bg-muted"
-                    }`}
-                  >
-                    nmap scan
-                  </button>
-                </div>
-
-                {/* Terminal output display */}
                 <div className="space-y-1">
-                  <div className="text-primary font-bold">
-                    <span>$ </span>
-                    <span className="text-foreground">{terminalCmd}</span>
-                  </div>
-                  <pre className="text-muted-foreground text-[11px] leading-relaxed whitespace-pre-wrap overflow-x-auto p-3 rounded-xl bg-card/60 border border-border/40 max-h-56">
-                    {terminalOutput}
-                  </pre>
+                  <h4 className="font-bold text-base text-foreground flex items-center gap-2">
+                    <span>Linux for Absolute Beginners</span>
+                  </h4>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    Master essential computer skills, files, safety, and free software alternatives.
+                  </p>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between text-[11px] text-muted-foreground border-t border-border">
-                  <span>Type commands or click pills above</span>
-                  <Link to="/lab" className="text-primary font-bold hover:underline flex items-center gap-1">
-                    Open Full Dual Linux Lab <ArrowRight className="h-3 w-3" />
-                  </Link>
+                {/* Visual Progress Bar */}
+                <div className="space-y-1.5 pt-1">
+                  <div className="flex items-center justify-between text-[11px] font-semibold text-muted-foreground">
+                    <span>Course Progress</span>
+                    <span className="text-primary font-bold">100% Free Access</span>
+                  </div>
+                  <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
+                    <div className="h-full w-2/5 rounded-full bg-primary" />
+                  </div>
                 </div>
+              </div>
+
+              {/* 3 Core Highlights in Grid */}
+              <div className="grid grid-cols-3 gap-2.5 text-center">
+                <div className="p-3 rounded-2xl bg-background border border-border/70 space-y-1">
+                  <div className="text-xl">🤖</div>
+                  <div className="font-bold text-xs text-foreground">AI Helper</div>
+                  <div className="text-[10px] text-muted-foreground">Instant Q&A</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-background border border-border/70 space-y-1">
+                  <div className="text-xl">💡</div>
+                  <div className="font-bold text-xs text-foreground">Bite-Sized</div>
+                  <div className="text-[10px] text-muted-foreground">5-Min Guides</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-background border border-border/70 space-y-1">
+                  <div className="text-xl">🏆</div>
+                  <div className="font-bold text-xs text-foreground">Certificates</div>
+                  <div className="text-[10px] text-muted-foreground">Share Online</div>
+                </div>
+              </div>
+
+              {/* Direct Action Link */}
+              <div className="pt-2">
+                <Link
+                  to="/courses/$slug"
+                  params={{ slug: "linux" }}
+                  className="w-full py-3 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition flex items-center justify-center gap-2 shadow-sm"
+                >
+                  <span>Start Beginner Lesson 1</span>
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Counter Strip */}
-      <section className="border-b border-border/60 bg-card/20 py-8">
-        <div className="mx-auto max-w-7xl px-6 grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-          <div className="space-y-1">
-            <div className="font-mono text-3xl font-extrabold text-primary">16+</div>
-            <div className="text-xs text-muted-foreground font-medium">Linux Distributions Profiled</div>
+      {/* 3 Simple Steps: How It Works */}
+      <section className="py-16 border-b border-border/60 bg-card/20">
+        <div className="mx-auto max-w-7xl px-6 space-y-10">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Simple & Stress-Free
+            </span>
+            <h2 className="text-3xl font-bold font-display">How AfroKernal Works</h2>
+            <p className="text-sm text-muted-foreground">
+              Learning Linux is as simple as 1, 2, 3. No setup headaches, no technical hurdles.
+            </p>
           </div>
-          <div className="space-y-1">
-            <div className="font-mono text-3xl font-extrabold text-primary">60+</div>
-            <div className="text-xs text-muted-foreground font-medium">Windows to Linux App Alternatives</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-mono text-3xl font-extrabold text-primary">7</div>
-            <div className="text-xs text-muted-foreground font-medium">Structured Learning Tracks</div>
-          </div>
-          <div className="space-y-1">
-            <div className="font-mono text-3xl font-extrabold text-primary">100%</div>
-            <div className="text-xs text-muted-foreground font-medium">Free & Community Governed</div>
+
+          <div className="grid gap-6 md:grid-cols-3">
+            {EASY_STEPS.map((s) => (
+              <div
+                key={s.step}
+                className="rounded-3xl border border-border bg-card p-6 sm:p-8 space-y-4 hover:border-primary/40 transition relative group"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-4xl p-2 rounded-2xl bg-secondary">{s.icon}</span>
+                  <span className="font-mono text-2xl font-extrabold text-primary/40 group-hover:text-primary transition">
+                    0{s.step}
+                  </span>
+                </div>
+                <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition">
+                  {s.title}
+                </h3>
+                <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">{s.desc}</p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Featured Courses Section */}
+      {/* Featured Structured Tracks */}
       <section className="py-20 border-b border-border/60">
-        <div className="mx-auto max-w-7xl px-6 space-y-12">
+        <div className="mx-auto max-w-7xl px-6 space-y-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">Structured Curriculum</span>
-              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">Featured Learning Tracks</h2>
-              <p className="text-sm text-muted-foreground mt-1">From the bash command line to enterprise cloud infrastructure.</p>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Explore The Curriculum
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">
+                Popular Learning Tracks
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Step-by-step courses with practical examples, quizzes, and digital certificates.
+              </p>
             </div>
             <Link
               to="/tutorials"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline self-start md:self-auto"
             >
-              Browse All 7 Tracks <ArrowRight className="h-3.5 w-3.5" />
+              Browse All Courses <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {paths.map((p) => (
+          <div className="grid gap-6 md:grid-cols-3">
+            {FEATURED_COURSES.map((course) => (
               <div
-                key={p.slug}
-                className="rounded-3xl border border-border bg-card p-6 md:p-8 flex flex-col justify-between hover:border-primary/40 hover:shadow-lg transition group"
+                key={course.slug}
+                className="rounded-3xl border border-border bg-card p-6 sm:p-8 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
               >
-                <div>
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-3xl p-2 rounded-2xl bg-secondary/80">{p.icon}</span>
-                    {p.hasCert && (
-                      <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
-                        <Award className="h-3 w-3" /> Certificate Included
-                      </span>
-                    )}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl p-2 rounded-2xl bg-secondary">{course.icon}</span>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${course.badgeColor}`}
+                    >
+                      {course.level}
+                    </span>
                   </div>
-                  <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition">{p.title}</h3>
-                  <p className="text-xs text-muted-foreground leading-relaxed mb-6">{p.desc}</p>
+
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition">
+                      {course.title}
+                    </h3>
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                      {course.desc}
+                    </p>
+                  </div>
                 </div>
 
-                <div className="pt-4 border-t border-border/60 flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground font-semibold">{p.lessons} Tutorials</span>
+                <div className="pt-5 mt-6 border-t border-border/60 flex items-center justify-between text-xs">
+                  <span className="text-muted-foreground font-semibold">
+                    {course.lessons} Lessons · {course.duration}
+                  </span>
                   <Link
                     to={user ? "/courses/$slug" : "/auth"}
-                    params={user ? { slug: p.slug } : undefined}
-                    search={user ? undefined : { redirect: `/courses/${p.slug}`, mode: "signup" }}
+                    params={user ? { slug: course.slug } : undefined}
+                    search={
+                      user ? undefined : { redirect: `/courses/${course.slug}`, mode: "signup" }
+                    }
                     className="font-bold text-primary flex items-center gap-1 hover:underline"
                   >
                     Start Track <ArrowRight className="h-3.5 w-3.5" />
@@ -337,134 +560,38 @@ drwxr-xr-x 2 learner learner 4096 Aug 14 11:20 tests`);
         </div>
       </section>
 
-      {/* Interactive Tools Showcase */}
+      {/* Why Learn Linux? Plain-English Benefits */}
       <section className="py-20 border-b border-border/60 bg-card/20">
         <div className="mx-auto max-w-7xl px-6 space-y-12">
-          <div className="text-center max-w-2xl mx-auto space-y-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-primary">Interactive Utility Suite</span>
-            <h2 className="text-3xl sm:text-4xl font-bold font-display">Essential Linux Productivity Tools</h2>
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Why Learn Linux?
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold font-display">
+              Real Benefits for Everyday People
+            </h2>
             <p className="text-sm text-muted-foreground">
-              Powerful calculators, translators, and builders designed to simplify daily Linux workflows.
+              Discover how Linux gives you total control, blazing speed, and valuable career skills.
             </p>
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            {/* Distro Finder */}
-            <Link
-              to="/distro-finder"
-              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
-            >
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                  <Sparkles className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Distro Finder Quiz</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  5-question smart quiz to discover your top 3 Linux distribution matches based on hardware and workflow.
-                </p>
-              </div>
-              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
-                Take Quiz <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            </Link>
-
-            {/* Permissions Calculator */}
-            <Link
-              to="/tools/permissions-calculator"
-              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
-            >
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                  <Calculator className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Permissions Calculator</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Visual chmod octal & symbolic calculator with SUID/SGID/Sticky bits and security presets.
-                </p>
-              </div>
-              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
-                Calculate chmod <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            </Link>
-
-            {/* Cron Builder */}
-            <Link
-              to="/tools/cron-builder"
-              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
-            >
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                  <Clock className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Cron Expression Builder</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Build automated schedules visually with plain English translation and production crontab export.
-                </p>
-              </div>
-              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
-                Build Cron Job <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            </Link>
-
-            {/* Command Translator */}
-            <Link
-              to="/tools/command-translator"
-              className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
-            >
-              <div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition">
-                  <Terminal className="h-6 w-6" />
-                </div>
-                <h3 className="font-bold text-lg mb-1 group-hover:text-primary transition">Command Translator</h3>
-                <p className="text-xs text-muted-foreground leading-relaxed">
-                  Convert Windows CMD & PowerShell commands directly to Linux Bash with detailed argument explanations.
-                </p>
-              </div>
-              <div className="pt-4 mt-6 border-t border-border/60 text-xs font-bold text-primary flex items-center gap-1">
-                Translate Commands <ArrowRight className="h-3.5 w-3.5" />
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* Popular Distros Showcase */}
-      <section className="py-20 border-b border-border/60">
-        <div className="mx-auto max-w-7xl px-6 space-y-12">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-            <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">Operating Systems</span>
-              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">Popular Linux Distributions</h2>
-              <p className="text-sm text-muted-foreground mt-1">Discover, compare, and download the finest Linux distributions.</p>
-            </div>
-            <Link
-              to="/distros"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
-            >
-              View All 16+ Distros <ArrowRight className="h-3.5 w-3.5" />
-            </Link>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-            {featuredDistros.map((d) => (
-              <div key={d.id} className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 transition group">
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-3xl p-1 rounded-xl bg-primary/10">{d.logo}</span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                      {d.difficulty}
+            {WHY_LINUX_BENEFITS.map((b) => (
+              <div
+                key={b.title}
+                className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 hover:shadow-lg transition group"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl p-2 rounded-2xl bg-secondary">{b.icon}</span>
+                    <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                      {b.badge}
                     </span>
                   </div>
-                  <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition">{d.name}</h3>
-                  <span className="text-xs text-muted-foreground block mb-2">{d.base} base · {d.defaultDesktop}</span>
-                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{d.tagline}</p>
-                </div>
-
-                <div className="pt-4 mt-4 border-t border-border/60 flex items-center justify-between">
-                  <span className="font-mono text-xs text-primary font-bold">{d.gamingScore}/10 Gaming</span>
-                  <Link to="/distros" className="text-xs font-semibold text-muted-foreground hover:text-foreground">
-                    Details →
-                  </Link>
+                  <h3 className="text-base font-bold text-foreground group-hover:text-primary transition">
+                    {b.title}
+                  </h3>
+                  <p className="text-xs text-muted-foreground leading-relaxed">{b.desc}</p>
                 </div>
               </div>
             ))}
@@ -472,42 +599,144 @@ drwxr-xr-x 2 learner learner 4096 Aug 14 11:20 tests`);
         </div>
       </section>
 
-      {/* App Alternatives Spotlight */}
+      {/* 1-Click Distro Matcher for Beginners */}
+      <section className="py-20 border-b border-border/60">
+        <div className="mx-auto max-w-7xl px-6 space-y-12">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Which Linux is Right For You?
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">
+                Find Your Ideal Linux Match
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Select your primary goal to see the top recommended distribution.
+              </p>
+            </div>
+            <Link
+              to="/distro-finder"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline self-start md:self-auto"
+            >
+              Take 5-Question Quiz <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+
+          <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] items-center">
+            {/* Goal Selectors */}
+            <div className="space-y-3">
+              {DISTRO_CHOICES.map((choice) => (
+                <button
+                  key={choice.id}
+                  onClick={() => setSelectedGoal(choice.id)}
+                  className={`w-full p-4 rounded-2xl border text-left transition flex items-center gap-4 ${
+                    selectedGoal === choice.id
+                      ? "border-primary bg-primary/10 shadow-sm ring-1 ring-primary/40"
+                      : "border-border bg-card hover:bg-muted"
+                  }`}
+                >
+                  <span className="text-3xl p-2 rounded-2xl bg-secondary shrink-0">
+                    {choice.emoji}
+                  </span>
+                  <div>
+                    <div className="font-bold text-sm text-foreground">{choice.title}</div>
+                    <div className="text-xs text-muted-foreground mt-0.5">{choice.subtitle}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            {/* Matched Result Card */}
+            <div className="rounded-3xl border border-primary/40 bg-card p-6 sm:p-8 space-y-6 shadow-xl relative overflow-hidden">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-4xl p-2 rounded-2xl bg-secondary">
+                    {currentDistro.distroLogo}
+                  </span>
+                  <div>
+                    <h3 className="text-2xl font-bold font-display text-foreground">
+                      {currentDistro.distroName}
+                    </h3>
+                    <span className="text-xs text-primary font-semibold">
+                      {currentDistro.difficulty}
+                    </span>
+                  </div>
+                </div>
+                <span className="text-xs font-mono font-bold px-3 py-1 rounded-full bg-secondary text-muted-foreground border border-border">
+                  {currentDistro.ramReq}
+                </span>
+              </div>
+
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {currentDistro.whyBest}
+              </p>
+
+              <div className="pt-2 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/distros"
+                  className="px-5 py-2.5 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition flex items-center gap-1.5"
+                >
+                  Learn About {currentDistro.distroName} <ArrowRight className="h-3.5 w-3.5" />
+                </Link>
+                <Link
+                  to="/distro-finder"
+                  className="px-4 py-2.5 rounded-xl border border-border bg-card text-foreground font-semibold text-xs hover:bg-muted transition"
+                >
+                  Detailed Quiz
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Free App Replacements */}
       <section className="py-20 border-b border-border/60 bg-card/20">
         <div className="mx-auto max-w-7xl px-6 space-y-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
             <div>
-              <span className="text-xs font-bold uppercase tracking-wider text-primary">Switching Software</span>
-              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">Windows to Linux App Alternatives</h2>
-              <p className="text-sm text-muted-foreground mt-1">Replace proprietary software with high-quality open-source tools.</p>
+              <span className="text-xs font-bold uppercase tracking-wider text-primary">
+                Free App Replacements
+              </span>
+              <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">
+                Replace Expensive Software for Free
+              </h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Linux has free, high-quality alternatives to everything you use on Windows.
+              </p>
             </div>
             <Link
               to="/apps"
               className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline"
             >
-              Explore 60+ App Alternatives <ArrowRight className="h-3.5 w-3.5" />
+              See All 60+ App Alternatives <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {featuredApps.map((app) => (
-              <div key={app.id} className="rounded-3xl border border-border bg-card p-6 space-y-4">
-                <div className="flex items-center gap-3">
-                  <span className="text-3xl p-2 rounded-2xl bg-secondary">{app.icon}</span>
-                  <div>
-                    <h3 className="font-bold text-base text-foreground">{app.name}</h3>
-                    <span className="text-xs text-muted-foreground">{app.category}</span>
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {APP_REPLACEMENTS.map((app) => (
+              <div
+                key={app.windowsApp}
+                className="rounded-3xl border border-border bg-card p-6 flex flex-col justify-between hover:border-primary/40 transition group"
+              >
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <span className="text-3xl p-2 rounded-2xl bg-secondary">{app.icon}</span>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                      {app.tag}
+                    </span>
                   </div>
-                </div>
 
-                <div className="space-y-2 pt-2 border-t border-border/60 text-xs">
-                  <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Best Linux Replacements:</span>
-                  {app.alternatives.map((alt) => (
-                    <div key={alt.name} className="flex items-center justify-between p-2.5 rounded-xl bg-background border border-border">
-                      <span className="font-semibold text-foreground">{alt.name}</span>
-                      <span className="text-[10px] text-emerald-500 font-bold">{alt.license}</span>
+                  <div>
+                    <div className="text-[11px] text-muted-foreground line-through">
+                      {app.windowsApp}
                     </div>
-                  ))}
+                    <h3 className="text-base font-bold text-foreground group-hover:text-primary transition mt-0.5">
+                      → {app.linuxApp}
+                    </h3>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">{app.desc}</p>
                 </div>
               </div>
             ))}
@@ -515,35 +744,133 @@ drwxr-xr-x 2 learner learner 4096 Aug 14 11:20 tests`);
         </div>
       </section>
 
-      {/* Certifications CTA Banner */}
-      <section className="py-20">
-        <div className="mx-auto max-w-7xl px-6">
-          <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-br from-card via-card to-primary/10 p-8 sm:p-14 shadow-2xl text-center space-y-6">
-            <div className="inline-flex items-center justify-center h-16 w-16 rounded-full bg-primary/20 text-primary mx-auto shadow-[0_0_20px_var(--primary)]">
-              <Award className="h-8 w-8" />
+      {/* 24/7 AI Helper Q&A Demo */}
+      <section className="py-20 border-b border-border/60">
+        <div className="mx-auto max-w-5xl px-6 space-y-10">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Your 24/7 AI Helper
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold font-display">
+              Never Get Stuck on Linux
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Ask questions in plain English anytime and get friendly, instant explanations.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-primary/30 bg-card p-6 sm:p-8 space-y-6 shadow-xl">
+            {/* Question Selector Pills */}
+            <div className="space-y-2">
+              <span className="text-xs font-semibold text-muted-foreground">
+                Click a question to see how the AI explains it:
+              </span>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                {aiAnswers.map((item, idx) => (
+                  <button
+                    key={item.q}
+                    onClick={() => setAiQuestion(idx)}
+                    className={`p-3 rounded-2xl border text-left text-xs font-medium transition ${
+                      aiQuestion === idx
+                        ? "border-primary bg-primary/10 text-primary font-bold shadow-sm"
+                        : "border-border bg-background text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {item.q}
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="max-w-2xl mx-auto space-y-2">
+            {/* Answer Display */}
+            <div className="p-5 rounded-2xl bg-background border border-border/80 space-y-2">
+              <div className="flex items-center gap-2 text-primary font-bold text-xs">
+                <Bot className="h-4 w-4" />
+                <span>AfroKernel AI Tutor:</span>
+              </div>
+              <p className="text-xs sm:text-sm text-foreground leading-relaxed">
+                {aiAnswers[aiQuestion].a}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between text-xs pt-1">
+              <span className="text-muted-foreground">Ask custom questions during any lesson</span>
+              <Link
+                to="/chat"
+                className="text-primary font-bold hover:underline flex items-center gap-1"
+              >
+                Chat with AI Assistant <ArrowRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Beginner FAQs */}
+      <section className="py-20 border-b border-border/60 bg-card/20">
+        <div className="mx-auto max-w-4xl px-6 space-y-10">
+          <div className="text-center space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-primary">
+              Got Questions?
+            </span>
+            <h2 className="text-3xl sm:text-4xl font-bold font-display">
+              Frequently Asked Questions
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Everything you need to know before getting started.
+            </p>
+          </div>
+
+          <div className="space-y-4">
+            {BEGINNER_FAQS.map((faq, idx) => (
+              <details
+                key={idx}
+                className="group rounded-2xl border border-border bg-card p-5 transition open:border-primary/40 open:bg-card/90"
+              >
+                <summary className="font-semibold text-sm sm:text-base text-foreground cursor-pointer flex items-center justify-between list-none">
+                  <span>{faq.q}</span>
+                  <ChevronDown className="h-4 w-4 text-muted-foreground transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+                <p className="mt-3 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/60 pt-3">
+                  {faq.a}
+                </p>
+              </details>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Modern High-Impact Closing CTA Banner */}
+      <section className="py-20">
+        <div className="mx-auto max-w-5xl px-6">
+          <div className="relative overflow-hidden rounded-3xl border border-primary/40 bg-gradient-to-br from-card via-card to-primary/15 p-8 sm:p-14 shadow-2xl text-center space-y-6">
+            <div className="inline-flex items-center justify-center h-16 w-16 rounded-2xl bg-primary/20 text-primary mx-auto text-3xl shadow-[0_0_25px_var(--primary)]">
+              🐧
+            </div>
+
+            <div className="max-w-xl mx-auto space-y-2">
               <h2 className="text-3xl sm:text-4xl font-bold font-display text-foreground">
-                Prove Your Skills with <span className="text-gradient">Official Certifications</span>
+                Your Linux Journey Starts <span className="text-gradient">Today</span>
               </h2>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                Take timed 50-question practice exams across Linux Fundamentals, Cybersecurity, and DevOps. Earn shareable credentials verified on LinkedIn.
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed">
+                Join thousands of learners mastering real system administration, cloud skills, and
+                free software. 100% free forever.
               </p>
             </div>
 
             <div className="flex flex-wrap justify-center gap-3 pt-2">
               <Link
-                to="/exam/practice"
-                className="px-8 py-3.5 rounded-xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
+                to={user ? "/courses" : "/auth"}
+                search={user ? undefined : { redirect: "/courses", mode: "signup" }}
+                className="px-8 py-4 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
               >
-                Start Free Practice Exam <ArrowRight className="h-4 w-4" />
+                <Zap className="h-4 w-4 fill-current" /> Start Learning Free
               </Link>
               <Link
-                to="/certification"
-                className="px-6 py-3.5 rounded-xl border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted transition"
+                to="/tutorials"
+                className="px-6 py-4 rounded-2xl border border-border bg-card text-foreground font-semibold text-sm hover:bg-muted transition"
               >
-                View Certification Details
+                Browse All Lessons
               </Link>
             </div>
           </div>

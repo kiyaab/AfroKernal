@@ -13,12 +13,18 @@ export function CookieConsent() {
   }, []);
 
   const acceptAll = () => {
-    localStorage.setItem("afrokernel-cookie-consent", JSON.stringify({ analytics: true, essential: true, acceptedAt: new Date().toISOString() }));
+    localStorage.setItem(
+      "afrokernel-cookie-consent",
+      JSON.stringify({ analytics: true, essential: true, acceptedAt: new Date().toISOString() }),
+    );
     setVisible(false);
   };
 
   const acceptEssential = () => {
-    localStorage.setItem("afrokernel-cookie-consent", JSON.stringify({ analytics: false, essential: true, acceptedAt: new Date().toISOString() }));
+    localStorage.setItem(
+      "afrokernel-cookie-consent",
+      JSON.stringify({ analytics: false, essential: true, acceptedAt: new Date().toISOString() }),
+    );
     setVisible(false);
   };
 
@@ -33,15 +39,20 @@ export function CookieConsent() {
         <div className="flex-1 min-w-0">
           <h3 className="text-base font-semibold font-display flex items-center justify-between">
             Cookie & Privacy Preferences
-            <button onClick={acceptEssential} className="text-muted-foreground hover:text-foreground text-xs p-1">
+            <button
+              onClick={acceptEssential}
+              className="text-muted-foreground hover:text-foreground text-xs p-1"
+            >
               <X className="w-4 h-4" />
             </button>
           </h3>
           <p className="text-xs text-muted-foreground mt-1.5 leading-relaxed">
-            We use essential cookies to maintain your login session, progress, and lab terminal states. By continuing, you agree to our{" "}
+            We use essential cookies to maintain your login session, progress, and lab terminal
+            states. By continuing, you agree to our{" "}
             <Link to="/terms" className="text-primary underline font-medium hover:brightness-110">
               Terms & Privacy Policy
-            </Link>.
+            </Link>
+            .
           </p>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <button

@@ -51,7 +51,9 @@ export function StudyTimer({ storageKey = "afrokernel-study-timer" }: { storageK
         </select>
       </div>
 
-      <div className={`font-display text-3xl font-bold tracking-tight ${done ? "text-primary" : ""}`}>
+      <div
+        className={`font-display text-3xl font-bold tracking-tight ${done ? "text-primary" : ""}`}
+      >
         {String(m).padStart(2, "0")}:{String(s).padStart(2, "0")}
       </div>
       <p className="mt-1 text-[11px] text-muted-foreground">

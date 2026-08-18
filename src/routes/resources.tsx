@@ -11,9 +11,16 @@ export const Route = createFileRoute("/resources")({
   head: () => ({
     meta: [
       { title: "Linux Resources & Official Documentation — AfroKernel" },
-      { name: "description", content: "Curated Linux PDFs, courses, and official documentation — RHEL, Ubuntu, Debian, Arch, Docker, Kubernetes and more." },
+      {
+        name: "description",
+        content:
+          "Curated Linux PDFs, courses, and official documentation — RHEL, Ubuntu, Debian, Arch, Docker, Kubernetes and more.",
+      },
       { property: "og:title", content: "AfroKernel — Linux Documentation Hub" },
-      { property: "og:description", content: "Every official Linux, DevOps and sysadmin documentation source in one place." },
+      {
+        property: "og:description",
+        content: "Every official Linux, DevOps and sysadmin documentation source in one place.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -74,9 +81,12 @@ function ResourcesPage() {
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
             Learning hub
           </span>
-          <h1 className="font-display mt-3 text-4xl font-bold md:text-5xl">Courses, PDFs &amp; Documentation</h1>
+          <h1 className="font-display mt-3 text-4xl font-bold md:text-5xl">
+            Courses, PDFs &amp; Documentation
+          </h1>
           <p className="mt-3 max-w-3xl text-lg text-muted-foreground">
-            Download study PDFs, browse curated official docs, and jump into AfroKernel courses — all in one place.
+            Download study PDFs, browse curated official docs, and jump into AfroKernel courses —
+            all in one place.
           </p>
         </div>
 
@@ -89,7 +99,8 @@ function ResourcesPage() {
             <div className="min-w-0 flex-1">
               <h2 className="font-display text-xl font-bold">Full Linux Command Reference (PDF)</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Complete command reference for offline study — perfect alongside AfroKernel courses and the Lab.
+                Complete command reference for offline study — perfect alongside AfroKernel courses
+                and the Lab.
               </p>
             </div>
             <div className="flex gap-2">
@@ -117,33 +128,43 @@ function ResourcesPage() {
           <div className="mb-8 flex items-center gap-2 text-sm text-muted-foreground">
             <Loader2 className="h-4 w-4 animate-spin" /> Loading library…
           </div>
-        ) : (pdfs.length > 0 || otherDb.length > 0) && (
-          <section className="mb-12">
-            <h2 className="font-display text-2xl font-bold">AfroKernel library</h2>
-            <p className="mt-1 text-sm text-muted-foreground">PDFs and links managed in the platform database.</p>
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {[...pdfs, ...otherDb].map((r) => (
-                <a
-                  key={r.id}
-                  href={r.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="group flex flex-col rounded-xl border border-border bg-card p-4 transition hover:border-primary/60"
-                >
-                  <div className="mb-2 flex items-center gap-2">
-                    {r.resource_type === "pdf" ? (
-                      <FileText className="h-4 w-4 text-primary" />
-                    ) : (
-                      <ExternalLink className="h-4 w-4 text-primary" />
+        ) : (
+          (pdfs.length > 0 || otherDb.length > 0) && (
+            <section className="mb-12">
+              <h2 className="font-display text-2xl font-bold">AfroKernel library</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                PDFs and links managed in the platform database.
+              </p>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {[...pdfs, ...otherDb].map((r) => (
+                  <a
+                    key={r.id}
+                    href={r.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group flex flex-col rounded-xl border border-border bg-card p-4 transition hover:border-primary/60"
+                  >
+                    <div className="mb-2 flex items-center gap-2">
+                      {r.resource_type === "pdf" ? (
+                        <FileText className="h-4 w-4 text-primary" />
+                      ) : (
+                        <ExternalLink className="h-4 w-4 text-primary" />
+                      )}
+                      <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                        {r.category}
+                      </span>
+                    </div>
+                    <h3 className="font-semibold group-hover:text-primary">{r.title}</h3>
+                    {r.description && (
+                      <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
+                        {r.description}
+                      </p>
                     )}
-                    <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">{r.category}</span>
-                  </div>
-                  <h3 className="font-semibold group-hover:text-primary">{r.title}</h3>
-                  {r.description && <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{r.description}</p>}
-                </a>
-              ))}
-            </div>
-          </section>
+                  </a>
+                ))}
+              </div>
+            </section>
+          )
         )}
 
         <div className="mb-8 flex flex-wrap gap-3">
@@ -164,7 +185,9 @@ function ResourcesPage() {
         <div className="space-y-12">
           {linuxResources.map((group) => (
             <section key={group.title}>
-              <h2 className="text-sm font-semibold uppercase tracking-wider text-primary">{group.title}</h2>
+              <h2 className="text-sm font-semibold uppercase tracking-wider text-primary">
+                {group.title}
+              </h2>
               <p className="mb-4 mt-1 max-w-3xl text-sm text-muted-foreground">{group.blurb}</p>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {group.links.map((l) => (
@@ -179,7 +202,9 @@ function ResourcesPage() {
                     <div>
                       <p className="font-semibold group-hover:text-primary">{l.name}</p>
                       {"blurb" in l && (l as { blurb?: string }).blurb && (
-                        <p className="mt-0.5 text-xs text-muted-foreground">{(l as { blurb?: string }).blurb}</p>
+                        <p className="mt-0.5 text-xs text-muted-foreground">
+                          {(l as { blurb?: string }).blurb}
+                        </p>
                       )}
                     </div>
                   </a>

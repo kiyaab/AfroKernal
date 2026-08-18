@@ -1,0 +1,40 @@
+services:
+  afrokernel:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_SUPABASE_URL: ${VITE_SUPABASE_URL:-https://znhuzzkqrrtzviamsvby.supabase.co}
+        VITE_SUPABASE_PUBLISHABLE_KEY: ${VITE_SUPABASE_PUBLISHABLE_KEY:-sb_publishable_1sdqLpDe9XzEqVw1DSHbcA_0mXlm6aR}
+        VITE_SUPABASE_PROJECT_ID: ${VITE_SUPABASE_PROJECT_ID:-znhuzzkqrrtzviamsvby}
+        SUPABASE_URL: ${SUPABASE_URL:-https://znhuzzkqrrtzviamsvby.supabase.co}
+        SUPABASE_PUBLISHABLE_KEY: ${SUPABASE_PUBLISHABLE_KEY:-sb_publishable_1sdqLpDe9XzEqVw1DSHbcA_0mXlm6aR}
+        SUPABASE_PROJECT_ID: ${SUPABASE_PROJECT_ID:-znhuzzkqrrtzviamsvby}
+    container_name: afrokernel-app
+    image: afrokernel:latest
+    restart: unless-stopped
+    ports:
+      - "${PORT:-3000}:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - HOST=0.0.0.0
+      - VITE_SUPABASE_URL=${VITE_SUPABASE_URL}
+      - VITE_SUPABASE_PUBLISHABLE_KEY=${VITE_SUPABASE_PUBLISHABLE_KEY}
+      - VITE_SUPABASE_PROJECT_ID=${VITE_SUPABASE_PROJECT_ID}
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_PUBLISHABLE_KEY=${SUPABASE_PUBLISHABLE_KEY}
+      - SUPABASE_PROJECT_ID=${SUPABASE_PROJECT_ID}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+    deploy:
+      resources:
+        limits:
+          memory: 1024M
+          cpus: "1.0"
+        reservations:
+          memory: 256M

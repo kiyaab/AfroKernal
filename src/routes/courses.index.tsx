@@ -32,21 +32,46 @@ export const Route = createFileRoute("/courses/")({
   head: () => ({
     meta: [
       { title: "Course Catalog — AfroKernel" },
-      { name: "description", content: "Explore hands-on Linux, Cybersecurity, DevOps, and Cloud courses with in-browser terminal labs and practice exams." },
+      {
+        name: "description",
+        content:
+          "Explore hands-on Linux, Cybersecurity, DevOps, and Cloud courses with in-browser terminal labs and practice exams.",
+      },
       { property: "og:title", content: "AfroKernel Course Catalog" },
-      { property: "og:description", content: "Master Linux and DevOps hands-on with browser labs, practice quizzes, and certificates." },
+      {
+        property: "og:description",
+        content:
+          "Master Linux and DevOps hands-on with browser labs, practice quizzes, and certificates.",
+      },
     ],
   }),
   component: CoursesIndex,
 });
 
-const CATEGORIES = ["All", "Fundamentals", "Cybersecurity", "DevOps", "Scripting", "Networking", "Cloud"];
+const CATEGORIES = [
+  "All",
+  "Fundamentals",
+  "Cybersecurity",
+  "DevOps",
+  "Scripting",
+  "Networking",
+  "Cloud",
+];
 const DIFFICULTIES = ["All", "beginner", "intermediate", "advanced"];
 
 const DIFFICULTY_BADGES: Record<string, { label: string; className: string }> = {
-  beginner: { label: "Beginner", className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/25" },
-  intermediate: { label: "Intermediate", className: "bg-amber-500/10 text-amber-500 border-amber-500/25" },
-  advanced: { label: "Advanced", className: "bg-purple-500/10 text-purple-500 border-purple-500/25" },
+  beginner: {
+    label: "Beginner",
+    className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/25",
+  },
+  intermediate: {
+    label: "Intermediate",
+    className: "bg-amber-500/10 text-amber-500 border-amber-500/25",
+  },
+  advanced: {
+    label: "Advanced",
+    className: "bg-purple-500/10 text-purple-500 border-purple-500/25",
+  },
 };
 
 function CoursesIndex() {
@@ -91,8 +116,7 @@ function CoursesIndex() {
         c.skills?.some((s) => s.toLowerCase().includes(q));
 
       const matchesCategory =
-        selectedCategory === "All" ||
-        c.category.toLowerCase() === selectedCategory.toLowerCase();
+        selectedCategory === "All" || c.category.toLowerCase() === selectedCategory.toLowerCase();
 
       const matchesDifficulty =
         selectedDifficulty === "All" ||
@@ -140,7 +164,8 @@ function CoursesIndex() {
                 <span className="text-gradient">modern Linux engineers.</span>
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Step-by-step video courses, interactive command line sandboxes, end-of-module knowledge checks, and verifiable certifications. 100% free.
+                Step-by-step video courses, interactive command line sandboxes, end-of-module
+                knowledge checks, and verifiable certifications. 100% free.
               </p>
             </div>
 
@@ -182,7 +207,8 @@ function CoursesIndex() {
                       ★ {featuredCourse.rating} ({featuredCourse.review_count} reviews)
                     </span>
                     <span className="text-xs text-muted-foreground flex items-center gap-1">
-                      <Users className="h-3.5 w-3.5 text-primary" /> {featuredCourse.learner_count.toLocaleString()} learners
+                      <Users className="h-3.5 w-3.5 text-primary" />{" "}
+                      {featuredCourse.learner_count.toLocaleString()} learners
                     </span>
                   </div>
 
@@ -195,7 +221,10 @@ function CoursesIndex() {
 
                   <div className="flex flex-wrap gap-2 pt-1">
                     {featuredCourse.skills.slice(0, 5).map((skill) => (
-                      <span key={skill} className="text-[11px] font-medium px-2.5 py-0.5 rounded-lg bg-background border border-border text-foreground/80">
+                      <span
+                        key={skill}
+                        className="text-[11px] font-medium px-2.5 py-0.5 rounded-lg bg-background border border-border text-foreground/80"
+                      >
                         {skill}
                       </span>
                     ))}
@@ -208,14 +237,17 @@ function CoursesIndex() {
                     className="px-8 py-3.5 rounded-2xl bg-primary text-primary-foreground font-bold text-sm hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center justify-center gap-2"
                   >
                     <Play className="h-4 w-4 fill-current" />
-                    {user && isEnrolled(featuredCourse.slug) ? "Continue Course" : "Enroll Free & Start"}
+                    {user && isEnrolled(featuredCourse.slug)
+                      ? "Continue Course"
+                      : "Enroll Free & Start"}
                   </button>
                   <Link
                     to="/courses/$slug"
                     params={{ slug: featuredCourse.slug }}
                     className="px-6 py-3.5 rounded-2xl border border-border bg-card/60 text-foreground font-semibold text-xs hover:bg-secondary transition flex items-center justify-center gap-1.5"
                   >
-                    View Syllabus ({featuredCourse.lessons.length} lessons) <ChevronRight className="h-4 w-4" />
+                    View Syllabus ({featuredCourse.lessons.length} lessons){" "}
+                    <ChevronRight className="h-4 w-4" />
                   </Link>
                 </div>
               </div>
@@ -259,7 +291,8 @@ function CoursesIndex() {
           {/* Secondary filter & count row */}
           <div className="flex items-center justify-between py-4 text-xs text-muted-foreground">
             <div>
-              Showing <strong className="text-foreground">{filtered.length}</strong> available curriculum courses
+              Showing <strong className="text-foreground">{filtered.length}</strong> available
+              curriculum courses
             </div>
             <div className="flex items-center gap-2">
               <span className="font-semibold text-foreground">Difficulty:</span>
@@ -288,9 +321,15 @@ function CoursesIndex() {
             <div className="py-20 text-center rounded-3xl border border-dashed border-border bg-card/30 p-8">
               <BookOpen className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
               <h3 className="text-base font-bold">No matching courses found</h3>
-              <p className="text-xs text-muted-foreground mt-1">Try clearing your search query or selecting a different category filter.</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Try clearing your search query or selecting a different category filter.
+              </p>
               <button
-                onClick={() => { setSearch(""); setSelectedCategory("All"); setSelectedDifficulty("All"); }}
+                onClick={() => {
+                  setSearch("");
+                  setSelectedCategory("All");
+                  setSelectedDifficulty("All");
+                }}
                 className="mt-4 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold"
               >
                 Reset Filters
@@ -301,8 +340,13 @@ function CoursesIndex() {
               {filtered.map((course) => {
                 const diff = DIFFICULTY_BADGES[course.difficulty] || DIFFICULTY_BADGES.beginner;
                 const enrolled = user && isEnrolled(course.slug);
-                const completedInCourse = course.lessons.filter((l) => completedLessons.includes(l.id)).length;
-                const progressPct = course.lessons.length > 0 ? Math.round((completedInCourse / course.lessons.length) * 100) : 0;
+                const completedInCourse = course.lessons.filter((l) =>
+                  completedLessons.includes(l.id),
+                ).length;
+                const progressPct =
+                  course.lessons.length > 0
+                    ? Math.round((completedInCourse / course.lessons.length) * 100)
+                    : 0;
 
                 return (
                   <div
@@ -316,7 +360,9 @@ function CoursesIndex() {
                           <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                             {course.category}
                           </span>
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diff.className}`}>
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${diff.className}`}
+                          >
                             {diff.label}
                           </span>
                         </div>
@@ -333,15 +379,21 @@ function CoursesIndex() {
                       <div className="p-6 pt-4 space-y-4">
                         <div className="grid grid-cols-3 gap-2 text-[11px] text-muted-foreground text-center py-2 rounded-2xl bg-secondary/40 border border-border/40">
                           <div>
-                            <span className="font-bold text-foreground block">{course.duration_hours} hrs</span>
+                            <span className="font-bold text-foreground block">
+                              {course.duration_hours} hrs
+                            </span>
                             <span>Duration</span>
                           </div>
                           <div>
-                            <span className="font-bold text-foreground block">{course.lessons.length} lessons</span>
+                            <span className="font-bold text-foreground block">
+                              {course.lessons.length} lessons
+                            </span>
                             <span>Syllabus</span>
                           </div>
                           <div>
-                            <span className="font-bold text-foreground block">★ {course.rating}</span>
+                            <span className="font-bold text-foreground block">
+                              ★ {course.rating}
+                            </span>
                             <span>Rating</span>
                           </div>
                         </div>
@@ -351,7 +403,9 @@ function CoursesIndex() {
                           <div className="space-y-1.5">
                             <div className="flex justify-between text-[11px] font-semibold text-muted-foreground">
                               <span>Your Progress</span>
-                              <span className="text-primary">{completedInCourse}/{course.lessons.length} done ({progressPct}%)</span>
+                              <span className="text-primary">
+                                {completedInCourse}/{course.lessons.length} done ({progressPct}%)
+                              </span>
                             </div>
                             <div className="h-2 w-full rounded-full bg-secondary overflow-hidden">
                               <div
@@ -365,7 +419,10 @@ function CoursesIndex() {
                         {/* Skills chips */}
                         <div className="flex flex-wrap gap-1.5">
                           {course.skills.slice(0, 4).map((s) => (
-                            <span key={s} className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-muted-foreground font-medium">
+                            <span
+                              key={s}
+                              className="text-[10px] px-2 py-0.5 rounded-md bg-secondary/80 text-muted-foreground font-medium"
+                            >
                               {s}
                             </span>
                           ))}
@@ -419,7 +476,8 @@ function CoursesIndex() {
               Ready to test your Linux mastery?
             </h2>
             <p className="text-sm text-muted-foreground max-w-xl">
-              Take our interactive Linux practice exams with real-world multiple choice questions, timer, instant scoring, and complete answer explanations.
+              Take our interactive Linux practice exams with real-world multiple choice questions,
+              timer, instant scoring, and complete answer explanations.
             </p>
             <div className="pt-2 flex flex-wrap gap-3 justify-center">
               <Link
