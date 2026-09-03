@@ -58,15 +58,24 @@ async function runAudit() {
 
       // Status 200 is healthy. 301/302/307/308 redirect for auth pages is also expected.
       const isRedirect = res.status >= 300 && res.status < 400;
-      const isSuccess = res.status === 200 || (isRedirect && (route.path.startsWith("/admin") || route.path.startsWith("/dashboard") || route.path.startsWith("/profile")));
+      const isSuccess =
+        res.status === 200 ||
+        (isRedirect &&
+          (route.path.startsWith("/admin") ||
+            route.path.startsWith("/dashboard") ||
+            route.path.startsWith("/profile")));
 
       if (isSuccess) {
         passed++;
-        console.log(`  ✅ [${res.status}] ${route.path.padEnd(32)} ${route.name.padEnd(30)} (${duration}ms)`);
+        console.log(
+          `  ✅ [${res.status}] ${route.path.padEnd(32)} ${route.name.padEnd(30)} (${duration}ms)`,
+        );
         results.push({ ...route, status: res.status, ok: true, duration });
       } else {
         failed++;
-        console.error(`  ❌ [${res.status}] ${route.path.padEnd(32)} ${route.name.padEnd(30)} (${duration}ms)`);
+        console.error(
+          `  ❌ [${res.status}] ${route.path.padEnd(32)} ${route.name.padEnd(30)} (${duration}ms)`,
+        );
         results.push({ ...route, status: res.status, ok: false, duration });
       }
     } catch (err) {

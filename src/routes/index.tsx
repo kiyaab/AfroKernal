@@ -313,7 +313,15 @@ function Landing() {
   );
 
   const courseCategories = useMemo(() => {
-    return ["All", "Enterprise Linux", "Fundamentals", "Cybersecurity", "DevOps", "Cloud", "Scripting"];
+    return [
+      "All",
+      "Enterprise Linux",
+      "Fundamentals",
+      "Cybersecurity",
+      "DevOps",
+      "Cloud",
+      "Scripting",
+    ];
   }, []);
 
   const visibleCourses = useMemo(() => {
@@ -558,7 +566,8 @@ function Landing() {
                 Popular Learning Tracks & Courses
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Hands-on courses with in-browser terminal exercises, practice quizzes, and verifiable certifications.
+                Hands-on courses with in-browser terminal exercises, practice quizzes, and
+                verifiable certifications.
               </p>
             </div>
             <Link

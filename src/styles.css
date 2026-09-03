@@ -58,8 +58,9 @@
   --afro-yellow: oklch(0.86 0.17 92);
   --afro-yellow-glow: oklch(0.9 0.19 95);
   --afro-dark: oklch(0.11 0.01 260);
-  --gradient-hero: radial-gradient(ellipse at top, oklch(0.22 0.03 90 / 0.35), transparent 60%),
-                   radial-gradient(ellipse at bottom left, oklch(0.2 0.04 260 / 0.5), transparent 55%);
+  --gradient-hero:
+    radial-gradient(ellipse at top, oklch(0.22 0.03 90 / 0.35), transparent 60%),
+    radial-gradient(ellipse at bottom left, oklch(0.2 0.04 260 / 0.5), transparent 55%);
   --gradient-primary: linear-gradient(135deg, oklch(0.86 0.17 92), oklch(0.78 0.16 75));
   --gradient-border: linear-gradient(135deg, oklch(0.86 0.17 92 / 0.5), oklch(0.86 0.17 92 / 0));
   --shadow-glow: 0 0 60px -10px oklch(0.86 0.17 92 / 0.35);
@@ -92,8 +93,13 @@
 }
 
 @layer base {
-  * { border-color: var(--color-border); }
-  html { font-family: var(--font-sans); scroll-behavior: smooth; }
+  * {
+    border-color: var(--color-border);
+  }
+  html {
+    font-family: var(--font-sans);
+    scroll-behavior: smooth;
+  }
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
@@ -102,7 +108,13 @@
       radial-gradient(ellipse 60% 40% at 100% 30%, oklch(0.5 0.15 260 / 0.08), transparent);
     background-attachment: fixed;
   }
-  h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -0.02em; }
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.02em;
+  }
 }
 
 @utility glass {
@@ -129,9 +141,37 @@
   background-size: 40px 40px;
 }
 
-@keyframes blink { 0%, 50% { opacity: 1 } 51%, 100% { opacity: 0 } }
-@keyframes float { 0%, 100% { transform: translateY(0) } 50% { transform: translateY(-8px) } }
-@keyframes shimmer { 0% { background-position: -200% 0 } 100% { background-position: 200% 0 } }
+@keyframes blink {
+  0%,
+  50% {
+    opacity: 1;
+  }
+  51%,
+  100% {
+    opacity: 0;
+  }
+}
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
 
-@utility cursor-blink { animation: blink 1s step-end infinite; }
-@utility float-anim { animation: float 4s ease-in-out infinite; }
+@utility cursor-blink {
+  animation: blink 1s step-end infinite;
+}
+@utility float-anim {
+  animation: float 4s ease-in-out infinite;
+}

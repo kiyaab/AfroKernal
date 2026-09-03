@@ -161,7 +161,8 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
               {results.courses.length > 0 && (
                 <div>
                   <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
-                    <GraduationCap className="h-3.5 w-3.5 text-primary" /> Interactive Courses & Certifications
+                    <GraduationCap className="h-3.5 w-3.5 text-primary" /> Interactive Courses &
+                    Certifications
                   </div>
                   <div className="space-y-2">
                     {results.courses.map((course) => (

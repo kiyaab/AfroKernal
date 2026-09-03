@@ -22,7 +22,10 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
     description:
       "List information about the FILEs (the current directory by default). Sort entries alphabetically if neither -cftuvSUX nor --sort is specified. Common flags include -l for long listing format, -a for all files including hidden ones, and -h for human readable file sizes.",
     examples: [
-      { cmd: "ls -la", out: "total 32K\ndrwxr-xr-x  5 root root 4.0K Sep 03 10:00 .\ndrwxr-xr-x 22 root root 4.0K Sep 03 09:30 ..\n-rw-r--r--  1 user user  220 Sep 03 10:00 .bashrc" },
+      {
+        cmd: "ls -la",
+        out: "total 32K\ndrwxr-xr-x  5 root root 4.0K Sep 03 10:00 .\ndrwxr-xr-x 22 root root 4.0K Sep 03 09:30 ..\n-rw-r--r--  1 user user  220 Sep 03 10:00 .bashrc",
+      },
       { cmd: "ls -lh /var/log", out: "-rw-r----- 1 syslog adm 1.2M Sep 03 12:00 syslog" },
       { cmd: "ls -lt --time=atime", out: "Sorts directory contents by access time, newest first" },
     ],
@@ -61,8 +64,14 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
     description:
       "grep searches for PATTERN in each FILE. A PATTERN is one or more lines separated by newline characters. grep prints each line that matches a pattern.",
     examples: [
-      { cmd: "grep -rn 'ERROR' /var/log/nginx/", out: "/var/log/nginx/error.log:42: [crit] 1234#0: connection failed" },
-      { cmd: "grep -i 'failed' auth.log", out: "Case-insensitive search for authentication failure lines" },
+      {
+        cmd: "grep -rn 'ERROR' /var/log/nginx/",
+        out: "/var/log/nginx/error.log:42: [crit] 1234#0: connection failed",
+      },
+      {
+        cmd: "grep -i 'failed' auth.log",
+        out: "Case-insensitive search for authentication failure lines",
+      },
       { cmd: "ps aux | grep node", out: "Filters active processes for NodeJS instances" },
     ],
     common_mistakes: [
@@ -81,7 +90,10 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
       "chmod changes the file mode bits of each given file according to mode, which can be either a symbolic representation of changes to make, or an octal number representing the bit pattern for the new mode bits (4=read, 2=write, 1=execute).",
     examples: [
       { cmd: "chmod 755 script.sh", out: "Owner gets rwx, group & others get r-x" },
-      { cmd: "chmod 600 ~/.ssh/id_rsa", out: "Owner gets read/write only; required by SSH clients" },
+      {
+        cmd: "chmod 600 ~/.ssh/id_rsa",
+        out: "Owner gets read/write only; required by SSH clients",
+      },
       { cmd: "chmod +x run.sh", out: "Grants execute permission to all classes" },
       { cmd: "chmod -R 750 /var/www", out: "Recursively applies permissions to directory tree" },
     ],
@@ -100,9 +112,15 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
     description:
       "systemctl may be used to introspect and control the state of the systemd system and service manager. Common commands include start, stop, restart, enable, disable, and status.",
     examples: [
-      { cmd: "systemctl status nginx", out: "● nginx.service - A high performance web server\n   Active: active (running)" },
+      {
+        cmd: "systemctl status nginx",
+        out: "● nginx.service - A high performance web server\n   Active: active (running)",
+      },
       { cmd: "sudo systemctl restart docker", out: "Restarts docker container daemon" },
-      { cmd: "sudo systemctl enable --now postgresql", out: "Enables service at boot and starts it immediately" },
+      {
+        cmd: "sudo systemctl enable --now postgresql",
+        out: "Enables service at boot and starts it immediately",
+      },
     ],
     common_mistakes: [
       "Forgetting 'sudo' when altering system services (start, restart, stop).",
@@ -119,8 +137,14 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
     description:
       "find searches the directory tree rooted at each given file name by evaluating the given expression from left to right, according to the rules of precedence, until the outcome is known.",
     examples: [
-      { cmd: "find /var/log -type f -name '*.log' -mtime -7", out: "Finds log files modified within the last 7 days" },
-      { cmd: "find . -type f -size +100M", out: "Finds files larger than 100 megabytes in current tree" },
+      {
+        cmd: "find /var/log -type f -name '*.log' -mtime -7",
+        out: "Finds log files modified within the last 7 days",
+      },
+      {
+        cmd: "find . -type f -size +100M",
+        out: "Finds files larger than 100 megabytes in current tree",
+      },
       { cmd: "find . -name '*.bak' -exec rm -f {} \\;", out: "Finds and deletes all backup files" },
     ],
     common_mistakes: [
@@ -138,7 +162,10 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
     description:
       "GNU tar is an archiving program designed to store multiple files in a single archive file, and to manipulate such archives. Flags: c=create, x=extract, v=verbose, z=gzip, f=file.",
     examples: [
-      { cmd: "tar -czvf archive.tar.gz /path/to/folder", out: "Creates gzipped tarball archive of specified folder" },
+      {
+        cmd: "tar -czvf archive.tar.gz /path/to/folder",
+        out: "Creates gzipped tarball archive of specified folder",
+      },
       { cmd: "tar -xzvf archive.tar.gz", out: "Extracts gzipped tarball into current directory" },
       { cmd: "tar -tvf backup.tar.gz", out: "Lists files inside archive without extracting" },
     ],
@@ -157,8 +184,14 @@ export const FALLBACK_COMMANDS_DOCS: LinuxCommandDoc[] = [
     description:
       "curl is a tool for transferring data from or to a server using HTTP, HTTPS, FTP, and many other protocols. It supports HTTP POST, cookies, user authentication, and SSL connections.",
     examples: [
-      { cmd: "curl -I https://example.com", out: "HTTP/2 200\ncontent-type: text/html; charset=UTF-8" },
-      { cmd: "curl -O https://example.com/file.zip", out: "Downloads file saving it with remote name" },
+      {
+        cmd: "curl -I https://example.com",
+        out: "HTTP/2 200\ncontent-type: text/html; charset=UTF-8",
+      },
+      {
+        cmd: "curl -O https://example.com/file.zip",
+        out: "Downloads file saving it with remote name",
+      },
       { cmd: "curl -s https://api.ipify.org", out: "Prints public IP address silently" },
     ],
     common_mistakes: [
@@ -176,7 +209,10 @@ export function getStaticCommandsList(): Array<{
   category: string;
   short_desc: string;
 }> {
-  const map = new Map<string, { slug: string; name: string; category: string; short_desc: string }>();
+  const map = new Map<
+    string,
+    { slug: string; name: string; category: string; short_desc: string }
+  >();
 
   // Add all rich docs first
   FALLBACK_COMMANDS_DOCS.forEach((d) => {
@@ -222,9 +258,7 @@ export function getStaticCommandDoc(slug: string): LinuxCommandDoc | null {
       short_desc: translation.description,
       syntax: `${norm} [OPTIONS] [ARGUMENTS]`,
       description: `${translation.description}\n\nLinux Equivalent of Windows: \`${translation.windowsCmd}\`\n\nNotes: ${translation.notes || "Standard GNU/Linux core utility."}`,
-      examples: [
-        { cmd: translation.linuxExample, out: `Demonstration of ${norm} in terminal.` },
-      ],
+      examples: [{ cmd: translation.linuxExample, out: `Demonstration of ${norm} in terminal.` }],
       common_mistakes: [
         `Assuming arguments are identical to Windows '${translation.windowsCmd}'.`,
         `Forgetting Linux command line arguments are case-sensitive.`,

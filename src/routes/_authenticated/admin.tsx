@@ -310,7 +310,9 @@ export function AdminControlCenter() {
             <span>Curriculum</span>
             <BookOpen className="h-3.5 w-3.5 text-primary" />
           </div>
-          <div className="text-base font-bold font-mono text-foreground">{CATALOG_COURSES.length} Tracks</div>
+          <div className="text-base font-bold font-mono text-foreground">
+            {CATALOG_COURSES.length} Tracks
+          </div>
           <span className="text-[10px] text-muted-foreground">150+ interactive labs</span>
         </div>
         <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
@@ -318,7 +320,9 @@ export function AdminControlCenter() {
             <span>Hardware DB</span>
             <Cpu className="h-3.5 w-3.5 text-amber-400" />
           </div>
-          <div className="text-base font-bold font-mono text-amber-400">{HARDWARE_DATA.length} Items</div>
+          <div className="text-base font-bold font-mono text-amber-400">
+            {HARDWARE_DATA.length} Items
+          </div>
           <span className="text-[10px] text-muted-foreground">Tested components</span>
         </div>
         <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
@@ -326,7 +330,9 @@ export function AdminControlCenter() {
             <span>Distros</span>
             <Laptop className="h-3.5 w-3.5 text-sky-400" />
           </div>
-          <div className="text-base font-bold font-mono text-sky-400">{DISTROS_DATA.length} Distros</div>
+          <div className="text-base font-bold font-mono text-sky-400">
+            {DISTROS_DATA.length} Distros
+          </div>
           <span className="text-[10px] text-muted-foreground">Finder quiz matrix</span>
         </div>
         <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
@@ -334,7 +340,9 @@ export function AdminControlCenter() {
             <span>App Alts</span>
             <Layers className="h-3.5 w-3.5 text-purple-400" />
           </div>
-          <div className="text-base font-bold font-mono text-purple-400">{APPS_DATA.length} Apps</div>
+          <div className="text-base font-bold font-mono text-purple-400">
+            {APPS_DATA.length} Apps
+          </div>
           <span className="text-[10px] text-muted-foreground">Linux replacements</span>
         </div>
         <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
@@ -342,7 +350,9 @@ export function AdminControlCenter() {
             <span>Exam Bank</span>
             <Award className="h-3.5 w-3.5 text-emerald-400" />
           </div>
-          <div className="text-base font-bold font-mono text-emerald-400">{EXAM_QUESTIONS.length} Items</div>
+          <div className="text-base font-bold font-mono text-emerald-400">
+            {EXAM_QUESTIONS.length} Items
+          </div>
           <span className="text-[10px] text-muted-foreground">RHCSA / LFCS prep</span>
         </div>
         <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
@@ -350,7 +360,9 @@ export function AdminControlCenter() {
             <span>Commands</span>
             <Terminal className="h-3.5 w-3.5 text-primary" />
           </div>
-          <div className="text-base font-bold font-mono text-primary">{COMMANDS_DATA.length} CMDs</div>
+          <div className="text-base font-bold font-mono text-primary">
+            {COMMANDS_DATA.length} CMDs
+          </div>
           <span className="text-[10px] text-muted-foreground">Bash translations</span>
         </div>
       </div>
@@ -1461,40 +1473,229 @@ interface SitePageEntry {
   path: string;
   label: string;
   desc: string;
-  category: "Core" | "Learning" | "Interactive" | "Ecosystem" | "Hardware" | "Gaming" | "Migration" | "Tools" | "References" | "Resources" | "AI" | "Learner" | "Auth" | "Legal" | "Admin";
+  category:
+    | "Core"
+    | "Learning"
+    | "Interactive"
+    | "Ecosystem"
+    | "Hardware"
+    | "Gaming"
+    | "Migration"
+    | "Tools"
+    | "References"
+    | "Resources"
+    | "AI"
+    | "Learner"
+    | "Auth"
+    | "Legal"
+    | "Admin";
   publishedByDefault: boolean;
 }
 
 const SITE_PAGES: SitePageEntry[] = [
-  { path: "/", label: "Landing / Home", desc: "Main public landing page and interactive showcase", category: "Core", publishedByDefault: true },
-  { path: "/courses", label: "Courses Catalog", desc: "Master track directory: Linux, Security, DevOps, Cloud", category: "Learning", publishedByDefault: true },
-  { path: "/courses/rhel", label: "RHEL Track Overview", desc: "Enterprise Linux administration curriculum hub", category: "Learning", publishedByDefault: true },
-  { path: "/courses/rhel/rhel-01", label: "RHEL Interactive Lesson", desc: "Curriculum player with video, lab sandbox, and notes", category: "Learning", publishedByDefault: true },
-  { path: "/courses/rhel/practice", label: "RHEL Practice Challenges", desc: "Hands-on scenario exercises with evaluation", category: "Learning", publishedByDefault: true },
-  { path: "/dashboard", label: "Learner Dashboard", desc: "Personal progress telemetry, XP awards, and streak tracking", category: "Learner", publishedByDefault: true },
-  { path: "/lab", label: "Live Terminal Sandbox", desc: "Browser-based virtual Linux bash environment with filesystem", category: "Interactive", publishedByDefault: true },
-  { path: "/exam/practice", label: "Exam Practice Center", desc: "Full-length timed Linux certification mock exams", category: "Interactive", publishedByDefault: true },
-  { path: "/certification", label: "Certification Hub", desc: "Official verification portal and exam syllabus", category: "Interactive", publishedByDefault: true },
-  { path: "/distros", label: "Linux Distros Matrix", desc: "Comprehensive Linux distributions matrix and benchmarks", category: "Ecosystem", publishedByDefault: true },
-  { path: "/distro-finder", label: "Distro Recommendation Quiz", desc: "Interactive recommendation quiz matching users to distros", category: "Ecosystem", publishedByDefault: true },
-  { path: "/apps", label: "App Alternatives", desc: "Direct Windows to Linux application alternatives directory", category: "Migration", publishedByDefault: true },
-  { path: "/hardware-compatibility", label: "Hardware Compatibility", desc: "Component compatibility matrix and diagnostic shell tools", category: "Hardware", publishedByDefault: true },
-  { path: "/gaming", label: "Linux Gaming & Proton", desc: "Steam ProtonDB tiers, launch tweaks, and game compatibility", category: "Gaming", publishedByDefault: true },
-  { path: "/migration-guides", label: "Migration Guides", desc: "Step-by-step Windows to Linux transition pathways", category: "Migration", publishedByDefault: true },
-  { path: "/tools/command-translator", label: "Command Translator", desc: "Windows CMD/PowerShell to Linux Bash command converter", category: "Tools", publishedByDefault: true },
-  { path: "/tools/cron-builder", label: "Cron Expression Builder", desc: "Visual interactive crontab generator and syntax parser", category: "Tools", publishedByDefault: true },
-  { path: "/tools/permissions-calculator", label: "Permissions Calculator", desc: "Octal and symbolic chmod permissions matrix calculator", category: "Tools", publishedByDefault: true },
-  { path: "/cheat-sheets", label: "Cheat Sheets Library", desc: "Printable and searchable Linux commands cheat sheets", category: "References", publishedByDefault: true },
-  { path: "/docs", label: "Command Docs Reference", category: "References", desc: "Full command manual pages with syntax and examples", publishedByDefault: true },
-  { path: "/docs/ls", label: "Command Reference (ls)", category: "References", desc: "Deep reference manual for the core ls command", publishedByDefault: true },
-  { path: "/tutorials", label: "Tutorials Hub", desc: "Step-by-step guides for everyday Linux tasks", category: "Learning", publishedByDefault: true },
-  { path: "/resources", label: "Resources & Downloads", desc: "Curated books, interactive labs, repositories, and podcasts", category: "Resources", publishedByDefault: true },
-  { path: "/chat", label: "AI Linux Assistant", desc: "Curriculum-grounded AI mentor with real-time assistance", category: "AI", publishedByDefault: true },
-  { path: "/profile", label: "Learner Profile", desc: "User profile, badges, certifications, and portfolio", category: "Learner", publishedByDefault: true },
-  { path: "/auth", label: "Authentication Portal", desc: "Sign in, registration, and credential recovery gateway", category: "Auth", publishedByDefault: true },
-  { path: "/terms", label: "Terms & Privacy", desc: "Platform terms of service and data privacy guidelines", category: "Legal", publishedByDefault: true },
-  { path: "/admin", label: "Admin Control Center", desc: "Central administration mission control and data hub", category: "Admin", publishedByDefault: true },
-  { path: "/admin/manage-courses", label: "Course Management", desc: "Course CRUD and syllabus manager", category: "Admin", publishedByDefault: true },
+  {
+    path: "/",
+    label: "Landing / Home",
+    desc: "Main public landing page and interactive showcase",
+    category: "Core",
+    publishedByDefault: true,
+  },
+  {
+    path: "/courses",
+    label: "Courses Catalog",
+    desc: "Master track directory: Linux, Security, DevOps, Cloud",
+    category: "Learning",
+    publishedByDefault: true,
+  },
+  {
+    path: "/courses/rhel",
+    label: "RHEL Track Overview",
+    desc: "Enterprise Linux administration curriculum hub",
+    category: "Learning",
+    publishedByDefault: true,
+  },
+  {
+    path: "/courses/rhel/rhel-01",
+    label: "RHEL Interactive Lesson",
+    desc: "Curriculum player with video, lab sandbox, and notes",
+    category: "Learning",
+    publishedByDefault: true,
+  },
+  {
+    path: "/courses/rhel/practice",
+    label: "RHEL Practice Challenges",
+    desc: "Hands-on scenario exercises with evaluation",
+    category: "Learning",
+    publishedByDefault: true,
+  },
+  {
+    path: "/dashboard",
+    label: "Learner Dashboard",
+    desc: "Personal progress telemetry, XP awards, and streak tracking",
+    category: "Learner",
+    publishedByDefault: true,
+  },
+  {
+    path: "/lab",
+    label: "Live Terminal Sandbox",
+    desc: "Browser-based virtual Linux bash environment with filesystem",
+    category: "Interactive",
+    publishedByDefault: true,
+  },
+  {
+    path: "/exam/practice",
+    label: "Exam Practice Center",
+    desc: "Full-length timed Linux certification mock exams",
+    category: "Interactive",
+    publishedByDefault: true,
+  },
+  {
+    path: "/certification",
+    label: "Certification Hub",
+    desc: "Official verification portal and exam syllabus",
+    category: "Interactive",
+    publishedByDefault: true,
+  },
+  {
+    path: "/distros",
+    label: "Linux Distros Matrix",
+    desc: "Comprehensive Linux distributions matrix and benchmarks",
+    category: "Ecosystem",
+    publishedByDefault: true,
+  },
+  {
+    path: "/distro-finder",
+    label: "Distro Recommendation Quiz",
+    desc: "Interactive recommendation quiz matching users to distros",
+    category: "Ecosystem",
+    publishedByDefault: true,
+  },
+  {
+    path: "/apps",
+    label: "App Alternatives",
+    desc: "Direct Windows to Linux application alternatives directory",
+    category: "Migration",
+    publishedByDefault: true,
+  },
+  {
+    path: "/hardware-compatibility",
+    label: "Hardware Compatibility",
+    desc: "Component compatibility matrix and diagnostic shell tools",
+    category: "Hardware",
+    publishedByDefault: true,
+  },
+  {
+    path: "/gaming",
+    label: "Linux Gaming & Proton",
+    desc: "Steam ProtonDB tiers, launch tweaks, and game compatibility",
+    category: "Gaming",
+    publishedByDefault: true,
+  },
+  {
+    path: "/migration-guides",
+    label: "Migration Guides",
+    desc: "Step-by-step Windows to Linux transition pathways",
+    category: "Migration",
+    publishedByDefault: true,
+  },
+  {
+    path: "/tools/command-translator",
+    label: "Command Translator",
+    desc: "Windows CMD/PowerShell to Linux Bash command converter",
+    category: "Tools",
+    publishedByDefault: true,
+  },
+  {
+    path: "/tools/cron-builder",
+    label: "Cron Expression Builder",
+    desc: "Visual interactive crontab generator and syntax parser",
+    category: "Tools",
+    publishedByDefault: true,
+  },
+  {
+    path: "/tools/permissions-calculator",
+    label: "Permissions Calculator",
+    desc: "Octal and symbolic chmod permissions matrix calculator",
+    category: "Tools",
+    publishedByDefault: true,
+  },
+  {
+    path: "/cheat-sheets",
+    label: "Cheat Sheets Library",
+    desc: "Printable and searchable Linux commands cheat sheets",
+    category: "References",
+    publishedByDefault: true,
+  },
+  {
+    path: "/docs",
+    label: "Command Docs Reference",
+    category: "References",
+    desc: "Full command manual pages with syntax and examples",
+    publishedByDefault: true,
+  },
+  {
+    path: "/docs/ls",
+    label: "Command Reference (ls)",
+    category: "References",
+    desc: "Deep reference manual for the core ls command",
+    publishedByDefault: true,
+  },
+  {
+    path: "/tutorials",
+    label: "Tutorials Hub",
+    desc: "Step-by-step guides for everyday Linux tasks",
+    category: "Learning",
+    publishedByDefault: true,
+  },
+  {
+    path: "/resources",
+    label: "Resources & Downloads",
+    desc: "Curated books, interactive labs, repositories, and podcasts",
+    category: "Resources",
+    publishedByDefault: true,
+  },
+  {
+    path: "/chat",
+    label: "AI Linux Assistant",
+    desc: "Curriculum-grounded AI mentor with real-time assistance",
+    category: "AI",
+    publishedByDefault: true,
+  },
+  {
+    path: "/profile",
+    label: "Learner Profile",
+    desc: "User profile, badges, certifications, and portfolio",
+    category: "Learner",
+    publishedByDefault: true,
+  },
+  {
+    path: "/auth",
+    label: "Authentication Portal",
+    desc: "Sign in, registration, and credential recovery gateway",
+    category: "Auth",
+    publishedByDefault: true,
+  },
+  {
+    path: "/terms",
+    label: "Terms & Privacy",
+    desc: "Platform terms of service and data privacy guidelines",
+    category: "Legal",
+    publishedByDefault: true,
+  },
+  {
+    path: "/admin",
+    label: "Admin Control Center",
+    desc: "Central administration mission control and data hub",
+    category: "Admin",
+    publishedByDefault: true,
+  },
+  {
+    path: "/admin/manage-courses",
+    label: "Course Management",
+    desc: "Course CRUD and syllabus manager",
+    category: "Admin",
+    publishedByDefault: true,
+  },
 ];
 
 function AdminPagesManager() {
@@ -1513,9 +1714,11 @@ function AdminPagesManager() {
   const [bannerDraft, setBannerDraft] = useState("");
   const [search, setSearch] = useState("");
   const [selectedCat, setSelectedCat] = useState<string>("All");
-  
+
   // Real-time route audit state
-  const [auditResults, setAuditResults] = useState<Record<string, { status: number; duration: number; ok: boolean }>>({});
+  const [auditResults, setAuditResults] = useState<
+    Record<string, { status: number; duration: number; ok: boolean }>
+  >({});
   const [auditing, setAuditing] = useState(false);
 
   async function runAudit() {
@@ -1582,7 +1785,8 @@ function AdminPagesManager() {
             <LayoutDashboard className="w-5 h-5 text-primary" /> Platform Pages & Live Health Audit
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Monitor all 29 routes, run live response audits, toggle public availability, and broadcast announcement banners.
+            Monitor all 29 routes, run live response audits, toggle public availability, and
+            broadcast announcement banners.
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
@@ -1591,7 +1795,11 @@ function AdminPagesManager() {
             disabled={auditing}
             className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm disabled:opacity-50"
           >
-            {auditing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+            {auditing ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <Play className="w-3.5 h-3.5" />
+            )}
             {auditing ? "Pinging All Routes…" : "Run Full Route Audit"}
           </button>
           <div className="flex items-center gap-2 text-xs">
@@ -1648,7 +1856,9 @@ function AdminPagesManager() {
             <div
               key={page.path}
               className={`rounded-2xl border bg-card p-4 space-y-3 transition ${
-                isPublished ? "border-border hover:border-primary/40" : "border-border/40 opacity-60"
+                isPublished
+                  ? "border-border hover:border-primary/40"
+                  : "border-border/40 opacity-60"
               }`}
             >
               <div className="flex items-start justify-between gap-4">
@@ -1669,7 +1879,9 @@ function AdminPagesManager() {
                             : "bg-destructive/15 text-destructive border border-destructive/30"
                         }`}
                       >
-                        <span className={`h-1.5 w-1.5 rounded-full ${audit.ok ? "bg-emerald-400" : "bg-destructive"}`} />
+                        <span
+                          className={`h-1.5 w-1.5 rounded-full ${audit.ok ? "bg-emerald-400" : "bg-destructive"}`}
+                        />
                         {audit.status} OK ({audit.duration}ms)
                       </span>
                     )}
@@ -1832,7 +2044,8 @@ function AdminHardwareManager() {
             <Cpu className="w-5 h-5 text-amber-400" /> Hardware Compatibility Database
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Manage tested GPU, Wi-Fi, Audio, and Laptop hardware profiles, Linux kernel versions, and diagnostic probe tools.
+            Manage tested GPU, Wi-Fi, Audio, and Laptop hardware profiles, Linux kernel versions,
+            and diagnostic probe tools.
           </p>
         </div>
         <div className="flex items-center gap-2 text-xs font-mono font-semibold text-muted-foreground">
@@ -1913,7 +2126,9 @@ function AdminHardwareManager() {
                   </span>
                   <h3 className="font-bold text-sm text-foreground mt-1">{hw.name}</h3>
                 </div>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierColors[hw.compatibility] || "bg-secondary"}`}>
+                <span
+                  className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierColors[hw.compatibility] || "bg-secondary"}`}
+                >
                   {hw.compatibility.split(" ")[0]}
                 </span>
               </div>
@@ -1923,7 +2138,10 @@ function AdminHardwareManager() {
               <p className="text-xs text-muted-foreground line-clamp-2">{hw.notes}</p>
               <div className="pt-2 border-t border-border flex flex-wrap gap-1">
                 {hw.testedDistros.map((d) => (
-                  <span key={d} className="text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground">
+                  <span
+                    key={d}
+                    className="text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground"
+                  >
                     {d}
                   </span>
                 ))}
@@ -1940,14 +2158,21 @@ function AdminHardwareManager() {
         </h3>
         <div className="grid gap-3 sm:grid-cols-2">
           {DIAGNOSTIC_COMMANDS.map((diag) => (
-            <div key={diag.cmd} className="p-3 rounded-xl border border-border bg-background space-y-1.5">
+            <div
+              key={diag.cmd}
+              className="p-3 rounded-xl border border-border bg-background space-y-1.5"
+            >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-foreground">{diag.title}</span>
                 <button
                   onClick={() => copy(diag.cmd)}
                   className="flex items-center gap-1 text-[10px] text-primary font-semibold hover:underline"
                 >
-                  {copiedCmd === diag.cmd ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copiedCmd === diag.cmd ? (
+                    <Check className="w-3 h-3" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
                   {copiedCmd === diag.cmd ? "Copied" : "Copy"}
                 </button>
               </div>
@@ -1989,7 +2214,9 @@ function AdminAppsMigrationManager() {
       app.name.toLowerCase().includes(q) ||
       app.category.toLowerCase().includes(q) ||
       app.summary.toLowerCase().includes(q) ||
-      app.alternatives.some((a) => a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q));
+      app.alternatives.some(
+        (a) => a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q),
+      );
     return matchCat && matchQ;
   });
 
@@ -2001,7 +2228,8 @@ function AdminAppsMigrationManager() {
             <Layers className="w-5 h-5 text-purple-400" /> Windows to Linux Apps & Migration Hub
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Directory of {APPS_DATA.length} Windows software applications with their native Linux replacements, install packages, and transition guides.
+            Directory of {APPS_DATA.length} Windows software applications with their native Linux
+            replacements, install packages, and transition guides.
           </p>
         </div>
         <Link
@@ -2061,7 +2289,10 @@ function AdminAppsMigrationManager() {
             <p className="text-xs text-muted-foreground">{app.summary}</p>
             <div className="space-y-2 pt-1">
               {app.alternatives.map((alt) => (
-                <div key={alt.name} className="p-2.5 rounded-xl border border-border/80 bg-background/60 space-y-1">
+                <div
+                  key={alt.name}
+                  className="p-2.5 rounded-xl border border-border/80 bg-background/60 space-y-1"
+                >
                   <div className="flex items-center justify-between">
                     <span className="font-bold text-xs text-foreground">{alt.name}</span>
                     <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
@@ -2083,10 +2314,15 @@ function AdminAppsMigrationManager() {
 
       {/* Migration Pathways Preview */}
       <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-        <h3 className="font-bold text-sm text-foreground">Migration Pathways ({MIGRATION_GUIDES.length} Workflows)</h3>
+        <h3 className="font-bold text-sm text-foreground">
+          Migration Pathways ({MIGRATION_GUIDES.length} Workflows)
+        </h3>
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {MIGRATION_GUIDES.map((guide) => (
-            <div key={guide.id} className="p-3.5 rounded-xl border border-border bg-background space-y-2">
+            <div
+              key={guide.id}
+              className="p-3.5 rounded-xl border border-border bg-background space-y-2"
+            >
               <div className="flex items-center gap-2">
                 <span className="text-xl">{guide.icon}</span>
                 <span className="font-bold text-xs text-foreground">{guide.title}</span>
@@ -2112,7 +2348,8 @@ function AdminDistrosGamingManager() {
   const bases = ["All", "Debian", "Ubuntu", "Arch", "Red Hat / Fedora", "openSUSE", "Independent"];
 
   const filteredDistros = DISTROS_DATA.filter((d) => {
-    const matchBase = selectedBase === "All" || d.base.toLowerCase().includes(selectedBase.toLowerCase());
+    const matchBase =
+      selectedBase === "All" || d.base.toLowerCase().includes(selectedBase.toLowerCase());
     const q = search.toLowerCase();
     const matchQ =
       !q ||
@@ -2130,7 +2367,8 @@ function AdminDistrosGamingManager() {
             <Gamepad2 className="w-5 h-5 text-sky-400" /> Distros Catalog & Gaming Matrix
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Manage {DISTROS_DATA.length} Linux operating system profiles, Steam Proton gaming tiers, and launch argument optimizations.
+            Manage {DISTROS_DATA.length} Linux operating system profiles, Steam Proton gaming tiers,
+            and launch argument optimizations.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -2183,7 +2421,10 @@ function AdminDistrosGamingManager() {
       {/* Distros Grid */}
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {filteredDistros.map((d) => (
-          <div key={d.id} className="rounded-2xl border border-border bg-card p-4 space-y-2 hover:border-primary/40 transition">
+          <div
+            key={d.id}
+            className="rounded-2xl border border-border bg-card p-4 space-y-2 hover:border-primary/40 transition"
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">{d.logo}</span>
@@ -2213,7 +2454,10 @@ function AdminDistrosGamingManager() {
           </h3>
           <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
             {ANTI_CHEAT_GAMES.map((game: AntiCheatGame) => (
-              <div key={game.name} className="p-2.5 rounded-xl border border-border bg-background flex items-center justify-between text-xs">
+              <div
+                key={game.name}
+                className="p-2.5 rounded-xl border border-border bg-background flex items-center justify-between text-xs"
+              >
                 <div>
                   <span className="font-bold text-foreground">{game.name}</span>
                   <p className="text-[11px] text-muted-foreground">{game.antiCheat}</p>
@@ -2222,7 +2466,9 @@ function AdminDistrosGamingManager() {
                   <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold block">
                     {game.protonTier}
                   </span>
-                  <span className="text-[10px] text-muted-foreground">{game.status.split(" ")[0]}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {game.status.split(" ")[0]}
+                  </span>
                 </div>
               </div>
             ))}
@@ -2235,7 +2481,10 @@ function AdminDistrosGamingManager() {
           </h3>
           <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
             {GPU_DRIVER_GUIDES.map((guide) => (
-              <div key={guide.gpu} className="p-2.5 rounded-xl border border-border bg-background space-y-1 text-xs">
+              <div
+                key={guide.gpu}
+                className="p-2.5 rounded-xl border border-border bg-background space-y-1 text-xs"
+              >
                 <span className="font-bold text-foreground">{guide.gpu}</span>
                 <code className="block p-1 rounded bg-secondary text-[10px] font-mono text-primary truncate">
                   {guide.ubuntu}
@@ -2284,7 +2533,8 @@ function AdminExamBankManager() {
             <Award className="w-5 h-5 text-emerald-400" /> Certification Exam Question Bank
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Authoring and audit bank for {EXAM_QUESTIONS.length} RHCSA, LFCS, and Linux+ practice examination questions.
+            Authoring and audit bank for {EXAM_QUESTIONS.length} RHCSA, LFCS, and Linux+ practice
+            examination questions.
           </p>
         </div>
         <Link
@@ -2354,7 +2604,9 @@ function AdminExamBankManager() {
                   }`}
                 >
                   <span>{opt}</span>
-                  {oIdx === q.correctIndex && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                  {oIdx === q.correctIndex && (
+                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                  )}
                 </div>
               ))}
             </div>
@@ -2406,7 +2658,8 @@ function AdminCommandsCheatsheetsManager() {
             <Terminal className="w-5 h-5 text-primary" /> Commands & Cheat Sheets Matrix
           </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Inspect {COMMANDS_DATA.length} Windows-to-Linux command translations and {CHEATSHEETS_DATA.length} curriculum cheat sheet categories.
+            Inspect {COMMANDS_DATA.length} Windows-to-Linux command translations and{" "}
+            {CHEATSHEETS_DATA.length} curriculum cheat sheet categories.
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -2470,7 +2723,10 @@ function AdminCommandsCheatsheetsManager() {
             </thead>
             <tbody className="divide-y divide-border">
               {filteredCmds.map((cmd) => (
-                <tr key={cmd.windowsCmd + cmd.linuxCmd} className="hover:bg-secondary/20 transition">
+                <tr
+                  key={cmd.windowsCmd + cmd.linuxCmd}
+                  className="hover:bg-secondary/20 transition"
+                >
                   <td className="p-3.5 font-mono text-muted-foreground">{cmd.windowsCmd}</td>
                   <td className="p-3.5 font-mono font-bold text-primary">{cmd.linuxCmd}</td>
                   <td className="p-3.5">
@@ -2493,10 +2749,15 @@ function AdminCommandsCheatsheetsManager() {
 
       {/* Cheat Sheets Overview */}
       <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
-        <h3 className="font-bold text-sm text-foreground">Cheat Sheet Categories ({CHEATSHEETS_DATA.length} Modules)</h3>
+        <h3 className="font-bold text-sm text-foreground">
+          Cheat Sheet Categories ({CHEATSHEETS_DATA.length} Modules)
+        </h3>
         <div className="grid gap-3 sm:grid-cols-3">
           {CHEATSHEETS_DATA.map((cs) => (
-            <div key={cs.id} className="p-3.5 rounded-xl border border-border bg-background space-y-1.5">
+            <div
+              key={cs.id}
+              className="p-3.5 rounded-xl border border-border bg-background space-y-1.5"
+            >
               <div className="flex items-center gap-2">
                 <span className="text-xl">{cs.icon}</span>
                 <span className="font-bold text-xs text-foreground">{cs.title}</span>

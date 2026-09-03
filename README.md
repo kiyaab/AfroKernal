@@ -9,10 +9,10 @@
 ---
 
 ![Platform](https://img.shields.io/badge/Platform-Linux%20Learning-blue?style=for-the-badge)
-![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square\&logo=react)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square\&logo=typescript)
-![Vite](https://img.shields.io/badge/Vite-Latest-646CFF?style=flat-square\&logo=vite)
-![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-06B6D4?style=flat-square\&logo=tailwindcss)
+![React](https://img.shields.io/badge/React-19-61DAFB?style=flat-square&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=flat-square&logo=typescript)
+![Vite](https://img.shields.io/badge/Vite-Latest-646CFF?style=flat-square&logo=vite)
+![TailwindCSS](https://img.shields.io/badge/TailwindCSS-4.x-06B6D4?style=flat-square&logo=tailwindcss)
 
 </div>
 
@@ -38,105 +38,105 @@ To empower Africa and the global technology community by providing high-quality,
 
 ## 📚 Learning Platform
 
-* Beginner to Advanced Linux Courses
-* Structured Learning Paths
-* Interactive Lessons
-* Progress Tracking
-* Learning Dashboard
-* Course Certificates
+- Beginner to Advanced Linux Courses
+- Structured Learning Paths
+- Interactive Lessons
+- Progress Tracking
+- Learning Dashboard
+- Course Certificates
 
 ---
 
 ## 💻 Hands-on Labs
 
-* Interactive Linux Terminal
-* Real Command Practice
-* Guided Lab Exercises
-* Virtual Linux Environment
-* File System Challenges
-* Shell Scripting Exercises
+- Interactive Linux Terminal
+- Real Command Practice
+- Guided Lab Exercises
+- Virtual Linux Environment
+- File System Challenges
+- Shell Scripting Exercises
 
 ---
 
 ## 🤖 AI Learning Assistant
 
-* AI Linux Tutor
-* Command Explanations
-* Error Diagnosis
-* Step-by-Step Guidance
-* Server Troubleshooting
-* Instant Q&A
+- AI Linux Tutor
+- Command Explanations
+- Error Diagnosis
+- Step-by-Step Guidance
+- Server Troubleshooting
+- Instant Q&A
 
 ---
 
 ## 🖥 Linux Administration Topics
 
-* Linux Fundamentals
-* File System Management
-* User & Group Administration
-* Permissions & Ownership
-* Bash Shell
-* Shell Scripting
-* Package Management
-* Process Management
-* System Monitoring
-* Networking
-* SSH Administration
-* Firewall Configuration
-* Storage Management
-* LVM
-* RAID
-* Cron Jobs
-* Services (systemd)
-* Log Management
-* Apache & Nginx
-* DNS
-* DHCP
-* Docker
-* Virtualization
-* Backup & Recovery
-* Security Hardening
+- Linux Fundamentals
+- File System Management
+- User & Group Administration
+- Permissions & Ownership
+- Bash Shell
+- Shell Scripting
+- Package Management
+- Process Management
+- System Monitoring
+- Networking
+- SSH Administration
+- Firewall Configuration
+- Storage Management
+- LVM
+- RAID
+- Cron Jobs
+- Services (systemd)
+- Log Management
+- Apache & Nginx
+- DNS
+- DHCP
+- Docker
+- Virtualization
+- Backup & Recovery
+- Security Hardening
 
 ---
 
 ## 🔐 Authentication
 
-* Secure Login
-* User Profiles
-* Role-Based Access
-* Progress Synchronization
+- Secure Login
+- User Profiles
+- Role-Based Access
+- Progress Synchronization
 
 ---
 
 ## 📊 Dashboard
 
-* Learning Progress
-* Completed Courses
-* Certificates
-* Recent Activities
-* XP & Achievements
-* Learning Statistics
+- Learning Progress
+- Completed Courses
+- Certificates
+- Recent Activities
+- XP & Achievements
+- Learning Statistics
 
 ---
 
 ## 🏆 Gamification
 
-* Badges
-* XP Points
-* Leaderboards
-* Daily Challenges
-* Weekly Missions
+- Badges
+- XP Points
+- Leaderboards
+- Daily Challenges
+- Weekly Missions
 
 ---
 
 ## 📱 Platform Features
 
-* Responsive Design
-* Dark Mode
-* Mobile Friendly
-* Fast Performance
-* Modern UI
-* Offline Learning Support
+- Responsive Design
+- Dark Mode
+- Mobile Friendly
+- Fast Performance
+- Modern UI
+- Offline Learning Support
 
 ---
 
@@ -144,32 +144,32 @@ To empower Africa and the global technology community by providing high-quality,
 
 ### Frontend
 
-* React
-* TypeScript
-* Vite
-* Tailwind CSS
-* TanStack Router
-* TanStack Query
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- TanStack Router
+- TanStack Query
 
 ### Backend
 
-* Node.js
-* REST API
+- Node.js
+- REST API
 
 ### Database
 
-* PostgreSQL / MySQL
+- PostgreSQL / MySQL
 
 ### Authentication
 
-* JWT
-* OAuth
+- JWT
+- OAuth
 
 ### Deployment
 
-* Docker
-* Nginx
-* GitHub
+- Docker
+- Nginx
+- GitHub
 
 ---
 
@@ -283,57 +283,62 @@ docker run -d -p 3000:3000 --name afrokernel-app --env-file .env afrokernel:late
 AfroKernal includes automated GitHub Actions workflows for continuous integration and delivery.
 
 ### 1. Continuous Integration (`.github/workflows/ci.yml`)
+
 Runs automatically on every Pull Request and push to `main`, `master`, and `develop`:
-* **Code Quality & Linting**: ESLint checks
-* **Type Validation**: TypeScript compiler check (`tsc --noEmit`)
-* **Build Verification**: Production Vite/TanStack build verification
-* **Docker Validation**: Multi-stage Docker build verification with layer caching
+
+- **Code Quality & Linting**: ESLint checks
+- **Type Validation**: TypeScript compiler check (`tsc --noEmit`)
+- **Build Verification**: Production Vite/TanStack build verification
+- **Docker Validation**: Multi-stage Docker build verification with layer caching
 
 ### 2. Continuous Delivery (`.github/workflows/cd.yml`)
+
 Runs on pushes to `main`/`master` or release tags (`v*`):
-* **GHCR Container Registry**: Automatically builds and publishes multi-platform container images to `ghcr.io/<username>/afrokernal`
-* **Automated Tagging**: Generates `latest`, `sha-<commit>`, and semantic version tags (`v1.0.0`, `1.0`)
-* **Deployment Trigger**: Extensible deployment hook for automated deployment rollouts
+
+- **GHCR Container Registry**: Automatically builds and publishes multi-platform container images to `ghcr.io/<username>/afrokernal`
+- **Automated Tagging**: Generates `latest`, `sha-<commit>`, and semantic version tags (`v1.0.0`, `1.0`)
+- **Deployment Trigger**: Extensible deployment hook for automated deployment rollouts
 
 #### Required GitHub Repository Secrets (Optional for Custom Supabase Config)
-* `VITE_SUPABASE_URL`
-* `VITE_SUPABASE_PUBLISHABLE_KEY`
-* `VITE_SUPABASE_PROJECT_ID`
-* `DEPLOY_WEBHOOK_URL` (optional, for triggering webhook deployment)
+
+- `VITE_SUPABASE_URL`
+- `VITE_SUPABASE_PUBLISHABLE_KEY`
+- `VITE_SUPABASE_PROJECT_ID`
+- `DEPLOY_WEBHOOK_URL` (optional, for triggering webhook deployment)
 
 ---
 
 # 🎓 Learning Roadmap
 
-* Linux Basics
-* Linux Commands
-* File Systems
-* Bash Scripting
-* Users & Groups
-* Networking
-* Services
-* Storage
-* Security
-* Containers
-* DevOps Essentials
-* Cloud Linux Administration
+- Linux Basics
+- Linux Commands
+- File Systems
+- Bash Scripting
+- Users & Groups
+- Networking
+- Services
+- Storage
+- Security
+- Containers
+- DevOps Essentials
+- Cloud Linux Administration
 
 ---
 
 # 🚀 Future Features
 
-* AI Command Generator
-* AI Terminal Assistant
-* Live Linux Sandbox
-* Multi-Distribution Support
-* Certification Exams
-* Virtual Machines
-* Kubernetes Labs
-* Cloud Labs
-* Community Forum
-* Instructor Dashboard
-* Team Learning
-* Enterprise Training
+- AI Command Generator
+- AI Terminal Assistant
+- Live Linux Sandbox
+- Multi-Distribution Support
+- Certification Exams
+- Virtual Machines
+- Kubernetes Labs
+- Cloud Labs
+- Community Forum
+- Instructor Dashboard
+- Team Learning
+- Enterprise Training
 
 ---
 

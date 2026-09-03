@@ -22,7 +22,14 @@ export interface CourseData {
   title: string;
   subtitle: string;
   description: string;
-  category: "Fundamentals" | "Enterprise Linux" | "Cybersecurity" | "DevOps" | "Networking" | "Scripting" | "Cloud";
+  category:
+    | "Fundamentals"
+    | "Enterprise Linux"
+    | "Cybersecurity"
+    | "DevOps"
+    | "Networking"
+    | "Scripting"
+    | "Cloud";
   difficulty: "beginner" | "intermediate" | "advanced";
   duration_hours: number;
   rating: number;
@@ -1489,8 +1496,7 @@ rpm -q redhat-release
 \`\`\`
 `,
         quiz: {
-          question:
-            "In the Red Hat development model, what role does CentOS Stream serve?",
+          question: "In the Red Hat development model, what role does CentOS Stream serve?",
           choices: [
             "A completely unrelated non-Linux operating system",
             "The continuous midstream development branch tracking upcoming RHEL minor releases",
@@ -1903,12 +1909,7 @@ sudo firewall-cmd --reload
         quiz: {
           question:
             "After adding firewall rules with 'firewall-cmd --permanent', what command must be run to apply the changes to the active firewall without dropping current connections?",
-          choices: [
-            "systemctl restart network",
-            "firewall-cmd --reload",
-            "iptables -F",
-            "reboot",
-          ],
+          choices: ["systemctl restart network", "firewall-cmd --reload", "iptables -F", "reboot"],
           correctIndex: 1,
           explanation:
             "`firewall-cmd --reload` loads the permanent configuration into runtime memory without disrupting established client connections.",
@@ -1959,12 +1960,7 @@ To pass the Red Hat Certified System Administrator practical hands-on exam:
         quiz: {
           question:
             "Which systemd socket unit manages on-demand socket activation for the Red Hat Cockpit Web Console?",
-          choices: [
-            "cockpit.socket",
-            "webadmin.service",
-            "rhel-dashboard.socket",
-            "httpd.service",
-          ],
+          choices: ["cockpit.socket", "webadmin.service", "rhel-dashboard.socket", "httpd.service"],
           correctIndex: 0,
           explanation:
             "`cockpit.socket` listens on port 9090 and starts the Cockpit service on-demand when an incoming HTTPS connection arrives, saving system memory when idle.",

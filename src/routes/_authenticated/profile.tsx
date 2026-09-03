@@ -77,7 +77,6 @@ const DISTROS = [
   "NixOS",
 ];
 
-
 const AVATAR_PRESETS = [
   {
     id: "tux",
