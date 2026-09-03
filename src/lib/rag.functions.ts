@@ -3,43 +3,65 @@ import { createClient } from "@supabase/supabase-js";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { chat, embed, type ChatMessage } from "./ai-gateway.server";
 
+import { getStaticCommandsList, getStaticCommandDoc } from "./commands-docs-data";
+
 function serverPublic() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY!;
-  return createClient(process.env.SUPABASE_URL!, key, {
-    auth: { persistSession: false, autoRefreshToken: false },
-    global: {
-      fetch: (input, init) => {
-        const h = new Headers(init?.headers);
-        if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
-          h.delete("Authorization");
-        h.set("apikey", key);
-        return fetch(input, { ...init, headers: h });
+  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
+  const url = process.env.SUPABASE_URL;
+  if (!url || !key) return null;
+  try {
+    return createClient(url, key, {
+      auth: { persistSession: false, autoRefreshToken: false },
+      global: {
+        fetch: (input, init) => {
+          const h = new Headers(init?.headers);
+          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
+            h.delete("Authorization");
+          h.set("apikey", key);
+          return fetch(input, { ...init, headers: h });
+        },
       },
-    },
-  });
+    });
+  } catch {
+    return null;
+  }
 }
 
 export const listCommands = createServerFn({ method: "GET" }).handler(async () => {
-  const sb = serverPublic();
-  const { data, error } = await sb
-    .from("linux_commands")
-    .select("slug,name,category,short_desc")
-    .order("name");
-  if (error) throw new Error(error.message);
-  return data ?? [];
+  try {
+    const sb = serverPublic();
+    if (sb) {
+      const { data, error } = await sb
+        .from("linux_commands")
+        .select("slug,name,category,short_desc")
+        .order("name");
+      if (!error && data && data.length > 0) {
+        return data;
+      }
+    }
+  } catch {
+    /* fallback to static commands */
+  }
+  return getStaticCommandsList();
 });
 
 export const getCommand = createServerFn({ method: "GET" })
   .validator((slug: string) => slug)
   .handler(async ({ data: slug }) => {
-    const sb = serverPublic();
-    const { data, error } = await sb
-      .from("linux_commands")
-      .select("*")
-      .eq("slug", slug)
-      .maybeSingle();
-    if (error) throw new Error(error.message);
-    return data;
+    try {
+      const sb = serverPublic();
+      if (sb) {
+        const { data, error } = await sb
+          .from("linux_commands")
+          .select("*")
+          .eq("slug", slug)
+          .maybeSingle();
+        if (!error && data) return data;
+      }
+    } catch {
+      /* fallback to static command doc */
+    }
+    return getStaticCommandDoc(slug);
   });
 
 // Extract a ~500-char window around the strongest keyword match.
@@ -83,27 +105,33 @@ export const askTutor = createServerFn({ method: "POST" })
       .slice(0, 8);
     type Row = { name: string; slug: string; short_desc: string; description: string };
     let context: Row[] = [];
-    try {
-      const vec = await embed(data.question, data.apiKey);
-      const { data: matches } = await sb.rpc("match_commands", {
-        query_embedding: vec as unknown as string,
-        match_count: 4,
-      });
-      if (Array.isArray(matches) && matches.length > 0) context = matches as Row[];
-    } catch {
-      /* ignore — fall back to keyword search */
-    }
-    if (context.length === 0) {
-      const or = terms
-        .map((t) => `name.ilike.%${t}%,short_desc.ilike.%${t}%,description.ilike.%${t}%`)
-        .join(",");
-      if (or) {
-        const { data: rows } = await sb
-          .from("linux_commands")
-          .select("name,slug,short_desc,description")
-          .or(or)
-          .limit(4);
-        context = (rows ?? []) as Row[];
+    if (sb) {
+      try {
+        const vec = await embed(data.question, data.apiKey);
+        const { data: matches } = await sb.rpc("match_commands", {
+          query_embedding: vec as unknown as string,
+          match_count: 4,
+        });
+        if (Array.isArray(matches) && matches.length > 0) context = matches as Row[];
+      } catch {
+        /* ignore — fall back to keyword search */
+      }
+      if (context.length === 0) {
+        const or = terms
+          .map((t) => `name.ilike.%${t}%,short_desc.ilike.%${t}%,description.ilike.%${t}%`)
+          .join(",");
+        if (or) {
+          try {
+            const { data: rows } = await sb
+              .from("linux_commands")
+              .select("name,slug,short_desc,description")
+              .or(or)
+              .limit(4);
+            if (rows) context = rows as Row[];
+          } catch {
+            /* ignore */
+          }
+        }
       }
     }
 

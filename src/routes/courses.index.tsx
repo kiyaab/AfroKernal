@@ -51,6 +51,7 @@ export const Route = createFileRoute("/courses/")({
 const CATEGORIES = [
   "All",
   "Fundamentals",
+  "Enterprise Linux",
   "Cybersecurity",
   "DevOps",
   "Scripting",

@@ -91,40 +91,86 @@ const WHY_LINUX_BENEFITS = [
   },
 ];
 
-// Popular Learning Pathways
+// Popular Learning Pathways & Courses
 const FEATURED_COURSES = [
   {
     slug: "linux",
     icon: "🐧",
-    title: "Linux for Absolute Beginners",
-    lessons: 38,
-    duration: "12 Hours",
+    title: "Linux Fundamentals & SysAdmin",
+    category: "Fundamentals",
+    lessons: 8,
+    duration: "4.5 Hours",
     level: "Beginner Friendly",
-    desc: "Start from zero. Learn computer basics, navigation, files, permissions, and everyday desktop management.",
+    desc: "Start from zero. Master command line navigation, file permissions, users, process management, and systemd services.",
+    skills: ["Bash CLI", "Permissions", "Systemd", "SSH Access"],
     hasCert: true,
     badgeColor: "bg-emerald-500/10 text-emerald-500 border-emerald-500/30",
   },
   {
+    slug: "rhel",
+    icon: "🎩",
+    title: "Red Hat Enterprise Linux (RHEL 9) & RHCSA",
+    category: "Enterprise Linux",
+    lessons: 8,
+    duration: "6.0 Hours",
+    level: "Enterprise Standard",
+    desc: "Master RHEL 9 administration, DNF/RPM package architecture, SELinux policies, LVM storage slicing, Firewalld, and Cockpit.",
+    skills: ["RHEL 9", "SELinux", "DNF / RPM", "LVM Storage", "Firewalld"],
+    hasCert: true,
+    badgeColor: "bg-red-500/10 text-red-500 border-red-500/30",
+    featured: true,
+  },
+  {
     slug: "security",
     icon: "🔒",
-    title: "Cybersecurity & Online Safety",
-    lessons: 10,
-    duration: "6 Hours",
-    level: "Easy to Follow",
-    desc: "Learn how the internet works, protect your home network, secure servers, and audit security vulnerabilities.",
+    title: "Cybersecurity & Linux Hardening",
+    category: "Cybersecurity",
+    lessons: 6,
+    duration: "5.0 Hours",
+    level: "Security Essential",
+    desc: "Reconnaissance with Nmap, packet analysis with Wireshark/tcpdump, UFW/iptables firewalls, and server hardening.",
+    skills: ["Nmap", "tcpdump", "UFW Firewalls", "Fail2Ban", "Auditing"],
     hasCert: true,
     badgeColor: "bg-rose-500/10 text-rose-500 border-rose-500/30",
   },
   {
     slug: "devops",
     icon: "⚙️",
-    title: "Cloud & DevOps Essentials",
-    lessons: 10,
-    duration: "8 Hours",
-    level: "Practical Tech",
-    desc: "Explore modern cloud infrastructure, Docker containers, automated deployments, and server administration.",
+    title: "DevOps, Docker & Kubernetes",
+    category: "DevOps",
+    lessons: 6,
+    duration: "5.5 Hours",
+    level: "Career Booster",
+    desc: "Build lightweight multi-stage Dockerfiles, compose multi-service stacks, orchestrate Pods on Kubernetes, and CI/CD.",
+    skills: ["Docker", "Kubernetes", "Compose", "CI/CD", "Helm"],
     hasCert: true,
     badgeColor: "bg-cyan-500/10 text-cyan-500 border-cyan-500/30",
+  },
+  {
+    slug: "cloud",
+    icon: "☁️",
+    title: "Cloud Infrastructure with Terraform",
+    category: "Cloud",
+    lessons: 5,
+    duration: "4.5 Hours",
+    level: "Cloud Engineering",
+    desc: "Provision Linux VMs with cloud-init YAML user-data, write Terraform IaC, configure VPC networks, and S3 backups.",
+    skills: ["Terraform", "Cloud-Init", "AWS/GCP Linux", "VPC Security"],
+    hasCert: true,
+    badgeColor: "bg-purple-500/10 text-purple-500 border-purple-500/30",
+  },
+  {
+    slug: "scripting",
+    icon: "⚡",
+    title: "Advanced Bash Scripting & Automation",
+    category: "Scripting",
+    lessons: 5,
+    duration: "4.0 Hours",
+    level: "Automation Pro",
+    desc: "Transform into a scripting wizard. Learn Bash strict mode, regex parsing with awk/sed, signal traps, and cron schedules.",
+    skills: ["Bash Strict Mode", "Awk & Sed", "Cron Timers", "Regex"],
+    hasCert: true,
+    badgeColor: "bg-amber-500/10 text-amber-500 border-amber-500/30",
   },
 ];
 
@@ -257,6 +303,7 @@ const BEGINNER_FAQS = [
 function Landing() {
   const { user } = useAuth();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [selectedCourseCat, setSelectedCourseCat] = useState("All");
 
   // Distro selector state
   const [selectedGoal, setSelectedGoal] = useState<SimpleGoal>("windows-like");
@@ -264,6 +311,15 @@ function Landing() {
     () => DISTRO_CHOICES.find((d) => d.id === selectedGoal) || DISTRO_CHOICES[0],
     [selectedGoal],
   );
+
+  const courseCategories = useMemo(() => {
+    return ["All", "Enterprise Linux", "Fundamentals", "Cybersecurity", "DevOps", "Cloud", "Scripting"];
+  }, []);
+
+  const visibleCourses = useMemo(() => {
+    if (selectedCourseCat === "All") return FEATURED_COURSES;
+    return FEATURED_COURSES.filter((c) => c.category === selectedCourseCat);
+  }, [selectedCourseCat]);
 
   // AI assistant preview state
   const [aiQuestion, setAiQuestion] = useState(0);
@@ -490,7 +546,7 @@ function Landing() {
         </div>
       </section>
 
-      {/* Featured Structured Tracks */}
+      {/* Featured Structured Tracks & Courses */}
       <section className="py-20 border-b border-border/60">
         <div className="mx-auto max-w-7xl px-6 space-y-10">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -499,26 +555,54 @@ function Landing() {
                 Explore The Curriculum
               </span>
               <h2 className="text-3xl sm:text-4xl font-bold font-display mt-1">
-                Popular Learning Tracks
+                Popular Learning Tracks & Courses
               </h2>
               <p className="text-sm text-muted-foreground mt-1">
-                Step-by-step courses with practical examples, quizzes, and digital certificates.
+                Hands-on courses with in-browser terminal exercises, practice quizzes, and verifiable certifications.
               </p>
             </div>
             <Link
-              to="/tutorials"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-primary hover:underline self-start md:self-auto"
+              to="/courses"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary/10 text-primary border border-primary/20 text-xs font-bold hover:bg-primary hover:text-primary-foreground transition self-start md:self-auto"
             >
-              Browse All Courses <ArrowRight className="h-3.5 w-3.5" />
+              Browse Full Course Catalog <ArrowRight className="h-3.5 w-3.5" />
             </Link>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {FEATURED_COURSES.map((course) => (
+          {/* Category Filter Pills */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
+            {courseCategories.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCourseCat(cat)}
+                className={`px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+                  selectedCourseCat === cat
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-card border-border text-muted-foreground hover:text-foreground hover:border-primary/40"
+                }`}
+              >
+                {cat === "Enterprise Linux" ? "🎩 Enterprise Linux (RHEL)" : cat}
+              </button>
+            ))}
+          </div>
+
+          {/* Course Cards Grid */}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {visibleCourses.map((course) => (
               <div
                 key={course.slug}
-                className="rounded-3xl border border-border bg-card p-6 sm:p-8 flex flex-col justify-between hover:border-primary/40 hover:shadow-xl transition group"
+                className={`rounded-3xl border p-6 sm:p-7 flex flex-col justify-between transition group relative overflow-hidden ${
+                  course.slug === "rhel"
+                    ? "border-red-500/40 bg-gradient-to-b from-card via-card to-red-500/5 hover:border-red-500/70 shadow-lg shadow-red-500/5"
+                    : "border-border bg-card hover:border-primary/40 hover:shadow-xl"
+                }`}
               >
+                {course.slug === "rhel" && (
+                  <div className="absolute top-0 right-0 bg-red-500/10 border-b border-l border-red-500/20 text-red-500 text-[10px] font-extrabold px-3 py-1 rounded-bl-xl uppercase tracking-wider">
+                    ⭐ Featured Track
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-3xl p-2 rounded-2xl bg-secondary">{course.icon}</span>
@@ -530,13 +614,27 @@ function Landing() {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition">
+                    <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition leading-snug">
                       {course.title}
                     </h3>
-                    <p className="text-xs text-muted-foreground leading-relaxed mt-2">
+                    <p className="text-xs text-muted-foreground leading-relaxed mt-2 line-clamp-2">
                       {course.desc}
                     </p>
                   </div>
+
+                  {/* Skills tags */}
+                  {course.skills && course.skills.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 pt-1">
+                      {course.skills.map((skill) => (
+                        <span
+                          key={skill}
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-md bg-secondary/80 text-muted-foreground border border-border/60"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="pt-5 mt-6 border-t border-border/60 flex items-center justify-between text-xs">
@@ -549,9 +647,13 @@ function Landing() {
                     search={
                       user ? undefined : { redirect: `/courses/${course.slug}`, mode: "signup" }
                     }
-                    className="font-bold text-primary flex items-center gap-1 hover:underline"
+                    className={`font-bold flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg transition ${
+                      course.slug === "rhel"
+                        ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
+                        : "bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground"
+                    }`}
                   >
-                    Start Track <ArrowRight className="h-3.5 w-3.5" />
+                    Start Course <ArrowRight className="h-3.5 w-3.5" />
                   </Link>
                 </div>
               </div>

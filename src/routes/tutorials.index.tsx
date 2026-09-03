@@ -13,6 +13,7 @@ import {
   ArrowRight,
   Sparkles,
   Award,
+  Server,
 } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -40,7 +41,7 @@ const LEARNING_PATHS: LearningPath[] = [
       "From the command line to enterprise system administration. Master file structures, permissions, bash navigation, and systemd.",
     icon: "🐧",
     lucideIcon: Terminal,
-    tutorialCount: 38,
+    tutorialCount: 8,
     badge: "Core Curriculum",
     hasCertificate: true,
     modules: [
@@ -50,6 +51,26 @@ const LEARNING_PATHS: LearningPath[] = [
       "Processes & Signals",
       "Package Managers",
       "Systemd Services",
+    ],
+  },
+  {
+    slug: "rhel",
+    name: "Red Hat Enterprise Linux (RHEL 9) & RHCSA",
+    description:
+      "Enterprise system administration, DNF/RPM package architecture, SELinux enforcement, LVM storage, Firewalld zones, and Cockpit web console.",
+    icon: "🎩",
+    lucideIcon: Server,
+    tutorialCount: 8,
+    badge: "Enterprise Standard",
+    hasCertificate: true,
+    modules: [
+      "RHEL 9 & CentOS Stream Architecture",
+      "DNF, RPM & Subscription Manager",
+      "SELinux Security Contexts & Booleans",
+      "LVM Storage Slicing (PV, VG, LV) & XFS",
+      "Systemd Targets & rd.break Rescue",
+      "NetworkManager (nmcli) & Firewalld",
+      "Cockpit Web Console Management",
     ],
   },
   {

@@ -47,7 +47,7 @@ type FileNode = { type: "file"; content: string; mode?: string };
 type DirNode = { type: "dir"; children: Record<string, FSNode>; mode?: string };
 type FSNode = FileNode | DirNode;
 
-export type Distro = "ubuntu" | "debian" | "alpine";
+export type Distro = "ubuntu" | "debian" | "alpine" | "rhel";
 const DISTRO_META: Record<
   Distro,
   { hostname: string; os_release: string; label: string; kernel: string }
@@ -62,7 +62,7 @@ const DISTRO_META: Record<
   debian: {
     hostname: "afrokernel-debian",
     os_release:
-      'NAME="Debian GNU/Linux"\nVERSION="12 (bookworm) â€” AfroKernel Simulated"\nID=debian\nPRETTY_NAME="Debian GNU/Linux 12 (bookworm)"\n',
+      'NAME="Debian GNU/Linux"\nVERSION="12 (bookworm) — AfroKernel Simulated"\nID=debian\nPRETTY_NAME="Debian GNU/Linux 12 (bookworm)"\n',
     label: "Debian 12 (Bookworm)",
     kernel: "Linux afrokernel-debian 6.1.0-afrokernel #1 SMP x86_64 GNU/Linux",
   },
@@ -72,6 +72,13 @@ const DISTRO_META: Record<
       'NAME="Alpine Linux"\nID=alpine\nVERSION_ID=3.20.0\nPRETTY_NAME="Alpine Linux v3.20 (AfroKernel)"\n',
     label: "Alpine Linux 3.20",
     kernel: "Linux afrokernel-alpine 6.6.0-afrokernel #1 SMP x86_64 GNU/Linux",
+  },
+  rhel: {
+    hostname: "afrokernel-rhel",
+    os_release:
+      'NAME="Red Hat Enterprise Linux"\nVERSION="9.4 (Plow) — AfroKernel Simulated"\nID="rhel"\nID_LIKE="fedora"\nVERSION_ID="9.4"\nPLATFORM_ID="platform:el9"\nPRETTY_NAME="Red Hat Enterprise Linux 9.4 (Plow)"\nANSI_COLOR="0;31"\nCPE_NAME="cpe:/o:redhat:enterprise_linux:9::baseos"\nHOME_URL="https://www.redhat.com/"\n',
+    label: "Red Hat Enterprise Linux (RHEL 9)",
+    kernel: "Linux afrokernel-rhel 5.14.0-427.el9.x86_64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux",
   },
 };
 
@@ -1100,6 +1107,50 @@ Setting up ${installed.join(", ")} (${installed.map((p) => PACKAGE_BY_NAME.get(p
         return { out: "yum install|remove|search|info|list" };
       },
       dnf: () => runOne("yum", args, stdin, workFs, opts),
+      rpm: () => {
+        if (args.includes("-qa") || args[0] === "-qa") {
+          return {
+            out: Array.from(packagesRef.current)
+              .sort()
+              .map((p) => `${p}-${PACKAGE_BY_NAME.get(p)?.version ?? "1.0"}.el9.x86_64`)
+              .join("\n"),
+          };
+        }
+        if (args.includes("-q") || args.includes("-qi")) {
+          const name = args.find((a) => !a.startsWith("-"));
+          if (!name || !packagesRef.current.has(name))
+            return { out: null, err: `package ${name || ""} is not installed` };
+          const info = PACKAGE_BY_NAME.get(name);
+          return {
+            out: `Name        : ${name}
+Version     : ${info?.version ?? "1.0"}
+Release     : 1.el9
+Architecture: x86_64
+Group       : ${info?.section ?? "System Environment/Base"}
+Size        : 4194304
+Summary     : ${info?.description ?? name}`,
+          };
+        }
+        return {
+          out: Array.from(packagesRef.current)
+            .sort()
+            .map((p) => `${p}-${PACKAGE_BY_NAME.get(p)?.version ?? "1.0"}.el9.x86_64`)
+            .join("\n"),
+        };
+      },
+      "subscription-manager": () => {
+        if (args[0] === "status") {
+          return {
+            out: "+-------------------------------------------+\n   System Status Details\n+-------------------------------------------+\nOverall Status: Current\nSubscription Type: Red Hat Developer Subscription\nSystem Purpose: Development/Test",
+          };
+        }
+        if (args[0] === "register") {
+          return {
+            out: "Registering to: subscription.rhsm.redhat.com:443/subscription\nThe system has been registered with ID: e7b249a1-8f43-4c91-a1e6-b2580c85c091\nThe registered system name is: afrokernel-rhel",
+          };
+        }
+        return { out: "subscription-manager register|status|list|refresh" };
+      },
       snap: () => {
         if (args[0] === "find" || args[0] === "search")
           return runOne("apt", ["search", ...args.slice(1)], stdin, workFs, opts);

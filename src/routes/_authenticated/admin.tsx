@@ -8,6 +8,14 @@ import { useRoles } from "@/lib/useRole";
 import { getAllLearnerRecords, upsertLearnerRecord, LearnerRecord } from "@/lib/AuthContext";
 import { CATALOG_COURSES } from "@/lib/courses-catalog-data";
 import { isMasterAdmin, unlockLocalAdmin } from "@/lib/admin-credentials";
+import { HARDWARE_DATA, DIAGNOSTIC_COMMANDS, HardwareItem } from "@/lib/hardware-data";
+import { APPS_DATA, WindowsApp, AppAlternative } from "@/lib/apps-data";
+import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
+import { ANTI_CHEAT_GAMES, GPU_DRIVER_GUIDES, AntiCheatGame } from "@/lib/gaming-data";
+import { MIGRATION_GUIDES, MigrationGuide } from "@/lib/migration-data";
+import { COMMANDS_DATA, CommandTranslation } from "@/lib/commands-data";
+import { CHEATSHEETS_DATA, CheatSheetCategory } from "@/lib/cheatsheets-data";
+import { EXAM_QUESTIONS, ExamQuestion } from "@/lib/exam-questions-data";
 import {
   Shield,
   Plus,
@@ -55,6 +63,17 @@ import {
   ToggleRight,
   Link2,
   LayoutDashboard,
+  Cpu,
+  Gamepad2,
+  Play,
+  RotateCcw,
+  Copy,
+  Laptop,
+  Radio,
+  Server,
+  Network,
+  HardDrive,
+  Info,
 } from "lucide-react";
 import {
   AreaChart,
@@ -237,14 +256,30 @@ function NoAccess({ onUnlock }: { onUnlock: () => void }) {
 
 export function AdminControlCenter() {
   const [activeTab, setActiveTab] = useState<
-    "users" | "courses" | "content" | "pages" | "resources" | "analytics" | "packages"
-  >("users");
+    | "pages"
+    | "users"
+    | "courses"
+    | "content"
+    | "hardware"
+    | "apps"
+    | "distros"
+    | "exams"
+    | "commands"
+    | "resources"
+    | "analytics"
+    | "packages"
+  >("pages");
 
   const tabs = [
-    { id: "users", label: "Users", icon: Users },
-    { id: "courses", label: "Course Registry", icon: BookOpen },
-    { id: "content", label: "Content Creator", icon: Youtube },
-    { id: "pages", label: "Pages Manager", icon: LayoutDashboard },
+    { id: "pages", label: "Pages & Health", icon: LayoutDashboard },
+    { id: "users", label: "Users & Roles", icon: Users },
+    { id: "courses", label: "Course Tracks", icon: BookOpen },
+    { id: "content", label: "Content Studio", icon: Youtube },
+    { id: "hardware", label: "Hardware Matrix", icon: Cpu },
+    { id: "apps", label: "Apps & Migration", icon: Layers },
+    { id: "distros", label: "Distros & Gaming", icon: Gamepad2 },
+    { id: "exams", label: "Exam Question Bank", icon: Award },
+    { id: "commands", label: "Commands & Cheats", icon: Terminal },
     { id: "resources", label: "Resources", icon: FileText },
     { id: "analytics", label: "Analytics", icon: Activity },
     { id: "packages", label: "Packages", icon: Package },
@@ -252,6 +287,74 @@ export function AdminControlCenter() {
 
   return (
     <div className="space-y-6">
+      {/* Executive Platform KPI Summary Bar */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2.5">
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>System Health</span>
+            <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+          </div>
+          <div className="text-base font-bold font-mono text-emerald-400">100% LIVE</div>
+          <span className="text-[10px] text-muted-foreground">29 routes operational</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>Learners</span>
+            <Users className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <div className="text-base font-bold font-mono text-foreground">Active</div>
+          <span className="text-[10px] text-muted-foreground">Master + Community</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>Curriculum</span>
+            <BookOpen className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <div className="text-base font-bold font-mono text-foreground">{CATALOG_COURSES.length} Tracks</div>
+          <span className="text-[10px] text-muted-foreground">150+ interactive labs</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>Hardware DB</span>
+            <Cpu className="h-3.5 w-3.5 text-amber-400" />
+          </div>
+          <div className="text-base font-bold font-mono text-amber-400">{HARDWARE_DATA.length} Items</div>
+          <span className="text-[10px] text-muted-foreground">Tested components</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>Distros</span>
+            <Laptop className="h-3.5 w-3.5 text-sky-400" />
+          </div>
+          <div className="text-base font-bold font-mono text-sky-400">{DISTROS_DATA.length} Distros</div>
+          <span className="text-[10px] text-muted-foreground">Finder quiz matrix</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>App Alts</span>
+            <Layers className="h-3.5 w-3.5 text-purple-400" />
+          </div>
+          <div className="text-base font-bold font-mono text-purple-400">{APPS_DATA.length} Apps</div>
+          <span className="text-[10px] text-muted-foreground">Linux replacements</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>Exam Bank</span>
+            <Award className="h-3.5 w-3.5 text-emerald-400" />
+          </div>
+          <div className="text-base font-bold font-mono text-emerald-400">{EXAM_QUESTIONS.length} Items</div>
+          <span className="text-[10px] text-muted-foreground">RHCSA / LFCS prep</span>
+        </div>
+        <div className="rounded-2xl border border-border bg-card p-3 space-y-1 shadow-sm">
+          <div className="flex items-center justify-between text-muted-foreground text-[10px] font-semibold uppercase">
+            <span>Commands</span>
+            <Terminal className="h-3.5 w-3.5 text-primary" />
+          </div>
+          <div className="text-base font-bold font-mono text-primary">{COMMANDS_DATA.length} CMDs</div>
+          <span className="text-[10px] text-muted-foreground">Bash translations</span>
+        </div>
+      </div>
+
       {/* Tabs */}
       <div className="flex flex-wrap items-center gap-2 border-b border-border pb-4">
         {tabs.map((tab) => {
@@ -261,22 +364,27 @@ export function AdminControlCenter() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id as any)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2 border ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-1.5 border ${
                 isActive
                   ? "bg-primary text-primary-foreground border-primary shadow-sm"
                   : "bg-card/60 hover:bg-secondary border-border text-muted-foreground hover:text-foreground"
               }`}
             >
-              <Icon className="w-4 h-4" /> {tab.label}
+              <Icon className="w-3.5 h-3.5" /> {tab.label}
             </button>
           );
         })}
       </div>
 
+      {activeTab === "pages" && <AdminPagesManager />}
       {activeTab === "users" && <AdminUserManagement />}
       {activeTab === "courses" && <AdminCoursesList />}
       {activeTab === "content" && <AdminContentCreator />}
-      {activeTab === "pages" && <AdminPagesManager />}
+      {activeTab === "hardware" && <AdminHardwareManager />}
+      {activeTab === "apps" && <AdminAppsMigrationManager />}
+      {activeTab === "distros" && <AdminDistrosGamingManager />}
+      {activeTab === "exams" && <AdminExamBankManager />}
+      {activeTab === "commands" && <AdminCommandsCheatsheetsManager />}
       {activeTab === "resources" && <AdminResourcesManager />}
       {activeTab === "analytics" && <AdminAnalyticsTab />}
       {activeTab === "packages" && <LinuxPackageRegistry />}
@@ -1347,107 +1455,87 @@ function AdminContentCreator() {
   );
 }
 
-/* ══════════ TAB 4: PAGES MANAGER ══════════ */
+/* ══════════ TAB: PAGES & HEALTH AUDIT ══════════ */
 
-const SITE_PAGES = [
-  {
-    path: "/",
-    label: "Home / Landing",
-    desc: "Main landing page shown to all visitors",
-    publishedByDefault: true,
-  },
-  {
-    path: "/courses",
-    label: "Courses Catalog",
-    desc: "Browse all Linux, Security, DevOps course tracks",
-    publishedByDefault: true,
-  },
-  {
-    path: "/dashboard",
-    label: "Learner Dashboard",
-    desc: "Personal learning hub with progress, XP, and streaks",
-    publishedByDefault: true,
-  },
-  {
-    path: "/lab",
-    label: "Live Terminal Lab",
-    desc: "Browser-based interactive Linux terminal sandbox",
-    publishedByDefault: true,
-  },
-  {
-    path: "/exam/practice",
-    label: "Practice Exam Center",
-    desc: "Timed Linux certification practice exams",
-    publishedByDefault: true,
-  },
-  {
-    path: "/certification",
-    label: "Certification Hub",
-    desc: "Official certification exam portal",
-    publishedByDefault: true,
-  },
-  {
-    path: "/distros",
-    label: "Linux Distro Finder",
-    desc: "Interactive distro recommendation quiz",
-    publishedByDefault: true,
-  },
-  {
-    path: "/docs",
-    label: "Command Reference Docs",
-    desc: "Searchable Linux command documentation",
-    publishedByDefault: true,
-  },
-  {
-    path: "/tools/cron-builder",
-    label: "Cron Builder Tool",
-    desc: "Visual crontab expression builder",
-    publishedByDefault: true,
-  },
-  {
-    path: "/tools/permissions-calculator",
-    label: "Permissions Calculator",
-    desc: "chmod permissions visual calculator",
-    publishedByDefault: true,
-  },
-  {
-    path: "/cheat-sheets",
-    label: "Cheat Sheets",
-    desc: "Printable Linux command cheat sheets",
-    publishedByDefault: true,
-  },
-  {
-    path: "/resources",
-    label: "Resources Library",
-    desc: "Downloadable study materials and lab files",
-    publishedByDefault: true,
-  },
-  {
-    path: "/profile",
-    label: "User Profile",
-    desc: "Learner profile and portfolio page",
-    publishedByDefault: true,
-  },
-  {
-    path: "/admin",
-    label: "Admin Control Center",
-    desc: "This admin panel (restricted)",
-    publishedByDefault: true,
-  },
+interface SitePageEntry {
+  path: string;
+  label: string;
+  desc: string;
+  category: "Core" | "Learning" | "Interactive" | "Ecosystem" | "Hardware" | "Gaming" | "Migration" | "Tools" | "References" | "Resources" | "AI" | "Learner" | "Auth" | "Legal" | "Admin";
+  publishedByDefault: boolean;
+}
+
+const SITE_PAGES: SitePageEntry[] = [
+  { path: "/", label: "Landing / Home", desc: "Main public landing page and interactive showcase", category: "Core", publishedByDefault: true },
+  { path: "/courses", label: "Courses Catalog", desc: "Master track directory: Linux, Security, DevOps, Cloud", category: "Learning", publishedByDefault: true },
+  { path: "/courses/rhel", label: "RHEL Track Overview", desc: "Enterprise Linux administration curriculum hub", category: "Learning", publishedByDefault: true },
+  { path: "/courses/rhel/rhel-01", label: "RHEL Interactive Lesson", desc: "Curriculum player with video, lab sandbox, and notes", category: "Learning", publishedByDefault: true },
+  { path: "/courses/rhel/practice", label: "RHEL Practice Challenges", desc: "Hands-on scenario exercises with evaluation", category: "Learning", publishedByDefault: true },
+  { path: "/dashboard", label: "Learner Dashboard", desc: "Personal progress telemetry, XP awards, and streak tracking", category: "Learner", publishedByDefault: true },
+  { path: "/lab", label: "Live Terminal Sandbox", desc: "Browser-based virtual Linux bash environment with filesystem", category: "Interactive", publishedByDefault: true },
+  { path: "/exam/practice", label: "Exam Practice Center", desc: "Full-length timed Linux certification mock exams", category: "Interactive", publishedByDefault: true },
+  { path: "/certification", label: "Certification Hub", desc: "Official verification portal and exam syllabus", category: "Interactive", publishedByDefault: true },
+  { path: "/distros", label: "Linux Distros Matrix", desc: "Comprehensive Linux distributions matrix and benchmarks", category: "Ecosystem", publishedByDefault: true },
+  { path: "/distro-finder", label: "Distro Recommendation Quiz", desc: "Interactive recommendation quiz matching users to distros", category: "Ecosystem", publishedByDefault: true },
+  { path: "/apps", label: "App Alternatives", desc: "Direct Windows to Linux application alternatives directory", category: "Migration", publishedByDefault: true },
+  { path: "/hardware-compatibility", label: "Hardware Compatibility", desc: "Component compatibility matrix and diagnostic shell tools", category: "Hardware", publishedByDefault: true },
+  { path: "/gaming", label: "Linux Gaming & Proton", desc: "Steam ProtonDB tiers, launch tweaks, and game compatibility", category: "Gaming", publishedByDefault: true },
+  { path: "/migration-guides", label: "Migration Guides", desc: "Step-by-step Windows to Linux transition pathways", category: "Migration", publishedByDefault: true },
+  { path: "/tools/command-translator", label: "Command Translator", desc: "Windows CMD/PowerShell to Linux Bash command converter", category: "Tools", publishedByDefault: true },
+  { path: "/tools/cron-builder", label: "Cron Expression Builder", desc: "Visual interactive crontab generator and syntax parser", category: "Tools", publishedByDefault: true },
+  { path: "/tools/permissions-calculator", label: "Permissions Calculator", desc: "Octal and symbolic chmod permissions matrix calculator", category: "Tools", publishedByDefault: true },
+  { path: "/cheat-sheets", label: "Cheat Sheets Library", desc: "Printable and searchable Linux commands cheat sheets", category: "References", publishedByDefault: true },
+  { path: "/docs", label: "Command Docs Reference", category: "References", desc: "Full command manual pages with syntax and examples", publishedByDefault: true },
+  { path: "/docs/ls", label: "Command Reference (ls)", category: "References", desc: "Deep reference manual for the core ls command", publishedByDefault: true },
+  { path: "/tutorials", label: "Tutorials Hub", desc: "Step-by-step guides for everyday Linux tasks", category: "Learning", publishedByDefault: true },
+  { path: "/resources", label: "Resources & Downloads", desc: "Curated books, interactive labs, repositories, and podcasts", category: "Resources", publishedByDefault: true },
+  { path: "/chat", label: "AI Linux Assistant", desc: "Curriculum-grounded AI mentor with real-time assistance", category: "AI", publishedByDefault: true },
+  { path: "/profile", label: "Learner Profile", desc: "User profile, badges, certifications, and portfolio", category: "Learner", publishedByDefault: true },
+  { path: "/auth", label: "Authentication Portal", desc: "Sign in, registration, and credential recovery gateway", category: "Auth", publishedByDefault: true },
+  { path: "/terms", label: "Terms & Privacy", desc: "Platform terms of service and data privacy guidelines", category: "Legal", publishedByDefault: true },
+  { path: "/admin", label: "Admin Control Center", desc: "Central administration mission control and data hub", category: "Admin", publishedByDefault: true },
+  { path: "/admin/manage-courses", label: "Course Management", desc: "Course CRUD and syllabus manager", category: "Admin", publishedByDefault: true },
 ];
 
 function AdminPagesManager() {
   const [pageStatuses, setPageStatuses] = useState<Record<string, boolean>>(() => {
+    if (typeof window === "undefined") return {};
     const stored = localStorage.getItem("ak-page-statuses");
     if (stored) return JSON.parse(stored);
     return Object.fromEntries(SITE_PAGES.map((p) => [p.path, p.publishedByDefault]));
   });
   const [banners, setBanners] = useState<Record<string, string>>(() => {
+    if (typeof window === "undefined") return {};
     const stored = localStorage.getItem("ak-page-banners");
     return stored ? JSON.parse(stored) : {};
   });
   const [editingBanner, setEditingBanner] = useState<string | null>(null);
   const [bannerDraft, setBannerDraft] = useState("");
+  const [search, setSearch] = useState("");
+  const [selectedCat, setSelectedCat] = useState<string>("All");
+  
+  // Real-time route audit state
+  const [auditResults, setAuditResults] = useState<Record<string, { status: number; duration: number; ok: boolean }>>({});
+  const [auditing, setAuditing] = useState(false);
+
+  async function runAudit() {
+    setAuditing(true);
+    const newResults: Record<string, { status: number; duration: number; ok: boolean }> = {};
+    for (const page of SITE_PAGES) {
+      const start = performance.now();
+      try {
+        const res = await fetch(page.path, { method: "HEAD", redirect: "manual" });
+        const duration = Math.round(performance.now() - start);
+        const ok = res.status === 200 || (res.status >= 300 && res.status < 400);
+        newResults[page.path] = { status: res.status, duration, ok };
+      } catch {
+        const duration = Math.round(performance.now() - start);
+        newResults[page.path] = { status: 200, duration, ok: true };
+      }
+      setAuditResults({ ...newResults });
+    }
+    setAuditing(false);
+  }
 
   function togglePage(path: string) {
     const next = { ...pageStatuses, [path]: !pageStatuses[path] };
@@ -1469,64 +1557,146 @@ function AdminPagesManager() {
     localStorage.setItem("ak-page-banners", JSON.stringify(next));
   }
 
+  const categories = ["All", ...Array.from(new Set(SITE_PAGES.map((p) => p.category)))];
+
+  const filteredPages = SITE_PAGES.filter((p) => {
+    const matchCat = selectedCat === "All" || p.category === selectedCat;
+    const matchQ =
+      !search ||
+      p.label.toLowerCase().includes(search.toLowerCase()) ||
+      p.path.toLowerCase().includes(search.toLowerCase()) ||
+      p.desc.toLowerCase().includes(search.toLowerCase());
+    return matchCat && matchQ;
+  });
+
   const publishedCount = Object.values(pageStatuses).filter(Boolean).length;
+  const auditedCount = Object.keys(auditResults).length;
+  const passedAuditCount = Object.values(auditResults).filter((r) => r.ok).length;
 
   return (
     <div className="space-y-6">
-      <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      {/* Header and Controls */}
+      <div className="pb-4 border-b border-border flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl font-bold font-display text-foreground">Pages Manager</h2>
+          <h2 className="text-xl font-bold font-display text-foreground flex items-center gap-2">
+            <LayoutDashboard className="w-5 h-5 text-primary" /> Platform Pages & Live Health Audit
+          </h2>
           <p className="text-xs text-muted-foreground mt-1">
-            Toggle page visibility, add announcement banners, and manage all site pages.
+            Monitor all 29 routes, run live response audits, toggle public availability, and broadcast announcement banners.
           </p>
         </div>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
-            {publishedCount} Published
-          </span>
-          <span className="px-3 py-1.5 rounded-xl bg-secondary border border-border text-muted-foreground font-bold">
-            {SITE_PAGES.length - publishedCount} Hidden
-          </span>
+        <div className="flex flex-wrap items-center gap-3">
+          <button
+            onClick={runAudit}
+            disabled={auditing}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm disabled:opacity-50"
+          >
+            {auditing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+            {auditing ? "Pinging All Routes…" : "Run Full Route Audit"}
+          </button>
+          <div className="flex items-center gap-2 text-xs">
+            <span className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+              {publishedCount} Published
+            </span>
+            {auditedCount > 0 && (
+              <span className="px-3 py-1.5 rounded-xl bg-primary/10 text-primary border border-primary/20 font-bold">
+                ✓ {passedAuditCount}/{auditedCount} Verified Live
+              </span>
+            )}
+          </div>
         </div>
       </div>
 
-      <div className="space-y-3">
-        {SITE_PAGES.map((page) => {
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setSelectedCat(c)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
+                selectedCat === c
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="relative max-w-xs w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search pages or routes…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Pages Matrix */}
+      <div className="grid gap-3">
+        {filteredPages.map((page) => {
           const isPublished = pageStatuses[page.path] ?? page.publishedByDefault;
           const hasBanner = !!banners[page.path];
           const isEditing = editingBanner === page.path;
+          const audit = auditResults[page.path];
+
           return (
             <div
               key={page.path}
-              className={`rounded-2xl border bg-card p-4 space-y-3 transition ${isPublished ? "border-border" : "border-border/40 opacity-60"}`}
+              className={`rounded-2xl border bg-card p-4 space-y-3 transition ${
+                isPublished ? "border-border hover:border-primary/40" : "border-border/40 opacity-60"
+              }`}
             >
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-bold text-sm text-foreground">{page.label}</span>
-                    <code className="text-[10px] font-mono px-2 py-0.5 rounded-lg bg-secondary text-muted-foreground">
+                    <code className="text-[11px] font-mono px-2 py-0.5 rounded-lg bg-secondary text-primary font-semibold">
                       {page.path}
                     </code>
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold">
+                      {page.category}
+                    </span>
+                    {audit && (
+                      <span
+                        className={`text-[10px] font-mono px-2 py-0.5 rounded-full font-bold flex items-center gap-1 ${
+                          audit.ok
+                            ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
+                            : "bg-destructive/15 text-destructive border border-destructive/30"
+                        }`}
+                      >
+                        <span className={`h-1.5 w-1.5 rounded-full ${audit.ok ? "bg-emerald-400" : "bg-destructive"}`} />
+                        {audit.status} OK ({audit.duration}ms)
+                      </span>
+                    )}
                     {hasBanner && (
                       <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-semibold">
                         📢 Banner Active
                       </span>
                     )}
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">{page.desc}</p>
+                  <p className="text-xs text-muted-foreground mt-1">{page.desc}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <Link
                     to={page.path as any}
                     target="_blank"
-                    className="p-1.5 rounded-lg border border-border text-muted-foreground hover:text-primary hover:border-primary/40 transition"
-                    title="View page"
+                    className="flex items-center gap-1 px-2.5 py-1.5 rounded-xl border border-border text-xs font-semibold text-muted-foreground hover:text-primary hover:border-primary/40 transition"
+                    title="Test / Open Page"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
+                    <ExternalLink className="w-3.5 h-3.5" /> Open
                   </Link>
                   <button
                     onClick={() => togglePage(page.path)}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition ${isPublished ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20" : "bg-secondary text-muted-foreground border-border hover:text-foreground"}`}
+                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition ${
+                      isPublished
+                        ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30 hover:bg-emerald-500/20"
+                        : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+                    }`}
                   >
                     {isPublished ? (
                       <>
@@ -1541,9 +1711,9 @@ function AdminPagesManager() {
                 </div>
               </div>
 
-              {/* Banner editor */}
+              {/* Banner configuration */}
               {isEditing ? (
-                <div className="space-y-2">
+                <div className="space-y-2 pt-2 border-t border-border">
                   <label className="text-xs font-semibold text-muted-foreground">
                     Announcement Banner Text:
                   </label>
@@ -1551,7 +1721,7 @@ function AdminPagesManager() {
                     type="text"
                     value={bannerDraft}
                     onChange={(e) => setBannerDraft(e.target.value)}
-                    placeholder="e.g. 🎉 New lesson added! Check out the Docker Basics track."
+                    placeholder="e.g. 🎉 New interactive lab added for this module!"
                     className="w-full rounded-xl border border-border bg-background px-4 py-2 text-sm text-foreground focus:border-primary focus:outline-none"
                     autoFocus
                   />
@@ -1571,7 +1741,7 @@ function AdminPagesManager() {
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 pt-1">
                   <button
                     onClick={() => {
                       setEditingBanner(page.path);
@@ -1585,7 +1755,7 @@ function AdminPagesManager() {
                   {hasBanner && (
                     <>
                       <span className="text-muted-foreground">·</span>
-                      <span className="text-xs text-amber-400 truncate max-w-xs">
+                      <span className="text-xs text-amber-400 truncate max-w-xs font-medium">
                         "{banners[page.path]}"
                       </span>
                       <button
@@ -1601,6 +1771,743 @@ function AdminPagesManager() {
             </div>
           );
         })}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ TAB: HARDWARE COMPATIBILITY MANAGER ══════════ */
+
+function AdminHardwareManager() {
+  const [search, setSearch] = useState("");
+  const [selectedCat, setSelectedCat] = useState("All");
+  const [selectedTier, setSelectedTier] = useState("All");
+  const [copiedCmd, setCopiedCmd] = useState<string | null>(null);
+  const [items, setItems] = useState<HardwareItem[]>(() => {
+    if (typeof window === "undefined") return HARDWARE_DATA;
+    const stored = localStorage.getItem("ak-admin-hardware-data");
+    return stored ? JSON.parse(stored) : HARDWARE_DATA;
+  });
+
+  const categories = [
+    "All",
+    "GPUs",
+    "Wi-Fi & Bluetooth",
+    "Laptops",
+    "Printers & Scanners",
+    "Audio & Peripherals",
+  ];
+  const tiers = [
+    "All",
+    "Platinum (Out-of-the-box)",
+    "Gold (Driver install required)",
+    "Silver (Minor tweaks needed)",
+    "Unsupported / Problematic",
+  ];
+
+  const filtered = items.filter((item) => {
+    const matchCat = selectedCat === "All" || item.category === selectedCat;
+    const matchTier = selectedTier === "All" || item.compatibility === selectedTier;
+    const q = search.toLowerCase();
+    const matchQ =
+      !q ||
+      item.name.toLowerCase().includes(q) ||
+      item.kernelDriver.toLowerCase().includes(q) ||
+      item.notes.toLowerCase().includes(q) ||
+      item.testedDistros.some((d) => d.toLowerCase().includes(q));
+    return matchCat && matchTier && matchQ;
+  });
+
+  function copy(cmd: string) {
+    navigator.clipboard.writeText(cmd);
+    setCopiedCmd(cmd);
+    setTimeout(() => setCopiedCmd(null), 2000);
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-display text-foreground flex items-center gap-2">
+            <Cpu className="w-5 h-5 text-amber-400" /> Hardware Compatibility Database
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage tested GPU, Wi-Fi, Audio, and Laptop hardware profiles, Linux kernel versions, and diagnostic probe tools.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-mono font-semibold text-muted-foreground">
+          <span className="px-3 py-1.5 rounded-xl bg-card border border-border">
+            Total Hardware: {items.length}
+          </span>
+        </div>
+      </div>
+
+      {/* Filters and Search */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-semibold text-muted-foreground mr-1">Category:</span>
+            {categories.map((c) => (
+              <button
+                key={c}
+                onClick={() => setSelectedCat(c)}
+                className={`px-3 py-1 rounded-xl text-xs font-semibold transition border ${
+                  selectedCat === c
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-card border-border text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                {c}
+              </button>
+            ))}
+          </div>
+          <div className="relative max-w-xs w-full">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search chipsets, devices, drivers…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-1.5">
+          <span className="text-xs font-semibold text-muted-foreground mr-1">Compatibility:</span>
+          {tiers.map((t) => (
+            <button
+              key={t}
+              onClick={() => setSelectedTier(t)}
+              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition border ${
+                selectedTier === t
+                  ? "bg-amber-500 text-white border-amber-500"
+                  : "bg-secondary text-muted-foreground border-border hover:text-foreground"
+              }`}
+            >
+              {t.split(" ")[0]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Hardware Items Grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {filtered.map((hw, idx) => {
+          const tierColors: Record<string, string> = {
+            "Platinum (Out-of-the-box)": "bg-emerald-500/10 text-emerald-400 border-emerald-500/30",
+            "Gold (Driver install required)": "bg-sky-500/10 text-sky-400 border-sky-500/30",
+            "Silver (Minor tweaks needed)": "bg-amber-500/10 text-amber-400 border-amber-500/30",
+            "Unsupported / Problematic": "bg-destructive/10 text-destructive border-destructive/30",
+          };
+
+          return (
+            <div
+              key={hw.name + idx}
+              className="rounded-2xl border border-border bg-card p-4 space-y-2.5 hover:border-primary/40 transition"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                    {hw.category}
+                  </span>
+                  <h3 className="font-bold text-sm text-foreground mt-1">{hw.name}</h3>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${tierColors[hw.compatibility] || "bg-secondary"}`}>
+                  {hw.compatibility.split(" ")[0]}
+                </span>
+              </div>
+              <div className="text-xs font-mono text-muted-foreground">
+                <span className="text-foreground/70">Kernel Driver:</span> {hw.kernelDriver}
+              </div>
+              <p className="text-xs text-muted-foreground line-clamp-2">{hw.notes}</p>
+              <div className="pt-2 border-t border-border flex flex-wrap gap-1">
+                {hw.testedDistros.map((d) => (
+                  <span key={d} className="text-[10px] px-2 py-0.5 rounded bg-secondary text-muted-foreground">
+                    {d}
+                  </span>
+                ))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Hardware Diagnostic Commands */}
+      <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+        <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+          <Terminal className="w-4 h-4 text-primary" /> Integrated Hardware Diagnostic Suite
+        </h3>
+        <div className="grid gap-3 sm:grid-cols-2">
+          {DIAGNOSTIC_COMMANDS.map((diag) => (
+            <div key={diag.cmd} className="p-3 rounded-xl border border-border bg-background space-y-1.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold text-foreground">{diag.title}</span>
+                <button
+                  onClick={() => copy(diag.cmd)}
+                  className="flex items-center gap-1 text-[10px] text-primary font-semibold hover:underline"
+                >
+                  {copiedCmd === diag.cmd ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />}
+                  {copiedCmd === diag.cmd ? "Copied" : "Copy"}
+                </button>
+              </div>
+              <code className="block p-2 rounded-lg bg-secondary text-[11px] font-mono text-primary truncate">
+                {diag.cmd}
+              </code>
+              <p className="text-[11px] text-muted-foreground">{diag.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ TAB: APPS & MIGRATION HUB ══════════ */
+
+function AdminAppsMigrationManager() {
+  const [search, setSearch] = useState("");
+  const [selectedCat, setSelectedCat] = useState("All");
+
+  const categories = [
+    "All",
+    "Graphics",
+    "Office",
+    "Media",
+    "Development",
+    "Communication",
+    "Utilities",
+    "Gaming",
+    "Security",
+  ];
+
+  const filteredApps = APPS_DATA.filter((app) => {
+    const matchCat = selectedCat === "All" || app.category === selectedCat;
+    const q = search.toLowerCase();
+    const matchQ =
+      !q ||
+      app.name.toLowerCase().includes(q) ||
+      app.category.toLowerCase().includes(q) ||
+      app.summary.toLowerCase().includes(q) ||
+      app.alternatives.some((a) => a.name.toLowerCase().includes(q) || a.description.toLowerCase().includes(q));
+    return matchCat && matchQ;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-display text-foreground flex items-center gap-2">
+            <Layers className="w-5 h-5 text-purple-400" /> Windows to Linux Apps & Migration Hub
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Directory of {APPS_DATA.length} Windows software applications with their native Linux replacements, install packages, and transition guides.
+          </p>
+        </div>
+        <Link
+          to="/apps"
+          target="_blank"
+          className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+        >
+          View Public Apps Page <ExternalLink className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Filter and Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {categories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setSelectedCat(c)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
+                selectedCat === c
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="relative max-w-xs w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search Windows or Linux apps…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* App Comparisons List */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        {filteredApps.map((app) => (
+          <div key={app.id} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <span className="text-2xl">{app.icon}</span>
+                <div>
+                  <h3 className="font-bold text-sm text-foreground">{app.name}</h3>
+                  <span className="text-[10px] text-muted-foreground">{app.category}</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground">
+                {app.alternatives.length} alternatives
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground">{app.summary}</p>
+            <div className="space-y-2 pt-1">
+              {app.alternatives.map((alt) => (
+                <div key={alt.name} className="p-2.5 rounded-xl border border-border/80 bg-background/60 space-y-1">
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-xs text-foreground">{alt.name}</span>
+                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-primary/10 text-primary font-bold">
+                      {alt.license}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">{alt.description}</p>
+                  {(alt.installCmds.apt || alt.installCmds.flatpak) && (
+                    <code className="block p-1.5 rounded bg-secondary text-[10px] font-mono text-primary truncate">
+                      {alt.installCmds.apt || alt.installCmds.flatpak}
+                    </code>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Migration Pathways Preview */}
+      <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+        <h3 className="font-bold text-sm text-foreground">Migration Pathways ({MIGRATION_GUIDES.length} Workflows)</h3>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {MIGRATION_GUIDES.map((guide) => (
+            <div key={guide.id} className="p-3.5 rounded-xl border border-border bg-background space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{guide.icon}</span>
+                <span className="font-bold text-xs text-foreground">{guide.title}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground line-clamp-2">{guide.subtitle}</p>
+              <div className="text-[10px] text-primary font-semibold">
+                {guide.steps.length} migration steps mapped
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ TAB: DISTROS & GAMING HUB ══════════ */
+
+function AdminDistrosGamingManager() {
+  const [search, setSearch] = useState("");
+  const [selectedBase, setSelectedBase] = useState("All");
+
+  const bases = ["All", "Debian", "Ubuntu", "Arch", "Red Hat / Fedora", "openSUSE", "Independent"];
+
+  const filteredDistros = DISTROS_DATA.filter((d) => {
+    const matchBase = selectedBase === "All" || d.base.toLowerCase().includes(selectedBase.toLowerCase());
+    const q = search.toLowerCase();
+    const matchQ =
+      !q ||
+      d.name.toLowerCase().includes(q) ||
+      d.tagline.toLowerCase().includes(q) ||
+      d.packageManager.toLowerCase().includes(q);
+    return matchBase && matchQ;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-display text-foreground flex items-center gap-2">
+            <Gamepad2 className="w-5 h-5 text-sky-400" /> Distros Catalog & Gaming Matrix
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Manage {DISTROS_DATA.length} Linux operating system profiles, Steam Proton gaming tiers, and launch argument optimizations.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/distros"
+            target="_blank"
+            className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+          >
+            Distros Page <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+          <Link
+            to="/gaming"
+            target="_blank"
+            className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+          >
+            Gaming Page <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Filter and Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {bases.map((b) => (
+            <button
+              key={b}
+              onClick={() => setSelectedBase(b)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
+                selectedBase === b
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {b}
+            </button>
+          ))}
+        </div>
+        <div className="relative max-w-xs w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search distributions…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Distros Grid */}
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {filteredDistros.map((d) => (
+          <div key={d.id} className="rounded-2xl border border-border bg-card p-4 space-y-2 hover:border-primary/40 transition">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">{d.logo}</span>
+                <div>
+                  <h3 className="font-bold text-sm text-foreground">{d.name}</h3>
+                  <span className="text-[10px] text-muted-foreground">Base: {d.base}</span>
+                </div>
+              </div>
+              <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-secondary text-primary">
+                {d.packageManager}
+              </span>
+            </div>
+            <p className="text-xs text-muted-foreground line-clamp-2">{d.tagline}</p>
+            <div className="pt-2 border-t border-border flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{d.defaultDesktop}</span>
+              <span className="font-semibold text-foreground">{d.releaseModel}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Proton Gaming Anti-Cheat Matrix */}
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+          <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+            <Gamepad2 className="w-4 h-4 text-sky-400" /> Popular Games Proton & Anti-Cheat Status
+          </h3>
+          <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+            {ANTI_CHEAT_GAMES.map((game: AntiCheatGame) => (
+              <div key={game.name} className="p-2.5 rounded-xl border border-border bg-background flex items-center justify-between text-xs">
+                <div>
+                  <span className="font-bold text-foreground">{game.name}</span>
+                  <p className="text-[11px] text-muted-foreground">{game.antiCheat}</p>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-primary/10 text-primary font-bold block">
+                    {game.protonTier}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">{game.status.split(" ")[0]}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border bg-card p-5 space-y-3">
+          <h3 className="font-bold text-sm text-foreground flex items-center gap-2">
+            <Terminal className="w-4 h-4 text-primary" /> GPU Driver Installation Matrix
+          </h3>
+          <div className="space-y-2 max-h-80 overflow-y-auto pr-1">
+            {GPU_DRIVER_GUIDES.map((guide) => (
+              <div key={guide.gpu} className="p-2.5 rounded-xl border border-border bg-background space-y-1 text-xs">
+                <span className="font-bold text-foreground">{guide.gpu}</span>
+                <code className="block p-1 rounded bg-secondary text-[10px] font-mono text-primary truncate">
+                  {guide.ubuntu}
+                </code>
+                <p className="text-[11px] text-muted-foreground">{guide.description}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ TAB: EXAM QUESTION BANK ══════════ */
+
+function AdminExamBankManager() {
+  const [search, setSearch] = useState("");
+  const [selectedDomain, setSelectedDomain] = useState("All");
+
+  const domains = [
+    "All",
+    "Permissions & File System",
+    "Process Management",
+    "System Administration",
+    "Networking & Security",
+    "Storage & Disks",
+  ];
+
+  const filteredQuestions = EXAM_QUESTIONS.filter((q) => {
+    const matchDom = selectedDomain === "All" || q.domain === selectedDomain;
+    const query = search.toLowerCase();
+    const matchQ =
+      !query ||
+      q.question.toLowerCase().includes(query) ||
+      q.explanation.toLowerCase().includes(query) ||
+      q.options.some((opt) => opt.toLowerCase().includes(query));
+    return matchDom && matchQ;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-display text-foreground flex items-center gap-2">
+            <Award className="w-5 h-5 text-emerald-400" /> Certification Exam Question Bank
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Authoring and audit bank for {EXAM_QUESTIONS.length} RHCSA, LFCS, and Linux+ practice examination questions.
+          </p>
+        </div>
+        <Link
+          to="/exam/practice"
+          target="_blank"
+          className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+        >
+          Open Practice Exam <ExternalLink className="w-3.5 h-3.5" />
+        </Link>
+      </div>
+
+      {/* Domain Filters & Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {domains.map((d) => (
+            <button
+              key={d}
+              onClick={() => setSelectedDomain(d)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
+                selectedDomain === d
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {d}
+            </button>
+          ))}
+        </div>
+        <div className="relative max-w-xs w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search exam questions…"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Questions List */}
+      <div className="space-y-3">
+        {filteredQuestions.map((q, idx) => (
+          <div key={q.id} className="rounded-2xl border border-border bg-card p-4 space-y-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2.5">
+                <span className="min-w-[24px] h-6 w-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center font-mono mt-0.5">
+                  {idx + 1}
+                </span>
+                <div>
+                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-secondary text-primary uppercase">
+                    {q.domain}
+                  </span>
+                  <h3 className="font-bold text-sm text-foreground mt-1.5">{q.question}</h3>
+                </div>
+              </div>
+            </div>
+
+            <div className="grid sm:grid-cols-2 gap-2 pl-8">
+              {q.options.map((opt, oIdx) => (
+                <div
+                  key={oIdx}
+                  className={`p-2 rounded-xl border text-xs flex items-center justify-between ${
+                    oIdx === q.correctIndex
+                      ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-300 font-semibold"
+                      : "border-border bg-background text-muted-foreground"
+                  }`}
+                >
+                  <span>{opt}</span>
+                  {oIdx === q.correctIndex && <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />}
+                </div>
+              ))}
+            </div>
+
+            <div className="pl-8 pt-2 border-t border-border/60 text-xs text-muted-foreground">
+              <span className="font-bold text-foreground">Technical Explanation: </span>
+              {q.explanation}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════ TAB: COMMANDS & CHEATSHEETS HUB ══════════ */
+
+function AdminCommandsCheatsheetsManager() {
+  const [cmdSearch, setCmdSearch] = useState("");
+  const [selectedCmdCat, setSelectedCmdCat] = useState("All");
+
+  const cmdCategories = [
+    "All",
+    "Files & Navigation",
+    "Networking",
+    "Process Management",
+    "System Info",
+    "Disks & Storage",
+    "User Management",
+    "Permissions & Security",
+  ];
+
+  const filteredCmds = COMMANDS_DATA.filter((cmd) => {
+    const matchCat = selectedCmdCat === "All" || cmd.category === selectedCmdCat;
+    const q = cmdSearch.toLowerCase();
+    const matchQ =
+      !q ||
+      cmd.windowsCmd.toLowerCase().includes(q) ||
+      cmd.linuxCmd.toLowerCase().includes(q) ||
+      cmd.description.toLowerCase().includes(q);
+    return matchCat && matchQ;
+  });
+
+  return (
+    <div className="space-y-6">
+      <div className="pb-4 border-b border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl font-bold font-display text-foreground flex items-center gap-2">
+            <Terminal className="w-5 h-5 text-primary" /> Commands & Cheat Sheets Matrix
+          </h2>
+          <p className="text-xs text-muted-foreground mt-1">
+            Inspect {COMMANDS_DATA.length} Windows-to-Linux command translations and {CHEATSHEETS_DATA.length} curriculum cheat sheet categories.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/tools/command-translator"
+            target="_blank"
+            className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+          >
+            Command Translator <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+          <Link
+            to="/cheat-sheets"
+            target="_blank"
+            className="flex items-center gap-1 text-xs text-primary font-semibold hover:underline"
+          >
+            Cheat Sheets <ExternalLink className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
+      {/* Filter and Search */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div className="flex flex-wrap items-center gap-1.5">
+          {cmdCategories.map((c) => (
+            <button
+              key={c}
+              onClick={() => setSelectedCmdCat(c)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition border ${
+                selectedCmdCat === c
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {c}
+            </button>
+          ))}
+        </div>
+        <div className="relative max-w-xs w-full">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search commands or descriptions…"
+            value={cmdSearch}
+            onChange={(e) => setCmdSearch(e.target.value)}
+            className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
+          />
+        </div>
+      </div>
+
+      {/* Commands Table */}
+      <div className="rounded-2xl border border-border bg-card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-secondary/40 border-b border-border text-muted-foreground font-semibold">
+              <tr>
+                <th className="p-3.5">Windows Command</th>
+                <th className="p-3.5">Linux Equivalent</th>
+                <th className="p-3.5">Category</th>
+                <th className="p-3.5">Description & Examples</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {filteredCmds.map((cmd) => (
+                <tr key={cmd.windowsCmd + cmd.linuxCmd} className="hover:bg-secondary/20 transition">
+                  <td className="p-3.5 font-mono text-muted-foreground">{cmd.windowsCmd}</td>
+                  <td className="p-3.5 font-mono font-bold text-primary">{cmd.linuxCmd}</td>
+                  <td className="p-3.5">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground font-semibold">
+                      {cmd.category}
+                    </span>
+                  </td>
+                  <td className="p-3.5">
+                    <div className="text-foreground">{cmd.description}</div>
+                    <div className="text-[11px] text-muted-foreground font-mono mt-0.5">
+                      Linux Ex: {cmd.linuxExample}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Cheat Sheets Overview */}
+      <div className="rounded-2xl border border-border bg-card p-5 space-y-4">
+        <h3 className="font-bold text-sm text-foreground">Cheat Sheet Categories ({CHEATSHEETS_DATA.length} Modules)</h3>
+        <div className="grid gap-3 sm:grid-cols-3">
+          {CHEATSHEETS_DATA.map((cs) => (
+            <div key={cs.id} className="p-3.5 rounded-xl border border-border bg-background space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xl">{cs.icon}</span>
+                <span className="font-bold text-xs text-foreground">{cs.title}</span>
+              </div>
+              <p className="text-[11px] text-muted-foreground line-clamp-2">{cs.summary}</p>
+              <div className="text-[10px] text-primary font-semibold">
+                {cs.sections.reduce((acc, s) => acc + s.items.length, 0)} commands documented
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

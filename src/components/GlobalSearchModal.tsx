@@ -9,11 +9,13 @@ import {
   FileText,
   ArrowRight,
   CornerDownLeft,
+  GraduationCap,
 } from "lucide-react";
 import { DISTROS_DATA } from "@/lib/distros-data";
 import { APPS_DATA } from "@/lib/apps-data";
 import { COMMANDS_DATA } from "@/lib/commands-data";
 import { CHEATSHEETS_DATA } from "@/lib/cheatsheets-data";
+import { CATALOG_COURSES } from "@/lib/courses-catalog-data";
 
 interface GlobalSearchModalProps {
   isOpen: boolean;
@@ -69,11 +71,32 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
         c.description.toLowerCase().includes(q),
     ).slice(0, 4);
 
-    const cheatsheets = CHEATSHEETS_DATA.filter(
-      (cs) => cs.title.toLowerCase().includes(q) || cs.summary.toLowerCase().includes(q),
-    ).slice(0, 2);
+    const courses = CATALOG_COURSES.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        c.subtitle?.toLowerCase().includes(q) ||
+        c.description.toLowerCase().includes(q) ||
+        c.category.toLowerCase().includes(q) ||
+        c.slug.toLowerCase().includes(q) ||
+        c.skills.some((s) => s.toLowerCase().includes(q)),
+    ).slice(0, 3);
 
-    return { distros, apps, commands, cheatsheets };
+    const cheatsheets = CHEATSHEETS_DATA.filter(
+      (c) =>
+        c.title.toLowerCase().includes(q) ||
+        c.summary.toLowerCase().includes(q) ||
+        c.sections.some(
+          (s) =>
+            s.sectionTitle.toLowerCase().includes(q) ||
+            s.items.some(
+              (item) =>
+                item.command.toLowerCase().includes(q) ||
+                item.description.toLowerCase().includes(q),
+            ),
+        ),
+    ).slice(0, 3);
+
+    return { courses, distros, apps, commands, cheatsheets };
   }, [query]);
 
   if (!isOpen) return null;
@@ -89,7 +112,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
           <Search className="h-5 w-5 text-muted-foreground shrink-0" />
           <input
             type="text"
-            placeholder="Search distros, commands, app alternatives, cheat sheets... (e.g. 'chmod', 'photoshop', 'ubuntu')"
+            placeholder="Search courses, distros, commands, cheat sheets... (e.g. 'Red Hat', 'chmod', 'ubuntu')"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -117,7 +140,7 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
             <div className="py-8 text-center text-sm text-muted-foreground">
               <p className="font-medium text-foreground mb-1">Quick Suggestions</p>
               <div className="flex flex-wrap justify-center gap-2 mt-3">
-                {["Ubuntu", "chmod", "Photoshop", "Vim", "Distro Finder", "Cron Builder"].map(
+                {["Red Hat", "Linux Course", "Ubuntu", "chmod", "Photoshop", "Vim", "RHCSA"].map(
                   (s) => (
                     <button
                       key={s}
@@ -134,6 +157,46 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
 
           {query && results && (
             <>
+              {/* Courses */}
+              {results.courses.length > 0 && (
+                <div>
+                  <div className="flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    <GraduationCap className="h-3.5 w-3.5 text-primary" /> Interactive Courses & Certifications
+                  </div>
+                  <div className="space-y-2">
+                    {results.courses.map((course) => (
+                      <Link
+                        key={course.id}
+                        to="/courses/$slug"
+                        params={{ slug: course.slug }}
+                        onClick={onClose}
+                        className="flex items-center justify-between p-3 rounded-xl border border-border bg-background/50 hover:bg-primary/5 hover:border-primary/40 transition group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <span className="h-8 w-8 rounded-lg bg-primary/10 text-primary flex items-center justify-center font-bold text-xs shrink-0">
+                            {course.slug === "rhel" ? "🎩" : "🎓"}
+                          </span>
+                          <div className="min-w-0">
+                            <div className="font-semibold text-sm text-foreground group-hover:text-primary truncate">
+                              {course.title}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {course.subtitle || course.description}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0 ml-3">
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
+                            {course.category}
+                          </span>
+                          <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition" />
+                        </div>
+                      </Link>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Commands */}
               {results.commands.length > 0 && (
                 <div>
@@ -254,7 +317,8 @@ export function GlobalSearchModal({ isOpen, onClose }: GlobalSearchModalProps) {
               )}
 
               {/* No results */}
-              {results.distros.length === 0 &&
+              {results.courses.length === 0 &&
+                results.distros.length === 0 &&
                 results.apps.length === 0 &&
                 results.commands.length === 0 &&
                 results.cheatsheets.length === 0 && (

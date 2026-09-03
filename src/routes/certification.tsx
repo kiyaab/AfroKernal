@@ -64,6 +64,27 @@ const TRACKS: CertTrack[] = [
       "Which command lists all open files and active network connections associated with process ID 1284?",
   },
   {
+    id: "rhel",
+    name: "Red Hat & RHCSA (RHEL 9)",
+    badge: "Enterprise Standard",
+    icon: "🎩",
+    hero: "Validate hands-on expertise in RHEL 9 administration, SELinux policy, LVM storage, firewalld, and enterprise server maintenance.",
+    description:
+      "Demonstrate industry-standard Red Hat enterprise administration skills: package management with DNF/RPM, SELinux boolean controls, LVM disk slicing, and systemd boot targets.",
+    topics: [
+      "RHEL 9 & CentOS Stream Architecture",
+      "DNF / RPM Package Management",
+      "SELinux Contexts & Booleans",
+      "LVM Storage (PV, VG, LV) & XFS",
+      "Systemd Boot Targets & rd.break Rescue",
+      "NetworkManager (nmcli) Configuration",
+      "Firewalld Zones & Rich Rules",
+      "Cockpit Web Console Management",
+    ],
+    sampleQuestion:
+      "Which command permanently sets an SELinux boolean flag so it persists across system reboots?",
+  },
+  {
     id: "security",
     name: "Cybersecurity Fundamentals",
     badge: "In Demand",
@@ -122,13 +143,13 @@ function Certification() {
           </div>
           <h1 className="text-4xl sm:text-5xl font-display font-bold">Linux Certifications</h1>
           <p className="text-muted-foreground text-base max-w-2xl">
-            Prove your skills with official, verifiable credentials. Three specialized tracks
+            Prove your skills with official, verifiable credentials. Four specialized tracks
             shareable on LinkedIn with instant public verification.
           </p>
         </div>
 
-        {/* 3 Tracks Cards */}
-        <div className="grid gap-6 md:grid-cols-3 mb-16">
+        {/* 4 Tracks Cards */}
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-16">
           {TRACKS.map((t) => {
             const isSelected = t.id === selectedTrack.id;
             return (
