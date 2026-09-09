@@ -15,7 +15,7 @@ import {
   UserCheck,
   Flame,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { EXAM_QUESTIONS, ExamQuestion } from "@/lib/exam-questions-data";
 import { useAuth } from "@/lib/AuthContext";
 import { HeaderNav } from "@/components/HeaderNav";
@@ -55,6 +55,8 @@ function ExamPracticePage() {
 
   const currentQ = questions[currentIndex] || questions[0];
 
+  const handleFinishExamRef = useRef<() => Promise<void>>(() => Promise.resolve());
+
   // Timer countdown
   useEffect(() => {
     if (!isExamActive || isExamCompleted) return;
@@ -62,7 +64,7 @@ function ExamPracticePage() {
       setTimeLeftSeconds((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          handleFinishExam();
+          handleFinishExamRef.current();
           return 0;
         }
         return prev - 1;
@@ -134,6 +136,7 @@ function ExamPracticePage() {
       });
     }
   };
+  handleFinishExamRef.current = handleFinishExam;
 
   const formatTime = (secs: number) => {
     const m = Math.floor(secs / 60);

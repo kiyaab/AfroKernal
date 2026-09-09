@@ -144,7 +144,7 @@ function CronBuilder() {
       times.push(next.toUTCString().replace("GMT", "UTC"));
     }
     return times;
-  }, [expression, hour]);
+  }, [hour]);
 
   const applyPreset = (presetExpr: string) => {
     const parts = presetExpr.split(" ");

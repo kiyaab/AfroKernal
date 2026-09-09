@@ -42,7 +42,7 @@ async function addXP(supabase: any, userId: string, xp: number) {
 // ---------- QUIZ ----------
 export const getLessonQuiz = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((lessonId: string) => lessonId)
+  .validator((lessonId: string) => lessonId)
   .handler(async ({ data: lessonId, context }) => {
     const { data: quiz } = await context.supabase
       .from("quizzes")
@@ -60,7 +60,7 @@ export const getLessonQuiz = createServerFn({ method: "GET" })
 
 export const getLessonQuizForAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((lessonId: string) => lessonId)
+  .validator((lessonId: string) => lessonId)
   .handler(async ({ data: lessonId, context }) => {
     const { data: quiz } = await context.supabase
       .from("quizzes")
@@ -78,7 +78,7 @@ export const getLessonQuizForAdmin = createServerFn({ method: "GET" })
 
 export const upsertQuiz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       lesson_id: string;
       quiz: { id?: string; title: string; passing_score: number; xp_reward: number };
@@ -140,7 +140,7 @@ export const upsertQuiz = createServerFn({ method: "POST" })
 
 export const submitQuiz = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { lesson_id: string; answers: Record<string, number> }) => input)
+  .validator((input: { lesson_id: string; answers: Record<string, number> }) => input)
   .handler(async ({ data, context }) => {
     const { data: quiz } = await context.supabase
       .from("quizzes")
@@ -185,7 +185,7 @@ export const submitQuiz = createServerFn({ method: "POST" })
 // ---------- CHALLENGE ----------
 export const getLessonChallenge = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((lessonId: string) => lessonId)
+  .validator((lessonId: string) => lessonId)
   .handler(async ({ data: lessonId, context }) => {
     const { data } = await context.supabase
       .from("challenges")
@@ -197,7 +197,7 @@ export const getLessonChallenge = createServerFn({ method: "GET" })
 
 export const getLessonChallengeForAdmin = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((lessonId: string) => lessonId)
+  .validator((lessonId: string) => lessonId)
   .handler(async ({ data: lessonId, context }) => {
     const { data } = await context.supabase
       .from("challenges")
@@ -209,7 +209,7 @@ export const getLessonChallengeForAdmin = createServerFn({ method: "GET" })
 
 export const upsertChallenge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       lesson_id: string;
       title: string;
@@ -248,7 +248,7 @@ export const upsertChallenge = createServerFn({ method: "POST" })
 
 export const submitChallenge = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { lesson_id: string; output: string }) => input)
+  .validator((input: { lesson_id: string; output: string }) => input)
   .handler(async ({ data, context }) => {
     const { data: chall } = await context.supabase
       .from("challenges")
@@ -332,7 +332,7 @@ export const getWeekly = createServerFn({ method: "GET" })
 
 export const setWeeklyTarget = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { target_xp: number; reminders_enabled?: boolean }) => input)
+  .validator((input: { target_xp: number; reminders_enabled?: boolean }) => input)
   .handler(async ({ data, context }) => {
     const week = weekStartISO();
     await context.supabase.from("weekly_goals").upsert(
@@ -388,7 +388,7 @@ export const markNotificationsRead = createServerFn({ method: "POST" })
 // ---------- PROFILE ----------
 export const updateProfile = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator(
+  .validator(
     (input: {
       display_name?: string;
       bio?: string;
@@ -440,7 +440,7 @@ export const updateProfile = createServerFn({ method: "POST" })
 // ---------- LESSON UNLOCK ----------
 export const getLessonUnlocks = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((courseId: string) => courseId)
+  .validator((courseId: string) => courseId)
   .handler(async ({ data: courseId, context }) => {
     const { data } = await context.supabase
       .from("lesson_progress")

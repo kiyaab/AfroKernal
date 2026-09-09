@@ -41,7 +41,7 @@ export const getDashboard = createServerFn({ method: "GET" })
 
 export const logTerminalSession = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { command_count: number; distro?: string }) => input)
+  .validator((input: { command_count: number; distro?: string }) => input)
   .handler(async ({ data, context }) => {
     const distro = data.distro ?? "ubuntu";
     await context.supabase.from("terminal_sessions").insert({

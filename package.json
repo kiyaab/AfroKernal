@@ -12,6 +12,8 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
+    "test": "node ./scripts/test-functionality.mjs",
+    "audit:routes": "node ./scripts/audit-routes.mjs",
     "lint": "eslint .",
     "format": "prettier --write ."
   },

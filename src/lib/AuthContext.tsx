@@ -176,15 +176,17 @@ export function upsertLearnerRecord(
   }
 }
 
+function getStoredLocalUser(): User | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const stored = localStorage.getItem(LOCAL_CURRENT_USER_SESSION_KEY);
+    if (stored) return JSON.parse(stored);
+  } catch {}
+  return null;
+}
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
-    try {
-      const stored = localStorage.getItem(LOCAL_CURRENT_USER_SESSION_KEY);
-      if (stored) return JSON.parse(stored);
-    } catch {}
-    return null;
-  });
+  const [user, setUser] = useState<User | null>(() => getStoredLocalUser());
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<UserStats>({ xp: 150, level: 1, streak_days: 1 });
@@ -263,8 +265,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     // 1. If stored local user, initialize data immediately
-    if (user) {
-      loadUserDataForId(user.id, user.email);
+    const localUser = getStoredLocalUser();
+    if (localUser) {
+      loadUserDataForId(localUser.id, localUser.email);
     }
 
     // 2. Check Supabase session with network error safety
