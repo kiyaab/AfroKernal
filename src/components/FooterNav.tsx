@@ -146,7 +146,7 @@ export function FooterNav() {
       </div>
 
       <div className="mx-auto mt-12 max-w-7xl px-6 pt-8 border-t border-border/60 flex flex-col sm:flex-row items-center justify-between gap-4 text-muted-foreground">
-        <p>© 2026 AfroKernel · Your Home to Learn Linux. Free, forever.</p>
+        <p>© 2026 AfroKernel · Your Home to Learn Linux. Practice. Grow. Automate. Deploy</p>
         <div className="flex items-center gap-6">
           <Link to="/terms" className="hover:text-primary transition">
             Terms of Service

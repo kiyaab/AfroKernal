@@ -32,3 +32,6 @@ dist-ssr
 *.sln
 *.sw?
 push-to-github.bat
+
+# Local environment variables - never commit
+.env
