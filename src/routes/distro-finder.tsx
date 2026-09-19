@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 
 export const Route = createFileRoute("/distro-finder")({
   component: DistroFinder,
@@ -332,9 +334,11 @@ function DistroFinder() {
   const currentQ = questions[step];
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-12">
-      {/* Header */}
-      <div className="mb-10 text-center flex flex-col gap-3 items-center">
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+      <main className="flex-1 mx-auto max-w-4xl px-6 py-12 w-full">
+        {/* Header */}
+        <div className="mb-10 text-center flex flex-col gap-3 items-center">
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
           <Compass className="h-7 w-7" />
         </div>
@@ -537,6 +541,8 @@ function DistroFinder() {
           </div>
         </div>
       )}
+      </main>
+      <FooterNav />
     </div>
   );
 }

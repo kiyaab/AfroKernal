@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useState, useMemo, useEffect } from "react";
 import { APPS_DATA, WindowsApp, AppAlternative } from "@/lib/apps-data";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 
 export const Route = createFileRoute("/apps")({
   component: AppsDirectory,
@@ -96,9 +98,11 @@ function AppsDirectory() {
   }, [searchQuery, selectedCategory]);
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12">
-      {/* Top Banner */}
-      <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+      <main className="flex-1 mx-auto max-w-7xl px-6 py-12 w-full">
+        {/* Top Banner */}
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary mb-3">
             <AppWindow className="h-3.5 w-3.5" /> Windows to Linux Software Directory
@@ -401,6 +405,8 @@ function AppsDirectory() {
           </div>
         </div>
       )}
+      </main>
+      <FooterNav />
     </div>
   );
 }

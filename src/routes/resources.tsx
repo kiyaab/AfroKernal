@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 import { ExternalLink, FileText, BookOpen, Download, Loader2 } from "lucide-react";
 import { linuxResources } from "@/lib/linux-resources";
 import pdfAsset from "@/assets/mts-linux-command-reference.pdf.asset.json";
@@ -55,28 +55,10 @@ function ResourcesPage() {
   const otherDb = (dbResources ?? []).filter((r) => r.resource_type !== "pdf");
 
   return (
-    <div className="min-h-screen">
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-3">
-          <Link to="/">
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-4">
-            <Link to="/courses" className="text-sm hover:text-primary">
-              Courses
-            </Link>
-            <Link to="/docs" className="text-sm hover:text-primary">
-              Docs
-            </Link>
-            <Link to="/lab" className="text-sm hover:text-primary">
-              Lab
-            </Link>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
 
-      <main className="mx-auto max-w-6xl px-6 py-10">
+      <main className="flex-1 mx-auto max-w-6xl px-6 py-10 w-full">
         <div className="mb-10">
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
             Learning hub
@@ -214,6 +196,7 @@ function ResourcesPage() {
           ))}
         </div>
       </main>
+      <FooterNav />
     </div>
   );
 }

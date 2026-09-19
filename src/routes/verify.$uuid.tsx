@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import jsPDF from "jspdf";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 
 export const Route = createFileRoute("/verify/$uuid")({
   component: CertificateVerification,
@@ -111,15 +113,9 @@ function CertificateVerification() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-6 py-16">
-      <div className="mb-6">
-        <Link
-          to="/"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground"
-        >
-          <ArrowLeft className="h-4 w-4" /> Back to Home
-        </Link>
-      </div>
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+      <main className="flex-1 mx-auto max-w-4xl px-6 py-12 w-full">
 
       <div className="rounded-3xl border border-border bg-card p-8 md:p-12 shadow-2xl space-y-8 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
@@ -191,6 +187,8 @@ function CertificateVerification() {
           </div>
         </div>
       </div>
+      </main>
+      <FooterNav />
     </div>
   );
 }

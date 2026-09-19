@@ -12,6 +12,8 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { CHEATSHEETS_DATA, CheatSheetCategory } from "@/lib/cheatsheets-data";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 
 export const Route = createFileRoute("/cheat-sheets")({
   component: CheatSheets,
@@ -48,9 +50,11 @@ function CheatSheets() {
   }, [activeSheet, searchQuery]);
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12">
-      {/* Top Banner */}
-      <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+      <main className="flex-1 mx-auto max-w-7xl px-6 py-12 w-full">
+        {/* Top Banner */}
+        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary mb-3">
             <FileText className="h-3.5 w-3.5" /> High-Density Reference Library
@@ -180,6 +184,8 @@ function CheatSheets() {
           </div>
         )}
       </div>
+      </main>
+      <FooterNav />
     </div>
   );
 }

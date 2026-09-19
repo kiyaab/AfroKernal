@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { MIGRATION_GUIDES, MigrationGuide } from "@/lib/migration-data";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 
 export const Route = createFileRoute("/migration-guides")({
   component: MigrationGuides,
@@ -53,9 +55,11 @@ function MigrationGuides() {
   const progressPercent = getGuideProgress(activeGuide);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-12">
-      {/* Top Banner */}
-      <div className="mb-10 text-center flex flex-col gap-3 items-center">
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+      <main className="flex-1 mx-auto max-w-6xl px-6 py-12 w-full">
+        {/* Top Banner */}
+        <div className="mb-10 text-center flex flex-col gap-3 items-center">
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
           <ArrowRightLeft className="h-7 w-7" />
         </div>
@@ -207,6 +211,8 @@ function MigrationGuides() {
           })}
         </div>
       </div>
+      </main>
+      <FooterNav />
     </div>
   );
 }

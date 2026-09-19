@@ -58,20 +58,25 @@ export const Route = createFileRoute("/auth")({
 });
 
 async function ensureProfile(userId: string, displayName: string, email: string) {
+  const cleanEmail = email.trim().toLowerCase();
+  const isMaster =
+    cleanEmail === MASTER_ADMIN_EMAIL.toLowerCase() ||
+    cleanEmail === "admin@afrokernel.com";
+  const defaultRole = isMaster ? "admin" : "user";
   const base = {
     id: userId,
-    display_name: displayName || email.split("@")[0],
+    display_name: displayName || cleanEmail.split("@")[0],
     updated_at: new Date().toISOString(),
   };
 
   upsertLearnerRecord({
     id: userId,
-    displayName: displayName || email.split("@")[0],
-    email,
+    displayName: displayName || cleanEmail.split("@")[0],
+    email: cleanEmail,
     xp: 150,
     level: 1,
     streak: 1,
-    roles: email.toLowerCase() === MASTER_ADMIN_EMAIL ? ["admin", "instructor", "user"] : ["user"],
+    roles: isMaster ? ["admin", "instructor", "user"] : ["user"],
     enrolledCourses: ["linux"],
     completedLessons: [],
     createdAt: new Date().toISOString(),
@@ -82,19 +87,24 @@ async function ensureProfile(userId: string, displayName: string, email: string)
   try {
     const withEmail = await supabase
       .from("profiles")
-      .upsert({ ...base, email } as never, { onConflict: "id" });
+      .upsert({ ...base, email: cleanEmail, headline: cleanEmail } as never, { onConflict: "id" });
     if (withEmail.error) {
       await supabase
         .from("profiles")
-        .upsert({ ...base, headline: email } as never, { onConflict: "id" });
+        .upsert({ ...base, headline: cleanEmail } as never, { onConflict: "id" });
     }
     await supabase
       .from("user_stats")
       .upsert({ user_id: userId, xp: 150, level: 1, streak_days: 1 } as never, {
         onConflict: "user_id",
       });
-  } catch {
-    /* fallback gracefully */
+    await supabase
+      .from("user_roles")
+      .upsert({ user_id: userId, role: defaultRole } as never, {
+        onConflict: "user_id,role",
+      });
+  } catch (err) {
+    console.warn("Could not sync profile/role to Supabase:", err);
   }
 }
 
@@ -184,7 +194,7 @@ function AuthPage() {
           throw new Error("Password must be at least 6 characters long.");
         }
 
-        let userId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+        let userId = "";
 
         try {
           const { data: sbData, error: sbErr } = await supabase.auth.signUp({
@@ -192,24 +202,52 @@ function AuthPage() {
             password: cleanPass,
             options: {
               emailRedirectTo: window.location.origin,
-              data: { display_name: displayName },
+              data: {
+                display_name: displayName,
+                full_name: displayName,
+                email: cleanEmail,
+              },
             },
           });
 
-          if (!sbErr && (sbData.session?.user || sbData.user)) {
-            userId = sbData.session?.user?.id ?? sbData.user?.id ?? userId;
+          if (sbErr) {
+            const msg = sbErr.message?.toLowerCase() || "";
+            if (msg.includes("already registered") || msg.includes("already in use")) {
+              throw new Error("An account with this email already exists. Please sign in instead.");
+            }
+            throw new Error(sbErr.message || "Registration failed. Please try again.");
           }
-        } catch (sbErr) {
+
+          if (sbData.user && Array.isArray(sbData.user.identities) && sbData.user.identities.length === 0) {
+            throw new Error("An account with this email already exists. Please sign in instead.");
+          }
+
+          if (sbData.user?.id || sbData.session?.user?.id) {
+            userId = sbData.user?.id || sbData.session?.user?.id || "";
+          }
+
+          if (!sbData.session && sbData.user) {
+            setSuccess("Registration successful! If confirmation is required, please check your email.");
+          }
+        } catch (err: any) {
+          // If it was an explicit validation or duplicate error from above, rethrow to display to user
+          if (err?.message && !err.message.includes("fetch") && !err.message.includes("network")) {
+            throw err;
+          }
           console.warn(
             "Supabase network sign-up unreachable, continuing with local registration:",
-            sbErr,
+            err,
           );
+        }
+
+        if (!userId) {
+          userId = `user-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
         }
 
         const newUser = {
           id: userId,
           email: cleanEmail,
-          user_metadata: { display_name: displayName },
+          user_metadata: { display_name: displayName, full_name: displayName },
           app_metadata: {},
           aud: "authenticated",
           created_at: new Date().toISOString(),

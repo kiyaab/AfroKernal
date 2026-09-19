@@ -1,4 +1,4 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/AuthContext";
 import {
@@ -21,6 +21,8 @@ import {
   LogOut,
   Sparkles,
   ArrowRight,
+  ArrowLeft,
+  Home,
   Shield,
   Layers,
   LayoutDashboard,
@@ -32,6 +34,8 @@ const LOGO_URL = "/afrokernel-logo.png";
 
 export function HeaderNav() {
   const { user, signOut } = useAuth();
+  const location = useLocation();
+  const isHomePage = location.pathname === "/" || location.pathname === "";
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -45,17 +49,49 @@ export function HeaderNav() {
       <header className="sticky top-0 z-40 w-full border-b border-border/80 bg-background/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5">
           {/* Brand Logo */}
-          <Link to="/" className="flex items-center gap-2.5 group">
-            <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/40 bg-primary/10 shadow-[0_0_20px_-5px_var(--primary)] transition group-hover:scale-105">
-              <img src={LOGO_URL} alt="AfroKernel" className="h-full w-full object-cover" />
-            </span>
-            <span className="font-display text-lg font-bold tracking-tight">
-              Afro<span className="text-primary">Kernel</span>
-            </span>
-          </Link>
+          <div className="flex items-center gap-2.5">
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <span className="inline-flex h-9 w-9 items-center justify-center overflow-hidden rounded-full ring-2 ring-primary/40 bg-primary/10 shadow-[0_0_20px_-5px_var(--primary)] transition group-hover:scale-105">
+                <img src={LOGO_URL} alt="AfroKernel" className="h-full w-full object-cover" />
+              </span>
+              <span className="font-display text-lg font-bold tracking-tight">
+                Afro<span className="text-primary">Kernel</span>
+              </span>
+            </Link>
+
+            {!isHomePage && (
+              <Link
+                to="/"
+                className="lg:hidden flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground bg-secondary/60 hover:bg-secondary border border-border/60 transition-all duration-200 group"
+                title="Back to Home"
+              >
+                <ArrowLeft className="h-3 w-3 text-primary transition-transform group-hover:-translate-x-0.5" />
+                <span>Home</span>
+              </Link>
+            )}
+          </div>
 
           {/* Desktop Navigation Mega Menu */}
           <nav className="hidden items-center gap-1 lg:flex text-sm font-medium">
+            {/* Back to Home / Home Link */}
+            {!isHomePage ? (
+              <Link
+                to="/"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/60 hover:border-border transition-all duration-200 group mr-1.5"
+                title="Return to Home"
+              >
+                <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
+                <span>Back to Home</span>
+              </Link>
+            ) : (
+              <Link
+                to="/"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-foreground hover:bg-secondary/60 transition-colors mr-1.5"
+              >
+                <Home className="h-3.5 w-3.5 text-primary" />
+                <span>Home</span>
+              </Link>
+            )}
             {/* 1. Courses Dropdown */}
             <div
               className="relative"
@@ -405,6 +441,17 @@ export function HeaderNav() {
         {/* Mobile Slideout Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border bg-card p-6 space-y-4 animate-in slide-in-from-top-4">
+            {!isHomePage && (
+              <Link
+                to="/"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-secondary/70 hover:bg-secondary text-foreground font-medium text-xs border border-border/60 transition-colors group"
+              >
+                <ArrowLeft className="h-4 w-4 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
+                <span>Back to Home</span>
+              </Link>
+            )}
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);

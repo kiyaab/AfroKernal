@@ -21,6 +21,7 @@ import {
   Square,
   HardDrive,
   Sparkles,
+  ArrowLeft,
 } from "lucide-react";
 
 export const Route = createFileRoute("/lab")({
@@ -252,9 +253,19 @@ function Lab() {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border/60 sticky top-0 z-40 bg-background/80 backdrop-blur">
         <div className="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/">
-            <Logo />
-          </Link>
+          <div className="flex items-center gap-3">
+            <Link to="/">
+              <Logo />
+            </Link>
+            <Link
+              to="/"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/60 hover:border-border transition-all duration-200 group"
+              title="Return to AfroKernel Home"
+            >
+              <ArrowLeft className="w-3.5 h-3.5 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
+              <span>Back to Home</span>
+            </Link>
+          </div>
           <div className="flex items-center gap-3">
             <button
               onClick={() => setSplitView(!splitView)}

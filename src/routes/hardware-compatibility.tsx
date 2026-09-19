@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { HARDWARE_DATA, DIAGNOSTIC_COMMANDS, HardwareItem } from "@/lib/hardware-data";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
 
 export const Route = createFileRoute("/hardware-compatibility")({
   component: HardwareCompatibility,
@@ -46,9 +48,11 @@ function HardwareCompatibility() {
   }, [searchQuery, selectedCategory]);
 
   return (
-    <div className="mx-auto max-w-7xl px-6 py-12">
-      {/* Top Banner */}
-      <div className="mb-10 text-center flex flex-col gap-3 items-center">
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
+      <main className="flex-1 mx-auto max-w-7xl px-6 py-12 w-full">
+        {/* Top Banner */}
+        <div className="mb-10 text-center flex flex-col gap-3 items-center">
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
           <Cpu className="h-7 w-7" />
         </div>
@@ -197,6 +201,8 @@ function HardwareCompatibility() {
           })
         )}
       </div>
+      </main>
+      <FooterNav />
     </div>
   );
 }

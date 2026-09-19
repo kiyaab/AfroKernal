@@ -411,6 +411,39 @@ function AdminUserManagement() {
   const [search, setSearch] = useState("");
   const [selectedUser, setSelectedUser] = useState<LearnerRecord | null>(null);
 
+  // Real-time synchronization: when someone registers or updates their profile in Supabase,
+  // invalidate the query so the table auto-refreshes immediately!
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-learners-live-sync")
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "profiles" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_roles" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+        },
+      )
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "user_stats" },
+        () => {
+          qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+        },
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
+
   const {
     data: learners,
     isLoading,
@@ -419,17 +452,64 @@ function AdminUserManagement() {
     queryKey: ["admin-learners-master"],
     queryFn: async (): Promise<LearnerRecord[]> => {
       const localUsers = getAllLearnerRecords();
-      try {
-        const { data: profiles } = await supabase.from("profiles").select("*");
-        const { data: stats } = await supabase.from("user_stats").select("*");
-        const { data: roles } = await supabase.from("user_roles").select("*");
-        const { data: progress } = await supabase.from("lesson_progress").select("*");
+      const merged: LearnerRecord[] = [...localUsers];
 
-        const merged: LearnerRecord[] = [...localUsers];
+      try {
+        // 1. First try RPC which bypasses RLS and returns all registered users directly
+        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)("admin_list_learners");
+
+        if (!rpcErr && Array.isArray(rpcUsers) && rpcUsers.length > 0) {
+          (rpcUsers as any[]).forEach((u) => {
+            const existingIdx = merged.findIndex(
+              (m) => m.id === u.id || (u.email && m.email?.toLowerCase() === u.email.toLowerCase()),
+            );
+            const row: LearnerRecord = {
+              id: u.id,
+              displayName: u.display_name || u.email?.split("@")[0] || "Learner",
+              email: u.email || "learner@afrokernel.com",
+              bio: u.bio || "",
+              avatarUrl: u.avatar_url || "",
+              location: u.location || "",
+              website: u.website || "",
+              githubUrl: u.github_url || "",
+              learningGoal: u.learning_goal || "Master Linux",
+              preferredDistro: u.preferred_distro || "Ubuntu",
+              headline: u.headline || "",
+              xp: u.xp ?? (existingIdx >= 0 ? merged[existingIdx].xp : 150),
+              level: u.level ?? (existingIdx >= 0 ? merged[existingIdx].level : 1),
+              streak: u.streak_days ?? (existingIdx >= 0 ? merged[existingIdx].streak : 1),
+              roles: Array.isArray(u.roles) && u.roles.length > 0
+                ? u.roles
+                : existingIdx >= 0
+                  ? merged[existingIdx].roles
+                  : ["user"],
+              enrolledCourses: existingIdx >= 0 ? merged[existingIdx].enrolledCourses : ["linux"],
+              completedLessons: existingIdx >= 0 ? merged[existingIdx].completedLessons : [],
+              examSubmissions: existingIdx >= 0 ? merged[existingIdx].examSubmissions : [],
+              createdAt: u.created_at || (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
+              updatedAt: u.updated_at || new Date().toISOString(),
+              lastActive: u.updated_at || new Date().toISOString(),
+            };
+            upsertLearnerRecord(row);
+            if (existingIdx >= 0) merged[existingIdx] = { ...merged[existingIdx], ...row };
+            else merged.unshift(row);
+          });
+        }
+
+        // 2. Also query tables directly (e.g. if RPC hasn't been executed or for extra data like lesson_progress)
+        const [profilesRes, statsRes, rolesRes, progressRes] = await Promise.allSettled([
+          supabase.from("profiles").select("*"),
+          supabase.from("user_stats").select("*"),
+          supabase.from("user_roles").select("*"),
+          supabase.from("lesson_progress").select("*"),
+        ]);
+
+        const profiles = profilesRes.status === "fulfilled" ? profilesRes.value.data : null;
+        const stats = statsRes.status === "fulfilled" ? statsRes.value.data : null;
+        const roles = rolesRes.status === "fulfilled" ? rolesRes.value.data : null;
+        const progress = progressRes.status === "fulfilled" ? progressRes.value.data : null;
 
         (profiles ?? []).forEach((p) => {
-          // Cast to any — Supabase generated type only includes base columns;
-          // extended columns (email, headline, location, etc.) exist in the real schema.
           const pr_ = p as any;
           const s = (stats ?? []).find((st) => st.user_id === p.id);
           const r = (roles ?? []).filter((ro) => ro.user_id === p.id).map((ro) => ro.role);
@@ -438,7 +518,7 @@ function AdminUserManagement() {
             .map((pg) => pg.lesson_id);
 
           const existingIdx = merged.findIndex(
-            (m) => m.id === p.id || (pr_.email && m.email === pr_.email),
+            (m) => m.id === p.id || (pr_.email && m.email.toLowerCase() === pr_.email.toLowerCase()),
           );
           const row: LearnerRecord = {
             id: p.id,
@@ -465,15 +545,16 @@ function AdminUserManagement() {
             updatedAt: p.updated_at || new Date().toISOString(),
             lastActive: new Date().toISOString(),
           };
+          upsertLearnerRecord(row);
           if (existingIdx >= 0) merged[existingIdx] = { ...merged[existingIdx], ...row };
           else merged.unshift(row);
         });
 
-        if (!merged.some((m) => m.email.toLowerCase() === "admin@ak.com")) {
+        if (!merged.some((m) => m.email.toLowerCase() === "admin@ak.com" || m.email.toLowerCase() === "admin@afrokernel.com")) {
           merged.unshift({
             id: "master-admin-001",
             displayName: "Master Administrator",
-            email: "admin@ak.com",
+            email: "admin@afrokernel.com",
             xp: 5000,
             level: 20,
             streak: 30,
@@ -512,7 +593,7 @@ function AdminUserManagement() {
         return localUsers;
       }
     },
-    refetchInterval: 10_000,
+    refetchInterval: 5_000,
   });
 
   const allUsers = learners ?? [];
@@ -531,24 +612,49 @@ function AdminUserManagement() {
   const totalLessonsCompleted = allUsers.reduce((s, u) => s + (u.completedLessons?.length || 0), 0);
   const totalExamsTaken = allUsers.reduce((s, u) => s + (u.examSubmissions?.length || 0), 0);
 
-  function grantBonusXp(user: LearnerRecord, amount: number) {
+  async function grantBonusXp(user: LearnerRecord, amount: number) {
     const updatedXp = (user.xp || 0) + amount;
+    const newLevel = Math.floor(updatedXp / 250) + 1;
     upsertLearnerRecord({
       id: user.id,
       email: user.email,
       xp: updatedXp,
-      level: Math.floor(updatedXp / 250) + 1,
+      level: newLevel,
     });
+    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev));
+    try {
+      await supabase.from("user_stats").upsert(
+        {
+          user_id: user.id,
+          xp: updatedXp,
+          level: newLevel,
+        } as never,
+        { onConflict: "user_id" },
+      );
+    } catch (e) {
+      console.warn("Could not sync XP to Supabase:", e);
+    }
     refetch();
   }
 
-  function toggleRole(user: LearnerRecord, role: string) {
+  async function toggleRole(user: LearnerRecord, role: string) {
     const has = user.roles.includes(role);
+    const updatedRoles = has ? user.roles.filter((r) => r !== role) : [...user.roles, role];
     upsertLearnerRecord({
       id: user.id,
       email: user.email,
-      roles: has ? user.roles.filter((r) => r !== role) : [...user.roles, role],
+      roles: updatedRoles,
     });
+    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev));
+    try {
+      if (has) {
+        await supabase.from("user_roles").delete().match({ user_id: user.id, role });
+      } else {
+        await supabase.from("user_roles").insert({ user_id: user.id, role } as never);
+      }
+    } catch (e) {
+      console.warn("Could not sync role to Supabase:", e);
+    }
     refetch();
   }
 

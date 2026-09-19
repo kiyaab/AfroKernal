@@ -1,7 +1,7 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
-import { Logo } from "@/components/Logo";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { ShieldCheck, FileText, Lock, Cookie, ArrowLeft } from "lucide-react";
+import { createFileRoute } from "@tanstack/react-router";
+import { HeaderNav } from "@/components/HeaderNav";
+import { FooterNav } from "@/components/FooterNav";
+import { ShieldCheck, FileText, Lock, Cookie } from "lucide-react";
 
 export const Route = createFileRoute("/terms")({
   head: () => ({
@@ -19,22 +19,10 @@ export const Route = createFileRoute("/terms")({
 
 function TermsPage() {
   return (
-    <div className="min-h-screen">
-      <header className="border-b border-border/60 sticky top-0 z-40 bg-background/80 backdrop-blur">
-        <div className="max-w-5xl mx-auto px-6 py-3 flex items-center justify-between">
-          <Link to="/">
-            <Logo />
-          </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/" className="text-sm hover:text-primary flex items-center gap-1">
-              <ArrowLeft className="w-3.5 h-3.5" /> Back Home
-            </Link>
-            <ThemeToggle />
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen flex flex-col bg-background">
+      <HeaderNav />
 
-      <main className="max-w-4xl mx-auto px-6 py-12">
+      <main className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
         <div className="flex items-center gap-3 text-primary mb-2">
           <ShieldCheck className="w-8 h-8" />
           <span className="text-xs font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">
@@ -119,6 +107,7 @@ function TermsPage() {
           </section>
         </div>
       </main>
+      <FooterNav />
     </div>
   );
 }
