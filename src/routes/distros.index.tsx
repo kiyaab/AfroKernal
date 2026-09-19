@@ -16,6 +16,7 @@ import { useState, useMemo } from "react";
 import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 
 export const Route = createFileRoute("/distros/")({
   component: DistrosIndex,
@@ -78,6 +79,7 @@ function DistrosIndex() {
     <div className="min-h-screen flex flex-col bg-background">
       <HeaderNav />
       <main className="flex-1 mx-auto max-w-7xl px-6 py-12 w-full">
+        <BackToHome />
         {/* Top Banner */}
         <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
         <div>

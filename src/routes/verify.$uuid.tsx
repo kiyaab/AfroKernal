@@ -13,6 +13,7 @@ import { useState } from "react";
 import jsPDF from "jspdf";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 
 export const Route = createFileRoute("/verify/$uuid")({
   component: CertificateVerification,
@@ -116,8 +117,9 @@ function CertificateVerification() {
     <div className="min-h-screen flex flex-col bg-background">
       <HeaderNav />
       <main className="flex-1 mx-auto max-w-4xl px-6 py-12 w-full">
+        <BackToHome />
 
-      <div className="rounded-3xl border border-border bg-card p-8 md:p-12 shadow-2xl space-y-8 relative overflow-hidden">
+        <div className="rounded-3xl border border-border bg-card p-8 md:p-12 shadow-2xl space-y-8 relative overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
           <div className="flex items-center gap-3">
             <div className="h-12 w-12 rounded-2xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">

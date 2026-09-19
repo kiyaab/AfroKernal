@@ -14,6 +14,7 @@ import {
 import { useState } from "react";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 
 export const Route = createFileRoute("/certification")({
   head: () => ({
@@ -136,6 +137,7 @@ function Certification() {
       <HeaderNav />
 
       <main className="flex-1 mx-auto max-w-7xl px-6 py-12">
+        <BackToHome />
         {/* Top Banner */}
         <div className="mb-12 text-center flex flex-col gap-3 items-center">
           <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">

@@ -57,32 +57,10 @@ export function HeaderNav() {
                 Afro<span className="text-primary">Kernel</span>
               </span>
             </Link>
-
-            {!isHomePage && (
-              <Link
-                to="/"
-                className="lg:hidden flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground bg-secondary/60 hover:bg-secondary border border-border/60 transition-all duration-200 group"
-                title="Back to Home"
-              >
-                <ArrowLeft className="h-3 w-3 text-primary transition-transform group-hover:-translate-x-0.5" />
-                <span>Home</span>
-              </Link>
-            )}
           </div>
 
           {/* Desktop Navigation Mega Menu */}
           <nav className="hidden items-center gap-1 lg:flex text-sm font-medium">
-            {/* Back to Home Button (hidden on landing page, shown on all single pages) */}
-            {!isHomePage && (
-              <Link
-                to="/"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/60 hover:border-border transition-all duration-200 group mr-1.5"
-                title="Return to Home"
-              >
-                <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
-                <span>Back to Home</span>
-              </Link>
-            )}
             {/* 1. Courses Dropdown */}
             <div
               className="relative"
@@ -432,16 +410,6 @@ export function HeaderNav() {
         {/* Mobile Slideout Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border bg-card p-6 space-y-4 animate-in slide-in-from-top-4">
-            {!isHomePage && (
-              <Link
-                to="/"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full py-2.5 px-4 rounded-xl bg-secondary/70 hover:bg-secondary text-foreground font-medium text-xs border border-border/60 transition-colors group"
-              >
-                <ArrowLeft className="h-4 w-4 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
-                <span>Back to Home</span>
-              </Link>
-            )}
 
             <button
               onClick={() => {

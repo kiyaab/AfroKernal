@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 import { ExternalLink, FileText, BookOpen, Download, Loader2 } from "lucide-react";
 import { linuxResources } from "@/lib/linux-resources";
 import pdfAsset from "@/assets/mts-linux-command-reference.pdf.asset.json";
@@ -59,6 +60,7 @@ function ResourcesPage() {
       <HeaderNav />
 
       <main className="flex-1 mx-auto max-w-6xl px-6 py-10 w-full">
+        <BackToHome />
         <div className="mb-10">
           <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider text-primary">
             Learning hub

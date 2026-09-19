@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 import { CATALOG_COURSES, getAllCourses, CourseData } from "@/lib/courses-catalog-data";
 import {
   BookOpen,
@@ -155,6 +156,7 @@ function CoursesIndex() {
         <section className="relative overflow-hidden border-b border-border/80 bg-gradient-to-b from-card/80 to-background py-14 lg:py-20">
           <div className="absolute inset-0 grid-bg opacity-30 pointer-events-none" />
           <div className="relative mx-auto max-w-7xl px-6">
+            <BackToHome />
             <div className="max-w-3xl space-y-4">
               <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-primary">
                 <Sparkles className="h-3.5 w-3.5" />

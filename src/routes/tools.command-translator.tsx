@@ -15,6 +15,7 @@ import { useState, useMemo } from "react";
 import { COMMANDS_DATA, CommandTranslation } from "@/lib/commands-data";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 
 export const Route = createFileRoute("/tools/command-translator")({
   component: CommandTranslator,
@@ -95,6 +96,7 @@ function CommandTranslator() {
     <div className="min-h-screen flex flex-col bg-background">
       <HeaderNav />
       <main className="flex-1 mx-auto max-w-6xl px-6 py-12 w-full">
+        <BackToHome />
         {/* Top Banner */}
         <div className="mb-10 text-center flex flex-col gap-3 items-center">
         <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">

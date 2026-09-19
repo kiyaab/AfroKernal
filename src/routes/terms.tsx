@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
+import { BackToHome } from "@/components/BackToHome";
 import { ShieldCheck, FileText, Lock, Cookie } from "lucide-react";
 
 export const Route = createFileRoute("/terms")({
@@ -23,6 +24,7 @@ function TermsPage() {
       <HeaderNav />
 
       <main className="flex-1 max-w-4xl mx-auto px-6 py-12 w-full">
+        <BackToHome />
         <div className="flex items-center gap-3 text-primary mb-2">
           <ShieldCheck className="w-8 h-8" />
           <span className="text-xs font-semibold uppercase tracking-widest px-2.5 py-1 rounded-full bg-primary/10 border border-primary/20">

@@ -13,6 +13,7 @@ import {
 } from "@/lib/lab-linux";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { BackToHome } from "@/components/BackToHome";
 import {
   RotateCcw,
   Save,
@@ -257,14 +258,6 @@ function Lab() {
             <Link to="/">
               <Logo />
             </Link>
-            <Link
-              to="/"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/60 hover:border-border transition-all duration-200 group"
-              title="Return to AfroKernel Home"
-            >
-              <ArrowLeft className="w-3.5 h-3.5 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
-              <span>Back to Home</span>
-            </Link>
           </div>
           <div className="flex items-center gap-3">
             <button
@@ -296,6 +289,7 @@ function Lab() {
       </header>
 
       <main className="flex-1 max-w-7xl mx-auto w-full px-6 py-4 flex flex-col">
+        <BackToHome />
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <div>
             <h1 className="text-xl font-bold font-display flex items-center gap-2">
