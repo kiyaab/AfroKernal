@@ -11,8 +11,8 @@ pipeline {
         DEPLOY_USER    = 'afrokernel-deploy'
         DEPLOY_KEY     = '/var/lib/jenkins/.ssh/afrokernel_deploy'
 
-        // Old Freestyle job already used production releases through build-8.
-        // The new Pipeline job has its own Jenkins build numbering.
+        // Old Freestyle job used production releases through build-8.
+        // New Pipeline uses its own Jenkins build numbering.
         RELEASE_OFFSET = '8'
     }
 
@@ -85,7 +85,29 @@ pipeline {
             }
         }
 
+        /*
+         * Production deployment stages run only when files that can
+         * affect the application or deployment process have changed.
+         *
+         * Documentation and repository housekeeping changes such as
+         * README files and .gitignore will still run CI, but will not
+         * deploy a new production release.
+         */
+
         stage('Prepare Release') {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "public/**"
+                    changeset "scripts/**"
+                    changeset "package.json"
+                    changeset "package-lock.json"
+                    changeset "vite.config.*"
+                    changeset "tsconfig*.json"
+                    changeset "Jenkinsfile"
+                }
+            }
+
             steps {
                 script {
                     env.RELEASE_NUMBER =
@@ -103,6 +125,19 @@ pipeline {
         }
 
         stage('Stage Release') {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "public/**"
+                    changeset "scripts/**"
+                    changeset "package.json"
+                    changeset "package-lock.json"
+                    changeset "vite.config.*"
+                    changeset "tsconfig*.json"
+                    changeset "Jenkinsfile"
+                }
+            }
+
             steps {
                 sh '''
                     RELEASE_DIR="/opt/afrokernel/releases/build-${RELEASE_NUMBER}"
@@ -118,6 +153,7 @@ pipeline {
                     echo "${DEPLOY_USER}@${DEPLOY_HOST}:${RELEASE_DIR}"
 
                     ssh \
+                      -o BatchMode=yes \
                       -i "${DEPLOY_KEY}" \
                       "${DEPLOY_USER}@${DEPLOY_HOST}" \
                       "mkdir -p '${RELEASE_DIR}'"
@@ -125,6 +161,7 @@ pipeline {
                     echo "Transferring artifact..."
 
                     scp \
+                      -o BatchMode=yes \
                       -i "${DEPLOY_KEY}" \
                       afrokernel-build.tar.gz \
                       "${DEPLOY_USER}@${DEPLOY_HOST}:${RELEASE_DIR}/"
@@ -135,6 +172,19 @@ pipeline {
         }
 
         stage('Validate Release') {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "public/**"
+                    changeset "scripts/**"
+                    changeset "package.json"
+                    changeset "package-lock.json"
+                    changeset "vite.config.*"
+                    changeset "tsconfig*.json"
+                    changeset "Jenkinsfile"
+                }
+            }
+
             steps {
                 sh '''
                     RELEASE_DIR="/opt/afrokernel/releases/build-${RELEASE_NUMBER}"
@@ -144,6 +194,7 @@ pipeline {
                     echo "================================"
 
                     ssh \
+                      -o BatchMode=yes \
                       -i "${DEPLOY_KEY}" \
                       "${DEPLOY_USER}@${DEPLOY_HOST}" \
                       "cd '${RELEASE_DIR}' &&
@@ -157,6 +208,19 @@ pipeline {
         }
 
         stage('Promote Release') {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "public/**"
+                    changeset "scripts/**"
+                    changeset "package.json"
+                    changeset "package-lock.json"
+                    changeset "vite.config.*"
+                    changeset "tsconfig*.json"
+                    changeset "Jenkinsfile"
+                }
+            }
+
             steps {
                 sh '''
                     echo "================================"
@@ -167,6 +231,7 @@ pipeline {
                     echo "build-${RELEASE_NUMBER}"
 
                     ssh \
+                      -o BatchMode=yes \
                       -i "${DEPLOY_KEY}" \
                       "${DEPLOY_USER}@${DEPLOY_HOST}" \
                       "sudo -n /usr/local/sbin/afrokernel-promote '${RELEASE_NUMBER}'"
@@ -177,6 +242,19 @@ pipeline {
         }
 
         stage('Verify Production') {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "public/**"
+                    changeset "scripts/**"
+                    changeset "package.json"
+                    changeset "package-lock.json"
+                    changeset "vite.config.*"
+                    changeset "tsconfig*.json"
+                    changeset "Jenkinsfile"
+                }
+            }
+
             steps {
                 sh '''
                     echo "================================"
@@ -186,6 +264,7 @@ pipeline {
                     EXPECTED="/opt/afrokernel/releases/build-${RELEASE_NUMBER}"
 
                     ACTUAL=$(ssh \
+                      -o BatchMode=yes \
                       -i "${DEPLOY_KEY}" \
                       "${DEPLOY_USER}@${DEPLOY_HOST}" \
                       "readlink -f /opt/afrokernel/current")
@@ -210,15 +289,14 @@ pipeline {
     post {
         success {
             echo '================================'
-            echo 'AfroKernel CI/CD Pipeline: SUCCESS'
+            echo 'AfroKernel Pipeline: SUCCESS'
             echo "Jenkins Pipeline Build: #${BUILD_NUMBER}"
-            echo "Production Release: build-${RELEASE_NUMBER}"
             echo '================================'
         }
 
         failure {
             echo '================================'
-            echo 'AfroKernel CI/CD Pipeline: FAILED'
+            echo 'AfroKernel Pipeline: FAILED'
             echo "Jenkins Pipeline Build: #${BUILD_NUMBER}"
             echo '================================'
         }
