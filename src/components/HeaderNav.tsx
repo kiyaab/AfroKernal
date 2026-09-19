@@ -22,7 +22,6 @@ import {
   Sparkles,
   ArrowRight,
   ArrowLeft,
-  Home,
   Shield,
   Layers,
   LayoutDashboard,
@@ -73,8 +72,8 @@ export function HeaderNav() {
 
           {/* Desktop Navigation Mega Menu */}
           <nav className="hidden items-center gap-1 lg:flex text-sm font-medium">
-            {/* Back to Home / Home Link */}
-            {!isHomePage ? (
+            {/* Back to Home Button (hidden on landing page, shown on all single pages) */}
+            {!isHomePage && (
               <Link
                 to="/"
                 className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-secondary/80 border border-border/60 hover:border-border transition-all duration-200 group mr-1.5"
@@ -82,14 +81,6 @@ export function HeaderNav() {
               >
                 <ArrowLeft className="h-3.5 w-3.5 text-primary transition-transform duration-200 group-hover:-translate-x-1" />
                 <span>Back to Home</span>
-              </Link>
-            ) : (
-              <Link
-                to="/"
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs sm:text-sm font-medium text-foreground hover:bg-secondary/60 transition-colors mr-1.5"
-              >
-                <Home className="h-3.5 w-3.5 text-primary" />
-                <span>Home</span>
               </Link>
             )}
             {/* 1. Courses Dropdown */}
