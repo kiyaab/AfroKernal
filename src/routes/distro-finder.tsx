@@ -341,208 +341,208 @@ function DistroFinder() {
         <BackToHome />
         {/* Header */}
         <div className="mb-10 text-center flex flex-col gap-3 items-center">
-        <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
-          <Compass className="h-7 w-7" />
+          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-[var(--shadow-glow)]">
+            <Compass className="h-7 w-7" />
+          </div>
+          <h1 className="text-4xl font-display font-bold">Linux Distro Finder</h1>
+          <p className="text-muted-foreground text-base max-w-xl">
+            Answer 5 quick questions and our recommendation engine will calculate your top 3 matches
+            from our distribution database.
+          </p>
         </div>
-        <h1 className="text-4xl font-display font-bold">Linux Distro Finder</h1>
-        <p className="text-muted-foreground text-base max-w-xl">
-          Answer 5 quick questions and our recommendation engine will calculate your top 3 matches
-          from our distribution database.
-        </p>
-      </div>
 
-      {!isComplete ? (
-        <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm transition-all">
-          {/* Progress bar */}
-          <div className="flex items-center justify-between gap-4 mb-8">
-            <span className="text-xs font-semibold uppercase tracking-wider text-primary">
-              Question {step + 1} of {questions.length}
-            </span>
-            <div className="flex flex-1 max-w-xs gap-1.5">
-              {questions.map((_, i) => (
-                <div
-                  key={i}
-                  className={`h-2 flex-1 rounded-full transition-all duration-300 ${
-                    i <= step ? "bg-primary shadow-[0_0_8px_var(--primary)]" : "bg-muted"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <div className="mb-6">
-            <h2 className="text-2xl font-bold text-foreground">{currentQ.title}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{currentQ.subtitle}</p>
-          </div>
-
-          <div className="space-y-3">
-            {currentQ.options.map((opt) => {
-              const isSelected = answers[currentQ.id] === opt.value;
-              return (
-                <button
-                  key={opt.value}
-                  onClick={() => handleSelect(currentQ.id, opt.value)}
-                  className={`w-full text-left p-4 rounded-xl border transition flex items-center justify-between group ${
-                    isSelected
-                      ? "border-primary bg-primary/10 shadow-[0_0_15px_-5px_var(--primary)]"
-                      : "border-border hover:border-primary/40 hover:bg-secondary/40"
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    {opt.icon && <span className="text-2xl">{opt.icon}</span>}
-                    <div>
-                      <div
-                        className={`font-semibold text-base transition ${isSelected ? "text-primary" : "text-foreground"}`}
-                      >
-                        {opt.label}
-                      </div>
-                      <div className="text-xs text-muted-foreground mt-0.5">{opt.desc}</div>
-                    </div>
-                  </div>
+        {!isComplete ? (
+          <div className="rounded-2xl border border-border bg-card p-6 md:p-8 shadow-sm transition-all">
+            {/* Progress bar */}
+            <div className="flex items-center justify-between gap-4 mb-8">
+              <span className="text-xs font-semibold uppercase tracking-wider text-primary">
+                Question {step + 1} of {questions.length}
+              </span>
+              <div className="flex flex-1 max-w-xs gap-1.5">
+                {questions.map((_, i) => (
                   <div
-                    className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition ${
+                    key={i}
+                    className={`h-2 flex-1 rounded-full transition-all duration-300 ${
+                      i <= step ? "bg-primary shadow-[0_0_8px_var(--primary)]" : "bg-muted"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <h2 className="text-2xl font-bold text-foreground">{currentQ.title}</h2>
+              <p className="text-sm text-muted-foreground mt-1">{currentQ.subtitle}</p>
+            </div>
+
+            <div className="space-y-3">
+              {currentQ.options.map((opt) => {
+                const isSelected = answers[currentQ.id] === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    onClick={() => handleSelect(currentQ.id, opt.value)}
+                    className={`w-full text-left p-4 rounded-xl border transition flex items-center justify-between group ${
                       isSelected
-                        ? "border-primary bg-primary text-primary-foreground"
-                        : "border-border"
+                        ? "border-primary bg-primary/10 shadow-[0_0_15px_-5px_var(--primary)]"
+                        : "border-border hover:border-primary/40 hover:bg-secondary/40"
                     }`}
                   >
-                    {isSelected && <div className="h-2 w-2 rounded-full bg-current" />}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Nav Buttons */}
-          <div className="mt-8 flex justify-between items-center pt-4 border-t border-border">
-            <button
-              onClick={handleBack}
-              disabled={step === 0}
-              className="px-4 py-2 flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-0 transition"
-            >
-              <ArrowLeft className="h-4 w-4" /> Back
-            </button>
-            <button
-              onClick={handleNext}
-              disabled={!answers[currentQ.id]}
-              className="px-6 py-2.5 bg-primary text-primary-foreground flex items-center gap-2 rounded-xl text-sm font-semibold hover:brightness-110 disabled:opacity-40 transition shadow-[var(--shadow-glow)]"
-            >
-              {step === questions.length - 1 ? "Calculate Matches" : "Next Question"}
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      ) : (
-        /* Results View */
-        <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
-          <div className="text-center p-6 rounded-2xl border border-primary/30 bg-primary/5">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary mb-2">
-              <Sparkles className="h-3.5 w-3.5" /> Personalized Recommendation
-            </span>
-            <h2 className="text-3xl font-display font-bold">Your Top 3 Linux Distributions</h2>
-            <p className="text-sm text-muted-foreground mt-1">
-              Based on your experience, hardware specifications, and intended workflow:
-            </p>
-          </div>
-
-          <div className="grid gap-6 md:grid-cols-3">
-            {topThree.map(({ distro, matchPercentage, reasons }, idx) => {
-              const badgeLabel =
-                idx === 0 ? "🏆 Best Match" : idx === 1 ? "🥈 Runner-Up" : "🥉 Great Alternative";
-              const borderClass =
-                idx === 0
-                  ? "border-primary ring-2 ring-primary/40 bg-card shadow-xl"
-                  : "border-border bg-card/70";
-
-              return (
-                <div
-                  key={distro.id}
-                  className={`rounded-2xl border p-6 flex flex-col justify-between ${borderClass}`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-4">
-                      <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
-                        {badgeLabel}
-                      </span>
-                      <span className="text-sm font-extrabold text-foreground">
-                        {matchPercentage}% Match
-                      </span>
-                    </div>
-
-                    <div className="flex items-center gap-3 mb-3">
-                      <span className="text-3xl">{distro.logo}</span>
+                    <div className="flex items-center gap-4">
+                      {opt.icon && <span className="text-2xl">{opt.icon}</span>}
                       <div>
-                        <h3 className="text-xl font-bold text-foreground">{distro.name}</h3>
-                        <span className="text-xs text-muted-foreground">
-                          {distro.base} base · {distro.defaultDesktop}
+                        <div
+                          className={`font-semibold text-base transition ${isSelected ? "text-primary" : "text-foreground"}`}
+                        >
+                          {opt.label}
+                        </div>
+                        <div className="text-xs text-muted-foreground mt-0.5">{opt.desc}</div>
+                      </div>
+                    </div>
+                    <div
+                      className={`h-5 w-5 rounded-full border flex items-center justify-center shrink-0 transition ${
+                        isSelected
+                          ? "border-primary bg-primary text-primary-foreground"
+                          : "border-border"
+                      }`}
+                    >
+                      {isSelected && <div className="h-2 w-2 rounded-full bg-current" />}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Nav Buttons */}
+            <div className="mt-8 flex justify-between items-center pt-4 border-t border-border">
+              <button
+                onClick={handleBack}
+                disabled={step === 0}
+                className="px-4 py-2 flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground disabled:opacity-0 transition"
+              >
+                <ArrowLeft className="h-4 w-4" /> Back
+              </button>
+              <button
+                onClick={handleNext}
+                disabled={!answers[currentQ.id]}
+                className="px-6 py-2.5 bg-primary text-primary-foreground flex items-center gap-2 rounded-xl text-sm font-semibold hover:brightness-110 disabled:opacity-40 transition shadow-[var(--shadow-glow)]"
+              >
+                {step === questions.length - 1 ? "Calculate Matches" : "Next Question"}
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+        ) : (
+          /* Results View */
+          <div className="space-y-8 animate-in fade-in zoom-in-95 duration-300">
+            <div className="text-center p-6 rounded-2xl border border-primary/30 bg-primary/5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary mb-2">
+                <Sparkles className="h-3.5 w-3.5" /> Personalized Recommendation
+              </span>
+              <h2 className="text-3xl font-display font-bold">Your Top 3 Linux Distributions</h2>
+              <p className="text-sm text-muted-foreground mt-1">
+                Based on your experience, hardware specifications, and intended workflow:
+              </p>
+            </div>
+
+            <div className="grid gap-6 md:grid-cols-3">
+              {topThree.map(({ distro, matchPercentage, reasons }, idx) => {
+                const badgeLabel =
+                  idx === 0 ? "🏆 Best Match" : idx === 1 ? "🥈 Runner-Up" : "🥉 Great Alternative";
+                const borderClass =
+                  idx === 0
+                    ? "border-primary ring-2 ring-primary/40 bg-card shadow-xl"
+                    : "border-border bg-card/70";
+
+                return (
+                  <div
+                    key={distro.id}
+                    className={`rounded-2xl border p-6 flex flex-col justify-between ${borderClass}`}
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-4">
+                        <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+                          {badgeLabel}
                         </span>
+                        <span className="text-sm font-extrabold text-foreground">
+                          {matchPercentage}% Match
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-3 mb-3">
+                        <span className="text-3xl">{distro.logo}</span>
+                        <div>
+                          <h3 className="text-xl font-bold text-foreground">{distro.name}</h3>
+                          <span className="text-xs text-muted-foreground">
+                            {distro.base} base · {distro.defaultDesktop}
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-xs text-muted-foreground leading-relaxed mb-4">
+                        {distro.tagline}
+                      </p>
+
+                      {/* Why this matches you */}
+                      <div className="space-y-2 mb-6">
+                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                          Why this matches you:
+                        </p>
+                        {reasons.map((r, i) => (
+                          <div
+                            key={i}
+                            className="flex items-start gap-1.5 text-xs text-foreground/90"
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
+                            <span>{r}</span>
+                          </div>
+                        ))}
                       </div>
                     </div>
 
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-4">
-                      {distro.tagline}
-                    </p>
-
-                    {/* Why this matches you */}
-                    <div className="space-y-2 mb-6">
-                      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        Why this matches you:
-                      </p>
-                      {reasons.map((r, i) => (
-                        <div
-                          key={i}
-                          className="flex items-start gap-1.5 text-xs text-foreground/90"
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                          <span>{r}</span>
-                        </div>
-                      ))}
+                    <div className="pt-4 border-t border-border space-y-2">
+                      <a
+                        href={distro.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:brightness-110 transition"
+                      >
+                        <Download className="h-3.5 w-3.5" /> Download ISO
+                      </a>
+                      <a
+                        href={distro.websiteUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-lg border border-border text-xs font-medium hover:bg-muted transition text-muted-foreground hover:text-foreground"
+                      >
+                        Official Website <ExternalLink className="h-3 w-3" />
+                      </a>
                     </div>
                   </div>
+                );
+              })}
+            </div>
 
-                  <div className="pt-4 border-t border-border space-y-2">
-                    <a
-                      href={distro.downloadUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-2 py-2 rounded-lg bg-primary text-primary-foreground text-xs font-semibold hover:brightness-110 transition"
-                    >
-                      <Download className="h-3.5 w-3.5" /> Download ISO
-                    </a>
-                    <a
-                      href={distro.websiteUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="w-full inline-flex items-center justify-center gap-1.5 py-2 rounded-lg border border-border text-xs font-medium hover:bg-muted transition text-muted-foreground hover:text-foreground"
-                    >
-                      Official Website <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </div>
-              );
-            })}
+            {/* Action Row */}
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
+              <button
+                onClick={() => {
+                  setStep(0);
+                  setAnswers({});
+                }}
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-sm font-medium hover:bg-muted transition"
+              >
+                <RefreshCw className="h-4 w-4" /> Retake Quiz
+              </button>
+              <Link
+                to="/distros"
+                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition"
+              >
+                <Scale className="h-4 w-4" /> Compare Distros Side-by-Side
+              </Link>
+            </div>
           </div>
-
-          {/* Action Row */}
-          <div className="flex flex-wrap items-center justify-center gap-4 pt-4">
-            <button
-              onClick={() => {
-                setStep(0);
-                setAnswers({});
-              }}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-border bg-card text-sm font-medium hover:bg-muted transition"
-            >
-              <RefreshCw className="h-4 w-4" /> Retake Quiz
-            </button>
-            <Link
-              to="/distros"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-secondary text-secondary-foreground text-sm font-semibold hover:bg-primary hover:text-primary-foreground transition"
-            >
-              <Scale className="h-4 w-4" /> Compare Distros Side-by-Side
-            </Link>
-          </div>
-        </div>
-      )}
+        )}
       </main>
       <FooterNav />
     </div>

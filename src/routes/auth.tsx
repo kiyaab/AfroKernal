@@ -60,8 +60,7 @@ export const Route = createFileRoute("/auth")({
 async function ensureProfile(userId: string, displayName: string, email: string) {
   const cleanEmail = email.trim().toLowerCase();
   const isMaster =
-    cleanEmail === MASTER_ADMIN_EMAIL.toLowerCase() ||
-    cleanEmail === "admin@afrokernel.com";
+    cleanEmail === MASTER_ADMIN_EMAIL.toLowerCase() || cleanEmail === "admin@afrokernel.com";
   const defaultRole = isMaster ? "admin" : "user";
   const base = {
     id: userId,
@@ -98,11 +97,9 @@ async function ensureProfile(userId: string, displayName: string, email: string)
       .upsert({ user_id: userId, xp: 150, level: 1, streak_days: 1 } as never, {
         onConflict: "user_id",
       });
-    await supabase
-      .from("user_roles")
-      .upsert({ user_id: userId, role: defaultRole } as never, {
-        onConflict: "user_id,role",
-      });
+    await supabase.from("user_roles").upsert({ user_id: userId, role: defaultRole } as never, {
+      onConflict: "user_id,role",
+    });
   } catch (err) {
     console.warn("Could not sync profile/role to Supabase:", err);
   }
@@ -218,7 +215,11 @@ function AuthPage() {
             throw new Error(sbErr.message || "Registration failed. Please try again.");
           }
 
-          if (sbData.user && Array.isArray(sbData.user.identities) && sbData.user.identities.length === 0) {
+          if (
+            sbData.user &&
+            Array.isArray(sbData.user.identities) &&
+            sbData.user.identities.length === 0
+          ) {
             throw new Error("An account with this email already exists. Please sign in instead.");
           }
 
@@ -227,7 +228,9 @@ function AuthPage() {
           }
 
           if (!sbData.session && sbData.user) {
-            setSuccess("Registration successful! If confirmation is required, please check your email.");
+            setSuccess(
+              "Registration successful! If confirmation is required, please check your email.",
+            );
           }
         } catch (err: any) {
           // If it was an explicit validation or duplicate error from above, rethrow to display to user

@@ -416,27 +416,15 @@ function AdminUserManagement() {
   useEffect(() => {
     const channel = supabase
       .channel("admin-learners-live-sync")
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "profiles" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_roles" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
-        },
-      )
-      .on(
-        "postgres_changes",
-        { event: "*", schema: "public", table: "user_stats" },
-        () => {
-          qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
-        },
-      )
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_stats" }, () => {
+        qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+      })
       .subscribe();
 
     return () => {
@@ -456,7 +444,9 @@ function AdminUserManagement() {
 
       try {
         // 1. First try RPC which bypasses RLS and returns all registered users directly
-        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)("admin_list_learners");
+        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)(
+          "admin_list_learners",
+        );
 
         if (!rpcErr && Array.isArray(rpcUsers) && rpcUsers.length > 0) {
           (rpcUsers as any[]).forEach((u) => {
@@ -478,15 +468,18 @@ function AdminUserManagement() {
               xp: u.xp ?? (existingIdx >= 0 ? merged[existingIdx].xp : 150),
               level: u.level ?? (existingIdx >= 0 ? merged[existingIdx].level : 1),
               streak: u.streak_days ?? (existingIdx >= 0 ? merged[existingIdx].streak : 1),
-              roles: Array.isArray(u.roles) && u.roles.length > 0
-                ? u.roles
-                : existingIdx >= 0
-                  ? merged[existingIdx].roles
-                  : ["user"],
+              roles:
+                Array.isArray(u.roles) && u.roles.length > 0
+                  ? u.roles
+                  : existingIdx >= 0
+                    ? merged[existingIdx].roles
+                    : ["user"],
               enrolledCourses: existingIdx >= 0 ? merged[existingIdx].enrolledCourses : ["linux"],
               completedLessons: existingIdx >= 0 ? merged[existingIdx].completedLessons : [],
               examSubmissions: existingIdx >= 0 ? merged[existingIdx].examSubmissions : [],
-              createdAt: u.created_at || (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
+              createdAt:
+                u.created_at ||
+                (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
               updatedAt: u.updated_at || new Date().toISOString(),
               lastActive: u.updated_at || new Date().toISOString(),
             };
@@ -518,7 +511,8 @@ function AdminUserManagement() {
             .map((pg) => pg.lesson_id);
 
           const existingIdx = merged.findIndex(
-            (m) => m.id === p.id || (pr_.email && m.email.toLowerCase() === pr_.email.toLowerCase()),
+            (m) =>
+              m.id === p.id || (pr_.email && m.email.toLowerCase() === pr_.email.toLowerCase()),
           );
           const row: LearnerRecord = {
             id: p.id,
@@ -550,7 +544,13 @@ function AdminUserManagement() {
           else merged.unshift(row);
         });
 
-        if (!merged.some((m) => m.email.toLowerCase() === "admin@ak.com" || m.email.toLowerCase() === "admin@afrokernel.com")) {
+        if (
+          !merged.some(
+            (m) =>
+              m.email.toLowerCase() === "admin@ak.com" ||
+              m.email.toLowerCase() === "admin@afrokernel.com",
+          )
+        ) {
           merged.unshift({
             id: "master-admin-001",
             displayName: "Master Administrator",
@@ -621,7 +621,9 @@ function AdminUserManagement() {
       xp: updatedXp,
       level: newLevel,
     });
-    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev));
+    setSelectedUser((prev) =>
+      prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev,
+    );
     try {
       await supabase.from("user_stats").upsert(
         {
@@ -645,7 +647,9 @@ function AdminUserManagement() {
       email: user.email,
       roles: updatedRoles,
     });
-    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev));
+    setSelectedUser((prev) =>
+      prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev,
+    );
     try {
       if (has) {
         await supabase.from("user_roles").delete().match({ user_id: user.id, role });

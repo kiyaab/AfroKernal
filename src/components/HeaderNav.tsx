@@ -410,7 +410,6 @@ export function HeaderNav() {
         {/* Mobile Slideout Menu */}
         {mobileMenuOpen && (
           <div className="lg:hidden border-t border-border bg-card p-6 space-y-4 animate-in slide-in-from-top-4">
-
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
