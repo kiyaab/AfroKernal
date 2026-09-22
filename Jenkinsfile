@@ -7,9 +7,9 @@ pipeline {
     }
 
     environment {
-        DEPLOY_HOST    = 'rhel10-lab01.ad.afrokernel.com'
-        DEPLOY_USER    = 'afrokernel-deploy'
-        DEPLOY_KEY     = '/var/lib/jenkins/.ssh/afrokernel_deploy'
+        DEPLOY_HOST = 'rhel10-lab01.ad.afrokernel.com'
+        DEPLOY_USER = 'afrokernel-deploy'
+        DEPLOY_KEY  = '/var/lib/jenkins/.ssh/afrokernel_deploy'
 
         // Old Freestyle job used production releases through build-8.
         // New Pipeline uses its own Jenkins build numbering.
@@ -17,7 +17,6 @@ pipeline {
     }
 
     stages {
-
         stage('Environment') {
             steps {
                 echo '================================'
@@ -82,11 +81,13 @@ pipeline {
                         echo "Building AfroKernel"
                         echo "================================"
                         echo "Supabase client configuration supplied by Jenkins credentials."
+
                         npm run build
                     '''
                 }
             }
         }
+
         stage('Create Artifact') {
             steps {
                 sh '''
@@ -138,7 +139,6 @@ pipeline {
                 echo '================================'
                 echo 'Preparing Production Release'
                 echo '================================'
-
                 echo "Jenkins Pipeline Build: #${BUILD_NUMBER}"
                 echo "Production Release: build-${RELEASE_NUMBER}"
             }
@@ -301,6 +301,37 @@ pipeline {
                     fi
 
                     echo "Production verification: PASS"
+                '''
+            }
+        }
+
+        stage('Cleanup Old Releases') {
+            when {
+                anyOf {
+                    changeset "src/**"
+                    changeset "public/**"
+                    changeset "scripts/**"
+                    changeset "package.json"
+                    changeset "package-lock.json"
+                    changeset "vite.config.*"
+                    changeset "tsconfig*.json"
+                    changeset "Jenkinsfile"
+                }
+            }
+
+            steps {
+                sh '''
+                    echo "================================"
+                    echo "Cleaning Up Old Production Releases"
+                    echo "================================"
+
+                    ssh \
+                      -o BatchMode=yes \
+                      -i "${DEPLOY_KEY}" \
+                      "${DEPLOY_USER}@${DEPLOY_HOST}" \
+                      "sudo -n /usr/local/sbin/afrokernel-cleanup --execute"
+
+                    echo "Release cleanup: PASS"
                 '''
             }
         }
