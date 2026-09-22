@@ -1,11 +1,18 @@
 pipeline {
     agent any
 
-    options {
-        disableConcurrentBuilds()
-        timestamps()
-    }
 
+   options {
+       disableConcurrentBuilds()
+       timestamps()
+
+       buildDiscarder(
+           logRotator(
+               numToKeepStr: '30',
+               artifactNumToKeepStr: '10'
+            )
+       )
+   }
     environment {
         DEPLOY_HOST = 'rhel10-lab01.ad.afrokernel.com'
         DEPLOY_USER = 'afrokernel-deploy'
