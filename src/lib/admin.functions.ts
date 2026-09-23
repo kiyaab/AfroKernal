@@ -278,7 +278,9 @@ export const getAdminLearnersServerFn = createServerFn({ method: "GET" }).handle
         // Merge with initial data to ensure rich baseline
         const mergedMap = new Map<string, LearnerRecord>();
         INITIAL_DATABASE_LEARNERS.forEach((l) => mergedMap.set(l.email.toLowerCase(), l));
-        records.forEach((r) => mergedMap.set(r.email.toLowerCase(), { ...mergedMap.get(r.email.toLowerCase()), ...r }));
+        records.forEach((r) =>
+          mergedMap.set(r.email.toLowerCase(), { ...mergedMap.get(r.email.toLowerCase()), ...r }),
+        );
 
         return {
           learners: Array.from(mergedMap.values()),
@@ -298,11 +300,16 @@ export const getAdminLearnersServerFn = createServerFn({ method: "GET" }).handle
         sb.from("exam_submissions").select("*"),
       ]);
 
-      const profiles = profilesRes.status === "fulfilled" && profilesRes.value.data ? profilesRes.value.data : [];
-      const stats = statsRes.status === "fulfilled" && statsRes.value.data ? statsRes.value.data : [];
-      const roles = rolesRes.status === "fulfilled" && rolesRes.value.data ? rolesRes.value.data : [];
-      const progress = progressRes.status === "fulfilled" && progressRes.value.data ? progressRes.value.data : [];
-      const exams = examsRes.status === "fulfilled" && examsRes.value.data ? examsRes.value.data : [];
+      const profiles =
+        profilesRes.status === "fulfilled" && profilesRes.value.data ? profilesRes.value.data : [];
+      const stats =
+        statsRes.status === "fulfilled" && statsRes.value.data ? statsRes.value.data : [];
+      const roles =
+        rolesRes.status === "fulfilled" && rolesRes.value.data ? rolesRes.value.data : [];
+      const progress =
+        progressRes.status === "fulfilled" && progressRes.value.data ? progressRes.value.data : [];
+      const exams =
+        examsRes.status === "fulfilled" && examsRes.value.data ? examsRes.value.data : [];
 
       if (profiles.length > 0) {
         const records: LearnerRecord[] = profiles.map((p: any) => {
@@ -353,7 +360,9 @@ export const getAdminLearnersServerFn = createServerFn({ method: "GET" }).handle
 
         const mergedMap = new Map<string, LearnerRecord>();
         INITIAL_DATABASE_LEARNERS.forEach((l) => mergedMap.set(l.email.toLowerCase(), l));
-        records.forEach((r) => mergedMap.set(r.email.toLowerCase(), { ...mergedMap.get(r.email.toLowerCase()), ...r }));
+        records.forEach((r) =>
+          mergedMap.set(r.email.toLowerCase(), { ...mergedMap.get(r.email.toLowerCase()), ...r }),
+        );
 
         return {
           learners: Array.from(mergedMap.values()),
@@ -391,14 +400,9 @@ export const updateUserRoleServerFn = createServerFn({ method: "POST" })
 
     try {
       if (data.action === "add") {
-        await sb
-          .from("user_roles")
-          .insert({ user_id: data.userId, role: data.role } as never);
+        await sb.from("user_roles").insert({ user_id: data.userId, role: data.role } as never);
       } else {
-        await sb
-          .from("user_roles")
-          .delete()
-          .match({ user_id: data.userId, role: data.role });
+        await sb.from("user_roles").delete().match({ user_id: data.userId, role: data.role });
       }
       return { success: true };
     } catch (err: any) {

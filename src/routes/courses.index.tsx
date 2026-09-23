@@ -35,27 +35,19 @@ export const Route = createFileRoute("/courses/")({
       { title: "Course Catalog — AfroKernel" },
       {
         name: "description",
-        content:
-          "Explore hands-on Linux courses with in-browser terminal labs and practice exams.",
+        content: "Explore hands-on Linux courses with in-browser terminal labs and practice exams.",
       },
       { property: "og:title", content: "AfroKernel Course Catalog" },
       {
         property: "og:description",
-        content:
-          "Master Linux hands-on with browser labs and practice quizzes.",
+        content: "Master Linux hands-on with browser labs and practice quizzes.",
       },
     ],
   }),
   component: CoursesIndex,
 });
 
-const CATEGORIES = [
-  "All",
-  "Fundamentals",
-  "Enterprise Linux",
-  "Scripting",
-  "Networking",
-];
+const CATEGORIES = ["All", "Fundamentals", "Enterprise Linux", "Scripting", "Networking"];
 const DIFFICULTIES = ["All", "beginner", "intermediate", "advanced"];
 
 const DIFFICULTY_BADGES: Record<string, { label: string; className: string }> = {

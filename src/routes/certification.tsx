@@ -21,7 +21,8 @@ function CertificationRedirect() {
             Explore Linux Courses & Labs
           </h1>
           <p className="text-sm text-muted-foreground leading-relaxed">
-            AfroKernel provides 100% free hands-on Linux training with in-browser terminal sandboxes and practical lessons.
+            AfroKernel provides 100% free hands-on Linux training with in-browser terminal sandboxes
+            and practical lessons.
           </p>
           <div className="pt-2">
             <Link

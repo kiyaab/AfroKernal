@@ -125,7 +125,8 @@ function TutorialsIndex() {
           <div>
             <h1 className="text-4xl font-display font-bold">Linux Courses & Tutorials</h1>
             <p className="text-muted-foreground text-base max-w-2xl mt-1">
-              Structured hands-on tracks with interactive lessons, command line practice, and quizzes. 100% free.
+              Structured hands-on tracks with interactive lessons, command line practice, and
+              quizzes. 100% free.
             </p>
           </div>
 

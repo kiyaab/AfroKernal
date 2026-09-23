@@ -22,11 +22,7 @@ export interface CourseData {
   title: string;
   subtitle: string;
   description: string;
-  category:
-    | "Fundamentals"
-    | "Enterprise Linux"
-    | "Networking"
-    | "Scripting";
+  category: "Fundamentals" | "Enterprise Linux" | "Networking" | "Scripting";
   difficulty: "beginner" | "intermediate" | "advanced";
   duration_hours: number;
   rating: number;

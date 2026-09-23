@@ -248,8 +248,8 @@ function Landing() {
             </h1>
 
             <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto lg:mx-0 leading-relaxed">
-              Master the terminal, essential commands, and real system administration with bite-sized
-              lessons and hands-on practice. Zero setup needed.
+              Master the terminal, essential commands, and real system administration with
+              bite-sized lessons and hands-on practice. Zero setup needed.
             </p>
 
             {/* Action Buttons */}
@@ -311,7 +311,9 @@ function Landing() {
                   <span className="h-3 w-3 rounded-full bg-rose-500/80 inline-block" />
                   <span className="h-3 w-3 rounded-full bg-amber-500/80 inline-block" />
                   <span className="h-3 w-3 rounded-full bg-emerald-500/80 inline-block" />
-                  <span className="ml-2 font-mono text-xs text-muted-foreground">afrokernel-sandbox ~</span>
+                  <span className="ml-2 font-mono text-xs text-muted-foreground">
+                    afrokernel-sandbox ~
+                  </span>
                 </div>
                 <div className="flex items-center gap-1.5 text-xs font-semibold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
                   <Terminal className="h-3 w-3" /> Live Terminal
@@ -351,7 +353,9 @@ function Landing() {
 
               {/* Bottom Quick Action */}
               <div className="flex items-center justify-between pt-1">
-                <span className="text-xs text-muted-foreground">Try it in the full interactive lab</span>
+                <span className="text-xs text-muted-foreground">
+                  Try it in the full interactive lab
+                </span>
                 <Link
                   to="/lab"
                   className="inline-flex items-center gap-1 text-xs font-bold text-primary hover:underline"
@@ -440,7 +444,9 @@ function Landing() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-3xl p-2 rounded-2xl bg-secondary">{course.icon}</span>
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${course.badgeColor}`}>
+                    <span
+                      className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${course.badgeColor}`}
+                    >
                       {course.level}
                     </span>
                   </div>
@@ -473,7 +479,9 @@ function Landing() {
                   <Link
                     to={user ? "/courses/$slug" : "/auth"}
                     params={user ? { slug: course.slug } : undefined}
-                    search={user ? undefined : { redirect: `/courses/${course.slug}`, mode: "signup" }}
+                    search={
+                      user ? undefined : { redirect: `/courses/${course.slug}`, mode: "signup" }
+                    }
                     className={`font-bold flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs transition ${
                       course.featured
                         ? "bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white"
@@ -670,7 +678,8 @@ function Landing() {
                 Your Linux Journey Starts Today
               </h2>
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-                Join thousands of learners mastering Linux with bite-sized lessons. 100% free forever.
+                Join thousands of learners mastering Linux with bite-sized lessons. 100% free
+                forever.
               </p>
             </div>
 

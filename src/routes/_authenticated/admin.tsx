@@ -506,7 +506,9 @@ function AdminUserManagement() {
 
       // 3. Query client Supabase directly (RPC & tables)
       try {
-        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)("admin_list_learners");
+        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)(
+          "admin_list_learners",
+        );
 
         if (!rpcErr && Array.isArray(rpcUsers) && rpcUsers.length > 0) {
           (rpcUsers as any[]).forEach((u) => {
@@ -524,10 +526,13 @@ function AdminUserManagement() {
               learningGoal: u.learning_goal || "Master Linux",
               preferredDistro: u.preferred_distro || "Ubuntu",
               headline: u.headline || "",
-              xp: typeof u.xp === "number" ? u.xp : existing?.xp ?? 150,
-              level: typeof u.level === "number" ? u.level : existing?.level ?? 1,
-              streak: typeof u.streak_days === "number" ? u.streak_days : existing?.streak ?? 1,
-              roles: Array.isArray(u.roles) && u.roles.length > 0 ? u.roles : existing?.roles ?? ["user"],
+              xp: typeof u.xp === "number" ? u.xp : (existing?.xp ?? 150),
+              level: typeof u.level === "number" ? u.level : (existing?.level ?? 1),
+              streak: typeof u.streak_days === "number" ? u.streak_days : (existing?.streak ?? 1),
+              roles:
+                Array.isArray(u.roles) && u.roles.length > 0
+                  ? u.roles
+                  : (existing?.roles ?? ["user"]),
               enrolledCourses: existing?.enrolledCourses ?? ["linux"],
               completedLessons: existing?.completedLessons ?? [],
               examSubmissions: existing?.examSubmissions ?? [],
@@ -554,7 +559,9 @@ function AdminUserManagement() {
 
         (profiles ?? []).forEach((p: any) => {
           const s = (stats ?? []).find((st: any) => st.user_id === p.id);
-          const r = (roles ?? []).filter((ro: any) => ro.user_id === p.id).map((ro: any) => ro.role);
+          const r = (roles ?? [])
+            .filter((ro: any) => ro.user_id === p.id)
+            .map((ro: any) => ro.role);
           const pr = (progress ?? [])
             .filter((pg: any) => pg.user_id === p.id && pg.completed)
             .map((pg: any) => pg.lesson_id);
@@ -574,7 +581,7 @@ function AdminUserManagement() {
             xp: s?.xp ?? existing?.xp ?? 150,
             level: s?.level ?? existing?.level ?? 1,
             streak: s?.streak_days ?? existing?.streak ?? 1,
-            roles: r.length > 0 ? r : existing?.roles ?? ["user"],
+            roles: r.length > 0 ? r : (existing?.roles ?? ["user"]),
             enrolledCourses: existing?.enrolledCourses ?? ["linux"],
             completedLessons: Array.from(new Set([...(existing?.completedLessons ?? []), ...pr])),
             examSubmissions: existing?.examSubmissions ?? [],
@@ -654,7 +661,9 @@ function AdminUserManagement() {
       xp: updatedXp,
       level: newLevel,
     });
-    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev));
+    setSelectedUser((prev) =>
+      prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev,
+    );
 
     try {
       await grantUserXpServerFn({ data: { userId: user.id, newXp: updatedXp, newLevel } });
@@ -689,7 +698,9 @@ function AdminUserManagement() {
       email: user.email,
       roles: updatedRoles,
     });
-    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev));
+    setSelectedUser((prev) =>
+      prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev,
+    );
 
     try {
       await updateUserRoleServerFn({
@@ -712,7 +723,9 @@ function AdminUserManagement() {
       console.warn("Could not sync role to Supabase:", e);
     }
 
-    setActionSuccessMsg(`Role ${role.toUpperCase()} ${has ? "removed from" : "granted to"} ${user.displayName}!`);
+    setActionSuccessMsg(
+      `Role ${role.toUpperCase()} ${has ? "removed from" : "granted to"} ${user.displayName}!`,
+    );
     setTimeout(() => setActionSuccessMsg(null), 3000);
     refetch();
   }
@@ -821,7 +834,17 @@ function AdminUserManagement() {
       a.click();
       URL.revokeObjectURL(url);
     } else {
-      const headers = ["ID", "Display Name", "Email", "Roles", "XP", "Level", "Streak", "Distro", "Created At"];
+      const headers = [
+        "ID",
+        "Display Name",
+        "Email",
+        "Roles",
+        "XP",
+        "Level",
+        "Streak",
+        "Distro",
+        "Created At",
+      ];
       const rows = allUsers.map((u) => [
         u.id,
         `"${u.displayName.replace(/"/g, '""')}"`,
@@ -932,7 +955,8 @@ function AdminUserManagement() {
             </span>
           </div>
           <p className="text-xs text-muted-foreground">
-            Live database records from {dbStatus.source} • Synced at {dbStatus.lastSyncedAt} • Real-time accounts
+            Live database records from {dbStatus.source} • Synced at {dbStatus.lastSyncedAt} •
+            Real-time accounts
           </p>
         </div>
 
@@ -960,8 +984,7 @@ function AdminUserManagement() {
             onClick={() => setIsAddUserOpen(true)}
             className="px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center gap-1.5 hover:brightness-110 shadow-sm transition"
           >
-            <UserPlus className="h-3.5 w-3.5" />
-            + Add User / Learner
+            <UserPlus className="h-3.5 w-3.5" />+ Add User / Learner
           </button>
         </div>
       </div>
@@ -1180,7 +1203,9 @@ function AdminUserManagement() {
 
             <form onSubmit={handleCreateUserSubmit} className="space-y-4 text-xs">
               <div>
-                <label className="font-semibold text-muted-foreground block mb-1">Display Name</label>
+                <label className="font-semibold text-muted-foreground block mb-1">
+                  Display Name
+                </label>
                 <input
                   type="text"
                   required
@@ -1192,7 +1217,9 @@ function AdminUserManagement() {
               </div>
 
               <div>
-                <label className="font-semibold text-muted-foreground block mb-1">Email Address</label>
+                <label className="font-semibold text-muted-foreground block mb-1">
+                  Email Address
+                </label>
                 <input
                   type="email"
                   required
@@ -1205,7 +1232,9 @@ function AdminUserManagement() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="font-semibold text-muted-foreground block mb-1">System Role</label>
+                  <label className="font-semibold text-muted-foreground block mb-1">
+                    System Role
+                  </label>
                   <select
                     value={newUserRole}
                     onChange={(e) => setNewUserRole(e.target.value as any)}
@@ -1218,7 +1247,9 @@ function AdminUserManagement() {
                 </div>
 
                 <div>
-                  <label className="font-semibold text-muted-foreground block mb-1">Starting XP</label>
+                  <label className="font-semibold text-muted-foreground block mb-1">
+                    Starting XP
+                  </label>
                   <input
                     type="number"
                     min={0}
@@ -1231,7 +1262,9 @@ function AdminUserManagement() {
               </div>
 
               <div>
-                <label className="font-semibold text-muted-foreground block mb-1">Preferred Distro</label>
+                <label className="font-semibold text-muted-foreground block mb-1">
+                  Preferred Distro
+                </label>
                 <select
                   value={newUserDistro}
                   onChange={(e) => setNewUserDistro(e.target.value)}
@@ -1246,7 +1279,9 @@ function AdminUserManagement() {
               </div>
 
               <div>
-                <label className="font-semibold text-muted-foreground block mb-1">Learning Goal</label>
+                <label className="font-semibold text-muted-foreground block mb-1">
+                  Learning Goal
+                </label>
                 <input
                   type="text"
                   placeholder="e.g. Master Linux Kernel & System Administration"
@@ -1269,7 +1304,11 @@ function AdminUserManagement() {
                   disabled={isSubmittingUser}
                   className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 transition flex items-center gap-1.5 text-xs shadow-md"
                 >
-                  {isSubmittingUser ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
+                  {isSubmittingUser ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <UserPlus className="h-3.5 w-3.5" />
+                  )}
                   Create & Save to Database
                 </button>
               </div>
@@ -1313,7 +1352,10 @@ function AdminUserManagement() {
                 ["Level", selectedUser.level, "text-foreground"],
                 ["Streak", `🔥 ${selectedUser.streak || 1}d`, "text-amber-400"],
               ].map(([lbl, val, cls]) => (
-                <div key={String(lbl)} className="p-3 rounded-2xl bg-secondary/40 border border-border">
+                <div
+                  key={String(lbl)}
+                  className="p-3 rounded-2xl bg-secondary/40 border border-border"
+                >
                   <span className="text-muted-foreground block text-[11px]">{lbl}</span>
                   <span className={`font-mono text-lg font-bold ${cls}`}>{val}</span>
                 </div>
@@ -1339,7 +1381,9 @@ function AdminUserManagement() {
                 </div>
               )}
               {selectedUser.bio && (
-                <p className="text-muted-foreground italic text-[11px] pt-1">"{selectedUser.bio}"</p>
+                <p className="text-muted-foreground italic text-[11px] pt-1">
+                  "{selectedUser.bio}"
+                </p>
               )}
             </div>
 
