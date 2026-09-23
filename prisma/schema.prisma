@@ -1,0 +1,207 @@
+// ─── AFROKERNEL DATABASE SCHEMA (PRISMA) ─────────────────────────
+// This schema models the complete data layer for AfroKernel,
+// including user profiles, courses, lessons, interactive terminal challenges,
+// practice exam submissions, and AI tutor conversations.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── PROFILES & USERS ─────────────────────────────────────────────
+model Profile {
+  id              String   @id @default(uuid()) @db.Uuid
+  userId          String   @unique @map("user_id") @db.Uuid
+  displayName     String?  @map("display_name")
+  avatarUrl       String?  @map("avatar_url")
+  bio             String?
+  headline        String?
+  preferredDistro String?  @map("preferred_distro")
+  xp              Int      @default(0)
+  level           Int      @default(1)
+  streakDays      Int      @default(0) @map("streak_days")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  enrollments       Enrollment[]
+  lessonProgress    LessonProgress[]
+  challengeAttempts ChallengeAttempt[]
+  examSubmissions   ExamSubmission[]
+  chatConversations ChatConversation[]
+
+  @@map("profiles")
+}
+
+// ─── COURSES ───────────────────────────────────────────────────────
+model Course {
+  id          String   @id @default(uuid()) @db.Uuid
+  slug        String   @unique
+  title       String
+  subtitle    String?
+  description String   @db.Text
+  category    String   // "Fundamentals", "Enterprise Linux", "Scripting", "Networking"
+  difficulty  String   @default("beginner") // "beginner", "intermediate", "advanced"
+  duration    Float    @default(0) // Duration in hours
+  rating      Float    @default(5.0)
+  reviewCount Int      @default(0) @map("review_count")
+  learnerCount Int     @default(0) @map("learner_count")
+  featured    Boolean  @default(false)
+  published   Boolean  @default(true)
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  lessons     Lesson[]
+  enrollments Enrollment[]
+
+  @@map("courses")
+}
+
+// ─── LESSONS ───────────────────────────────────────────────────────
+model Lesson {
+  id              String   @id @default(uuid()) @db.Uuid
+  courseId        String   @map("course_id") @db.Uuid
+  slug            String
+  title           String
+  lessonType      String   @default("notes") @map("lesson_type") // "video", "notes", "lab", "quiz"
+  videoUrl        String?  @map("video_url")
+  durationMinutes Int      @default(15) @map("duration_minutes")
+  xpReward        Int      @default(20) @map("xp_reward")
+  sortOrder       Int      @default(0) @map("sort_order")
+  contentMarkdown String   @map("content_markdown") @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  progress        LessonProgress[]
+  challenge       Challenge?
+
+  @@unique([courseId, slug])
+  @@map("lessons")
+}
+
+// ─── LAB CHALLENGES ───────────────────────────────────────────────
+model Challenge {
+  id             String   @id @default(uuid()) @db.Uuid
+  lessonId       String   @unique @map("lesson_id") @db.Uuid
+  title          String
+  prompt         String   @db.Text
+  starterCommand String?  @map("starter_command")
+  expectedOutput String   @map("expected_output") @db.Text
+  matchMode      String   @default("exact") @map("match_mode") // "exact", "regex", "contains"
+  xpReward       Int      @default(25) @map("xp_reward")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  lesson         Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  attempts       ChallengeAttempt[]
+
+  @@map("challenges")
+}
+
+model ChallengeAttempt {
+  id          String   @id @default(uuid()) @db.Uuid
+  challengeId String   @map("challenge_id") @db.Uuid
+  profileId   String   @map("profile_id") @db.Uuid
+  output      String   @db.Text
+  passed      Boolean
+  awardedXp   Int      @default(0) @map("awarded_xp")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  challenge   Challenge @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("challenge_attempts")
+}
+
+// ─── USER ENROLLMENTS & LESSON PROGRESS ───────────────────────────
+model Enrollment {
+  id         String   @id @default(uuid()) @db.Uuid
+  profileId  String   @map("profile_id") @db.Uuid
+  courseId   String   @map("course_id") @db.Uuid
+  enrolledAt DateTime @default(now()) @map("enrolled_at")
+
+  profile    Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  course     Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, courseId])
+  @@map("enrollments")
+}
+
+model LessonProgress {
+  id          String    @id @default(uuid()) @db.Uuid
+  profileId   String    @map("profile_id") @db.Uuid
+  lessonId    String    @map("lesson_id") @db.Uuid
+  completed   Boolean   @default(false)
+  completedAt DateTime? @map("completed_at")
+
+  profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+
+  @@unique([profileId, lessonId])
+  @@map("lesson_progress")
+}
+
+// ─── PRACTICE EXAM SUBMISSIONS ────────────────────────────────────
+model ExamSubmission {
+  id             String   @id @default(uuid()) @db.Uuid
+  profileId      String   @map("profile_id") @db.Uuid
+  trackId        String   @map("track_id")
+  trackLabel     String   @map("track_label")
+  score          Int
+  totalQuestions Int      @map("total_questions")
+  percentage     Float
+  passed         Boolean
+  answersJson    Json?    @map("answers_json")
+  submittedAt    DateTime @default(now()) @map("submitted_at")
+
+  profile        Profile  @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("exam_submissions")
+}
+
+// ─── AI LINUX TUTOR CHAT ──────────────────────────────────────────
+model ChatConversation {
+  id        String        @id @default(uuid()) @db.Uuid
+  profileId String        @map("profile_id") @db.Uuid
+  title     String        @default("New Chat")
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  profile   Profile       @relation(fields: [profileId], references: [id], onDelete: Cascade)
+  messages  ChatMessage[]
+
+  @@map("chat_conversations")
+}
+
+model ChatMessage {
+  id             String           @id @default(uuid()) @db.Uuid
+  conversationId String           @map("conversation_id") @db.Uuid
+  role           String           // "user" | "assistant" | "system"
+  content        String           @db.Text
+  createdAt      DateTime         @default(now()) @map("created_at")
+
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@map("chat_messages")
+}
+
+// ─── LINUX COMMANDS REFERENCE (DOCS) ──────────────────────────────
+model LinuxCommand {
+  id           String   @id @default(uuid()) @db.Uuid
+  slug         String   @unique
+  name         String
+  category     String
+  shortDesc    String   @map("short_desc")
+  syntax       String
+  examplesJson Json     @map("examples_json")
+  mistakesJson Json?    @map("mistakes_json")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("linux_commands")
+}

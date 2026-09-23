@@ -168,11 +168,6 @@ function CourseDetailPage() {
                   <span className="px-2.5 py-0.5 rounded-full bg-secondary text-secondary-foreground text-xs font-semibold capitalize">
                     {c.difficulty} Level
                   </span>
-                  {c.certificate_available && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/25 text-xs font-semibold">
-                      <Award className="h-3.5 w-3.5" /> Certificate Included
-                    </span>
-                  )}
                 </div>
 
                 <h1 className="font-display text-3xl sm:text-4xl lg:text-5xl font-black text-foreground tracking-tight">
@@ -272,7 +267,7 @@ function CourseDetailPage() {
                   </div>
                   <div className="flex items-center gap-2">
                     <Check className="h-4 w-4 text-emerald-500 shrink-0" />
-                    <span>Shareable completion certificate</span>
+                    <span>Hands-on command line exercises</span>
                   </div>
                 </div>
 

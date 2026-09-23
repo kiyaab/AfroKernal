@@ -93,32 +93,34 @@ export function HeaderNav() {
                       </div>
                     </Link>
                     <Link
-                      to="/tutorials"
+                      to="/courses/$slug"
+                      params={{ slug: "scripting" }}
                       onClick={() => setCoursesOpen(false)}
                       className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-secondary/60 transition group"
                     >
-                      <span className="text-xl p-1.5 rounded-lg bg-primary/10">🔒</span>
+                      <span className="text-xl p-1.5 rounded-lg bg-primary/10">⚡</span>
                       <div>
                         <div className="font-semibold text-xs text-foreground group-hover:text-primary">
-                          Cybersecurity Fundamentals
+                          Bash Scripting & Automation
                         </div>
                         <div className="text-[11px] text-muted-foreground">
-                          Nmap, Wireshark, hardening & pentest
+                          Crons, awk/sed & shell automation
                         </div>
                       </div>
                     </Link>
                     <Link
-                      to="/tutorials"
+                      to="/courses/$slug"
+                      params={{ slug: "rhel" }}
                       onClick={() => setCoursesOpen(false)}
                       className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-secondary/60 transition group"
                     >
-                      <span className="text-xl p-1.5 rounded-lg bg-primary/10">⚙️</span>
+                      <span className="text-xl p-1.5 rounded-lg bg-primary/10">🎩</span>
                       <div>
                         <div className="font-semibold text-xs text-foreground group-hover:text-primary">
-                          DevOps & Containers
+                          Red Hat Linux (RHEL 9)
                         </div>
                         <div className="text-[11px] text-muted-foreground">
-                          Docker, Kubernetes, CI/CD & Ansible
+                          Enterprise sysadmin, SELinux & storage
                         </div>
                       </div>
                     </Link>
@@ -128,7 +130,7 @@ export function HeaderNav() {
                         onClick={() => setCoursesOpen(false)}
                         className="flex items-center justify-between p-2 rounded-lg text-xs font-semibold text-primary hover:bg-primary/10 transition"
                       >
-                        <span>View All 7 Curriculum Tracks</span>
+                        <span>View All Curriculum Tracks</span>
                         <ArrowRight className="h-3.5 w-3.5" />
                       </Link>
                     </div>
@@ -314,15 +316,7 @@ export function HeaderNav() {
               )}
             </div>
 
-            {/* 4. Certifications Link */}
-            <Link
-              to="/certification"
-              className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition"
-            >
-              Certifications
-            </Link>
-
-            {/* 5. Cheat Sheets Link */}
+            {/* Cheat Sheets Link */}
             <Link
               to="/cheat-sheets"
               className="px-3 py-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-secondary/50 transition"
@@ -502,13 +496,6 @@ export function HeaderNav() {
                 className="p-3 rounded-xl bg-background border border-border"
               >
                 📄 Cheat Sheets
-              </Link>
-              <Link
-                to="/certification"
-                onClick={() => setMobileMenuOpen(false)}
-                className="p-3 rounded-xl bg-background border border-border"
-              >
-                🏆 Certifications
               </Link>
             </div>
           </div>

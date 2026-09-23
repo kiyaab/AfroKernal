@@ -125,30 +125,29 @@ export const linuxResources: ResourceGroup[] = [
     ],
   },
   {
-    title: "DevOps, Containers & Automation",
-    blurb: "The tools every Linux admin lives inside daily.",
+    title: "System Automation & Administration Tools",
+    blurb: "Essential automation utilities and system administration tools.",
     links: [
       {
         name: "Ansible",
         url: "https://docs.ansible.com",
         desc: "Agentless automation and config management.",
       },
-      {
-        name: "Podman",
-        url: "https://docs.podman.io",
-        desc: "Rootless daemonless container engine.",
-      },
-      { name: "Docker", url: "https://docs.docker.com", desc: "The container standard." },
-      {
-        name: "Kubernetes",
-        url: "https://kubernetes.io/docs",
-        desc: "Production-grade container orchestration.",
-      },
       { name: "Git", url: "https://git-scm.com/doc", desc: "Distributed version control." },
       {
         name: "Cockpit",
         url: "https://cockpit-project.org/documentation.html",
         desc: "Web-based server admin UI.",
+      },
+      {
+        name: "Cron Manual",
+        url: "https://man7.org/linux/man-pages/man5/crontab.5.html",
+        desc: "Standard Linux scheduled task daemon.",
+      },
+      {
+        name: "Rsyslog Documentation",
+        url: "https://www.rsyslog.com/doc/",
+        desc: "Centralized logging and syslog monitoring.",
       },
     ],
   },

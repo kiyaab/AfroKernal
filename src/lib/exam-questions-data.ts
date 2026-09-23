@@ -1,6 +1,6 @@
 export interface ExamQuestion {
   id: number;
-  track: "linux" | "security" | "devops" | "networking";
+  track: "linux" | "rhel" | "scripting";
   question: string;
   options: string[];
   correctIndex: number;
@@ -78,74 +78,99 @@ export const EXAM_QUESTIONS: ExamQuestion[] = [
   },
   {
     id: 6,
-    track: "security",
-    domain: "Network Scanning",
-    question: "What type of scan does 'nmap -sS <target>' perform?",
-    options: [
-      "TCP Connect Scan (completes full 3-way handshake)",
-      "SYN Stealth Scan (half-open scan sending SYN and RST)",
-      "UDP Port Scan",
-      "ICMP Ping Sweep",
-    ],
-    correctIndex: 1,
-    explanation:
-      "-sS is the default TCP SYN scan. It sends SYN, waits for SYN-ACK, then immediately sends RST without completing the full 3-way handshake.",
-  },
-  {
-    id: 7,
-    track: "security",
-    domain: "System Hardening",
+    track: "scripting",
+    domain: "Bash Redirection & I/O",
     question:
-      "Which SSH configuration directive in /etc/ssh/sshd_config prevents direct root logins over SSH?",
+      "Which syntax redirects both standard output (stdout) and standard error (stderr) to a file named 'output.log' in standard Bash?",
     options: [
-      "AllowRootLogin no",
-      "PermitRootLogin no",
-      "DisableRootAccess yes",
-      "RootLogin disabled",
-    ],
-    correctIndex: 1,
-    explanation:
-      "'PermitRootLogin no' ensures root cannot log in directly over SSH, forcing admins to authenticate as unprivileged users and escalate via sudo.",
-  },
-  {
-    id: 8,
-    track: "security",
-    domain: "Traffic Analysis",
-    question:
-      "In Wireshark or tcpdump, which filter syntax matches HTTP traffic on port 80 or 8080?",
-    options: [
-      "port == 80 or port == 8080",
-      "tcp.port in {80, 8080}",
-      "protocol.http == true",
-      "tcp.port == 80 || tcp.port == 8080",
-    ],
-    correctIndex: 3,
-    explanation:
-      "In Wireshark display filter syntax, 'tcp.port == 80 || tcp.port == 8080' filters packets having source or destination port 80 or 8080.",
-  },
-  {
-    id: 9,
-    track: "devops",
-    domain: "Docker & Containers",
-    question: "In a Dockerfile, what is the key difference between ENTRYPOINT and CMD?",
-    options: [
-      "ENTRYPOINT sets the default executable, while CMD provides default arguments that can be easily overridden at runtime",
-      "CMD runs at build time, ENTRYPOINT runs at container startup",
-      "ENTRYPOINT only accepts shell syntax, CMD only accepts JSON array syntax",
-      "There is no difference; they are aliases",
+      "command > output.log 2>&1",
+      "command 2> output.log",
+      "command >> stdout.log < stderr",
+      "command | tee -e output.log",
     ],
     correctIndex: 0,
     explanation:
-      "ENTRYPOINT defines the command that will always be executed; CMD parameters are passed as default arguments to ENTRYPOINT and can be overridden by passing arguments to 'docker run'.",
+      "In standard Bash, 'command > output.log 2>&1' redirects stdout to output.log, then duplicates file descriptor 2 (stderr) to file descriptor 1 (stdout).",
+  },
+  {
+    id: 7,
+    track: "linux",
+    domain: "User & Security Administration",
+    question:
+      "Which command safely opens the /etc/sudoers file with syntax validation before saving?",
+    options: ["nano /etc/sudoers", "visudo", "sudo-edit", "vim /etc/sudoers"],
+    correctIndex: 1,
+    explanation:
+      "'visudo' locks the sudoers file against simultaneous edits and verifies syntax before saving to prevent corrupting the file.",
+  },
+  {
+    id: 8,
+    track: "scripting",
+    domain: "Shell Scripting Variables",
+    question:
+      "In a Bash script, which special parameter holds the exit status of the most recently executed foreground pipeline?",
+    options: ["$!", "$$", "$?", "$#"],
+    correctIndex: 2,
+    explanation:
+      "'$?' expands to the exit status of the most recently executed foreground command, where 0 indicates success.",
+  },
+  {
+    id: 9,
+    track: "rhel",
+    domain: "Enterprise Linux (RHEL 9)",
+    question:
+      "Which command verifies and queries all installed RPM packages matching 'nginx' on Red Hat Enterprise Linux?",
+    options: [
+      "rpm -qa | grep nginx",
+      "apt list --installed nginx",
+      "pkg_info | grep nginx",
+      "pacman -Q nginx",
+    ],
+    correctIndex: 0,
+    explanation:
+      "'rpm -qa' queries all installed RPM packages on RHEL and Enterprise Linux distributions, which can be piped to grep.",
   },
   {
     id: 10,
-    track: "devops",
-    domain: "Kubernetes Basics",
-    question: "What is the smallest deployable computing unit in Kubernetes?",
-    options: ["Container", "Pod", "ReplicaSet", "Deployment"],
+    track: "linux",
+    domain: "Archiving & Compression",
+    question:
+      "Which 'tar' flags create a new gzip-compressed archive named 'archive.tar.gz' from a directory '/data'?",
+    options: [
+      "tar -xzvf archive.tar.gz /data",
+      "tar -czvf archive.tar.gz /data",
+      "tar -jcvf archive.tar.gz /data",
+      "tar -tzvf archive.tar.gz /data",
+    ],
     correctIndex: 1,
     explanation:
-      "In Kubernetes, a Pod represents a single instance of a running process and can contain one or more tightly coupled containers sharing network and storage.",
+      "-c creates a new archive, -z uses gzip compression, -v provides verbose progress, and -f specifies the archive file.",
+  },
+  {
+    id: 11,
+    track: "scripting",
+    domain: "Text Processing",
+    question:
+      "Which command prints only the first column (field) of a space-delimited text file named 'users.txt'?",
+    options: [
+      "awk '{print $1}' users.txt",
+      "sed 's/column/1/' users.txt",
+      "grep -col 1 users.txt",
+      "cat users.txt | head -c 1",
+    ],
+    correctIndex: 0,
+    explanation:
+      "awk defaults to whitespace separation and '{print $1}' prints the first field of each record.",
+  },
+  {
+    id: 12,
+    track: "rhel",
+    domain: "SELinux & System Security",
+    question:
+      "Which command checks the current operational mode of SELinux (Enforcing, Permissive, or Disabled)?",
+    options: ["getenforce", "selinux-status", "chkconfig selinux", "systemctl status selinux"],
+    correctIndex: 0,
+    explanation:
+      "'getenforce' quickly displays the current operational state of Security-Enhanced Linux (SELinux) on RHEL systems.",
   },
 ];

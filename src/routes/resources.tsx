@@ -15,12 +15,12 @@ export const Route = createFileRoute("/resources")({
       {
         name: "description",
         content:
-          "Curated Linux PDFs, courses, and official documentation — RHEL, Ubuntu, Debian, Arch, Docker, Kubernetes and more.",
+          "Curated Linux PDFs, courses, and official documentation — RHEL, Ubuntu, Debian, Arch, and Enterprise Administration.",
       },
       { property: "og:title", content: "AfroKernel — Linux Documentation Hub" },
       {
         property: "og:description",
-        content: "Every official Linux, DevOps and sysadmin documentation source in one place.",
+        content: "Every official Linux and sysadmin documentation source in one place.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

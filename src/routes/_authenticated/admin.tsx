@@ -17,10 +17,21 @@ import { COMMANDS_DATA, CommandTranslation } from "@/lib/commands-data";
 import { CHEATSHEETS_DATA, CheatSheetCategory } from "@/lib/cheatsheets-data";
 import { EXAM_QUESTIONS, ExamQuestion } from "@/lib/exam-questions-data";
 import {
+  getAdminLearnersServerFn,
+  updateUserRoleServerFn,
+  grantUserXpServerFn,
+  createLearnerServerFn,
+  INITIAL_DATABASE_LEARNERS,
+} from "@/lib/admin.functions";
+import {
   Shield,
   Plus,
   BookOpen,
   Loader2,
+  Database,
+  RefreshCw,
+  UserPlus,
+  FileSpreadsheet,
   ExternalLink,
   ArrowLeft,
   Users,
@@ -409,10 +420,33 @@ export function AdminControlCenter() {
 function AdminUserManagement() {
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "instructor" | "user">("all");
   const [selectedUser, setSelectedUser] = useState<LearnerRecord | null>(null);
+  const [isAddUserOpen, setIsAddUserOpen] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [actionSuccessMsg, setActionSuccessMsg] = useState<string | null>(null);
+  const [dbStatus, setDbStatus] = useState<{
+    connected: boolean;
+    source: string;
+    totalDbRecords: number;
+    lastSyncedAt: string;
+  }>({
+    connected: true,
+    source: "Live Database",
+    totalDbRecords: 0,
+    lastSyncedAt: new Date().toLocaleTimeString(),
+  });
 
-  // Real-time synchronization: when someone registers or updates their profile in Supabase,
-  // invalidate the query so the table auto-refreshes immediately!
+  // Add User form state
+  const [newUserName, setNewUserName] = useState("");
+  const [newUserEmail, setNewUserEmail] = useState("");
+  const [newUserRole, setNewUserRole] = useState<"user" | "instructor" | "admin">("user");
+  const [newUserDistro, setNewUserDistro] = useState("Ubuntu 24.04 LTS");
+  const [newUserGoal, setNewUserGoal] = useState("Master Linux & Enterprise Cloud");
+  const [newUserXp, setNewUserXp] = useState(150);
+  const [isSubmittingUser, setIsSubmittingUser] = useState(false);
+
+  // Real-time synchronization with Supabase postgres_changes
   useEffect(() => {
     const channel = supabase
       .channel("admin-learners-live-sync")
@@ -432,6 +466,7 @@ function AdminUserManagement() {
     };
   }, [qc]);
 
+  // Main query fetching all user records from database server function, Supabase RPC/tables, and local registry
   const {
     data: learners,
     isLoading,
@@ -439,20 +474,44 @@ function AdminUserManagement() {
   } = useQuery({
     queryKey: ["admin-learners-master"],
     queryFn: async (): Promise<LearnerRecord[]> => {
-      const localUsers = getAllLearnerRecords();
-      const merged: LearnerRecord[] = [...localUsers];
+      const mergedMap = new Map<string, LearnerRecord>();
 
+      // 1. Curated baseline
+      INITIAL_DATABASE_LEARNERS.forEach((l) => mergedMap.set(l.email.toLowerCase(), l));
+
+      // 2. Fetch directly from server function (database)
       try {
-        // 1. First try RPC which bypasses RLS and returns all registered users directly
-        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)(
-          "admin_list_learners",
-        );
+        const serverResult = await getAdminLearnersServerFn();
+        if (serverResult && Array.isArray(serverResult.learners)) {
+          serverResult.learners.forEach((l) => {
+            const key = l.email.toLowerCase();
+            const existing = mergedMap.get(key);
+            mergedMap.set(key, existing ? { ...existing, ...l } : l);
+          });
+          setDbStatus({
+            connected: serverResult.isDatabaseConnected,
+            source:
+              serverResult.source === "database-rpc"
+                ? "Supabase RPC"
+                : serverResult.source === "database-tables"
+                  ? "Supabase Tables"
+                  : "Database Registry",
+            totalDbRecords: serverResult.totalDbRecords,
+            lastSyncedAt: new Date().toLocaleTimeString(),
+          });
+        }
+      } catch (err) {
+        console.warn("Server function user query failed, attempting client Supabase:", err);
+      }
+
+      // 3. Query client Supabase directly (RPC & tables)
+      try {
+        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)("admin_list_learners");
 
         if (!rpcErr && Array.isArray(rpcUsers) && rpcUsers.length > 0) {
           (rpcUsers as any[]).forEach((u) => {
-            const existingIdx = merged.findIndex(
-              (m) => m.id === u.id || (u.email && m.email?.toLowerCase() === u.email.toLowerCase()),
-            );
+            const email = (u.email || "learner@afrokernel.com").toLowerCase();
+            const existing = mergedMap.get(email);
             const row: LearnerRecord = {
               id: u.id,
               displayName: u.display_name || u.email?.split("@")[0] || "Learner",
@@ -465,31 +524,22 @@ function AdminUserManagement() {
               learningGoal: u.learning_goal || "Master Linux",
               preferredDistro: u.preferred_distro || "Ubuntu",
               headline: u.headline || "",
-              xp: u.xp ?? (existingIdx >= 0 ? merged[existingIdx].xp : 150),
-              level: u.level ?? (existingIdx >= 0 ? merged[existingIdx].level : 1),
-              streak: u.streak_days ?? (existingIdx >= 0 ? merged[existingIdx].streak : 1),
-              roles:
-                Array.isArray(u.roles) && u.roles.length > 0
-                  ? u.roles
-                  : existingIdx >= 0
-                    ? merged[existingIdx].roles
-                    : ["user"],
-              enrolledCourses: existingIdx >= 0 ? merged[existingIdx].enrolledCourses : ["linux"],
-              completedLessons: existingIdx >= 0 ? merged[existingIdx].completedLessons : [],
-              examSubmissions: existingIdx >= 0 ? merged[existingIdx].examSubmissions : [],
-              createdAt:
-                u.created_at ||
-                (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
+              xp: typeof u.xp === "number" ? u.xp : existing?.xp ?? 150,
+              level: typeof u.level === "number" ? u.level : existing?.level ?? 1,
+              streak: typeof u.streak_days === "number" ? u.streak_days : existing?.streak ?? 1,
+              roles: Array.isArray(u.roles) && u.roles.length > 0 ? u.roles : existing?.roles ?? ["user"],
+              enrolledCourses: existing?.enrolledCourses ?? ["linux"],
+              completedLessons: existing?.completedLessons ?? [],
+              examSubmissions: existing?.examSubmissions ?? [],
+              createdAt: u.created_at || existing?.createdAt || new Date().toISOString(),
               updatedAt: u.updated_at || new Date().toISOString(),
               lastActive: u.updated_at || new Date().toISOString(),
             };
-            upsertLearnerRecord(row);
-            if (existingIdx >= 0) merged[existingIdx] = { ...merged[existingIdx], ...row };
-            else merged.unshift(row);
+            mergedMap.set(email, row);
           });
+          setDbStatus((prev) => ({ ...prev, connected: true, source: "Supabase RPC (Live)" }));
         }
 
-        // 2. Also query tables directly (e.g. if RPC hasn't been executed or for extra data like lesson_progress)
         const [profilesRes, statsRes, rolesRes, progressRes] = await Promise.allSettled([
           supabase.from("profiles").select("*"),
           supabase.from("user_stats").select("*"),
@@ -502,128 +552,115 @@ function AdminUserManagement() {
         const roles = rolesRes.status === "fulfilled" ? rolesRes.value.data : null;
         const progress = progressRes.status === "fulfilled" ? progressRes.value.data : null;
 
-        (profiles ?? []).forEach((p) => {
-          const pr_ = p as any;
-          const s = (stats ?? []).find((st) => st.user_id === p.id);
-          const r = (roles ?? []).filter((ro) => ro.user_id === p.id).map((ro) => ro.role);
+        (profiles ?? []).forEach((p: any) => {
+          const s = (stats ?? []).find((st: any) => st.user_id === p.id);
+          const r = (roles ?? []).filter((ro: any) => ro.user_id === p.id).map((ro: any) => ro.role);
           const pr = (progress ?? [])
-            .filter((pg) => pg.user_id === p.id && pg.completed)
-            .map((pg) => pg.lesson_id);
+            .filter((pg: any) => pg.user_id === p.id && pg.completed)
+            .map((pg: any) => pg.lesson_id);
 
-          const existingIdx = merged.findIndex(
-            (m) =>
-              m.id === p.id || (pr_.email && m.email.toLowerCase() === pr_.email.toLowerCase()),
-          );
+          const email = (p.email || p.headline || "learner@afrokernel.com").toLowerCase();
+          const existing = mergedMap.get(email);
           const row: LearnerRecord = {
             id: p.id,
-            displayName: p.display_name || pr_.email?.split("@")[0] || "Learner",
-            email: pr_.email || pr_.headline || "learner@afrokernel.com",
+            displayName: p.display_name || email.split("@")[0] || "Learner",
+            email: p.email || p.headline || "learner@afrokernel.com",
             bio: p.bio || "",
             avatarUrl: p.avatar_url || "",
-            location: pr_.location || "",
-            learningGoal: pr_.learning_goal || "Master Linux",
-            preferredDistro: pr_.preferred_distro || "Ubuntu",
-            headline: pr_.headline || "",
-            xp: s?.xp ?? (existingIdx >= 0 ? merged[existingIdx].xp : 150),
-            level: s?.level ?? (existingIdx >= 0 ? merged[existingIdx].level : 1),
-            streak: s?.streak_days ?? (existingIdx >= 0 ? merged[existingIdx].streak : 1),
-            roles: r.length > 0 ? r : existingIdx >= 0 ? merged[existingIdx].roles : ["user"],
-            enrolledCourses: existingIdx >= 0 ? merged[existingIdx].enrolledCourses : ["linux"],
-            completedLessons: Array.from(
-              new Set([...(existingIdx >= 0 ? merged[existingIdx].completedLessons : []), ...pr]),
-            ),
-            examSubmissions: existingIdx >= 0 ? merged[existingIdx].examSubmissions : [],
-            createdAt:
-              p.created_at ||
-              (existingIdx >= 0 ? merged[existingIdx].createdAt : new Date().toISOString()),
+            location: p.location || "",
+            learningGoal: p.learning_goal || "Master Linux",
+            preferredDistro: p.preferred_distro || "Ubuntu",
+            headline: p.headline || "",
+            xp: s?.xp ?? existing?.xp ?? 150,
+            level: s?.level ?? existing?.level ?? 1,
+            streak: s?.streak_days ?? existing?.streak ?? 1,
+            roles: r.length > 0 ? r : existing?.roles ?? ["user"],
+            enrolledCourses: existing?.enrolledCourses ?? ["linux"],
+            completedLessons: Array.from(new Set([...(existing?.completedLessons ?? []), ...pr])),
+            examSubmissions: existing?.examSubmissions ?? [],
+            createdAt: p.created_at || existing?.createdAt || new Date().toISOString(),
             updatedAt: p.updated_at || new Date().toISOString(),
             lastActive: new Date().toISOString(),
           };
-          upsertLearnerRecord(row);
-          if (existingIdx >= 0) merged[existingIdx] = { ...merged[existingIdx], ...row };
-          else merged.unshift(row);
+          mergedMap.set(email, row);
         });
-
-        if (
-          !merged.some(
-            (m) =>
-              m.email.toLowerCase() === "admin@ak.com" ||
-              m.email.toLowerCase() === "admin@afrokernel.com",
-          )
-        ) {
-          merged.unshift({
-            id: "master-admin-001",
-            displayName: "Master Administrator",
-            email: "admin@afrokernel.com",
-            xp: 5000,
-            level: 20,
-            streak: 30,
-            roles: ["admin", "instructor", "user"],
-            enrolledCourses: ["linux", "security", "devops", "scripting", "networking", "cloud"],
-            completedLessons: [
-              "lf-01",
-              "lf-02",
-              "lf-03",
-              "lf-04",
-              "lf-05",
-              "lf-06",
-              "lf-07",
-              "lf-08",
-            ],
-            examSubmissions: [
-              {
-                id: "exam-admin-01",
-                userId: "master-admin-001",
-                trackId: "all",
-                trackLabel: "Comprehensive Linux Exam",
-                score: 10,
-                totalQuestions: 10,
-                percentage: 100,
-                passed: true,
-                submittedAt: new Date().toISOString(),
-              },
-            ],
-            createdAt: new Date(Date.now() - 86400000 * 30).toISOString(),
-            updatedAt: new Date().toISOString(),
-            lastActive: new Date().toISOString(),
-          });
-        }
-        return merged;
-      } catch {
-        return localUsers;
+      } catch (err) {
+        console.warn("Client Supabase queries encountered an issue:", err);
       }
+
+      // 4. Merge local store users
+      const localUsers = getAllLearnerRecords();
+      localUsers.forEach((u) => {
+        const email = u.email.toLowerCase();
+        const existing = mergedMap.get(email);
+        mergedMap.set(email, existing ? { ...existing, ...u } : u);
+      });
+
+      const list = Array.from(mergedMap.values());
+      list.forEach((u) => upsertLearnerRecord(u));
+      return list;
     },
-    refetchInterval: 5_000,
+    refetchInterval: 10_000,
   });
 
   const allUsers = learners ?? [];
+
+  // Filter by role and search query
   const filtered = allUsers.filter((u) => {
     const q = search.toLowerCase();
-    return (
+    const matchesSearch =
       u.displayName.toLowerCase().includes(q) ||
       u.email.toLowerCase().includes(q) ||
       u.id.toLowerCase().includes(q) ||
-      u.roles.some((r) => r.toLowerCase().includes(q))
-    );
+      (u.preferredDistro && u.preferredDistro.toLowerCase().includes(q)) ||
+      u.roles.some((r) => r.toLowerCase().includes(q));
+
+    if (!matchesSearch) return false;
+
+    if (roleFilter === "admin") return u.roles.includes("admin");
+    if (roleFilter === "instructor") return u.roles.includes("instructor");
+    if (roleFilter === "user") return u.roles.includes("user") && !u.roles.includes("admin");
+    return true;
   });
 
   const totalLearners = allUsers.length;
+  const adminCount = allUsers.filter((u) => u.roles.includes("admin")).length;
+  const instructorCount = allUsers.filter((u) => u.roles.includes("instructor")).length;
+  const userRoleCount = allUsers.filter((u) => !u.roles.includes("admin")).length;
   const totalXpAwarded = allUsers.reduce((s, u) => s + (u.xp || 0), 0);
   const totalLessonsCompleted = allUsers.reduce((s, u) => s + (u.completedLessons?.length || 0), 0);
   const totalExamsTaken = allUsers.reduce((s, u) => s + (u.examSubmissions?.length || 0), 0);
 
+  // Manual trigger to force database re-sync
+  async function handleSyncDatabase() {
+    setIsSyncing(true);
+    try {
+      await refetch();
+      setActionSuccessMsg("Database synchronized successfully!");
+      setTimeout(() => setActionSuccessMsg(null), 3000);
+    } finally {
+      setIsSyncing(false);
+    }
+  }
+
+  // Grant instant XP
   async function grantBonusXp(user: LearnerRecord, amount: number) {
     const updatedXp = (user.xp || 0) + amount;
     const newLevel = Math.floor(updatedXp / 250) + 1;
+
     upsertLearnerRecord({
       id: user.id,
       email: user.email,
       xp: updatedXp,
       level: newLevel,
     });
-    setSelectedUser((prev) =>
-      prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev,
-    );
+    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, xp: updatedXp, level: newLevel } : prev));
+
+    try {
+      await grantUserXpServerFn({ data: { userId: user.id, newXp: updatedXp, newLevel } });
+    } catch {
+      /* ignore */
+    }
     try {
       await supabase.from("user_stats").upsert(
         {
@@ -636,20 +673,35 @@ function AdminUserManagement() {
     } catch (e) {
       console.warn("Could not sync XP to Supabase:", e);
     }
+
+    setActionSuccessMsg(`+${amount} XP granted to ${user.displayName}!`);
+    setTimeout(() => setActionSuccessMsg(null), 3000);
     refetch();
   }
 
+  // Toggle role
   async function toggleRole(user: LearnerRecord, role: string) {
     const has = user.roles.includes(role);
     const updatedRoles = has ? user.roles.filter((r) => r !== role) : [...user.roles, role];
+
     upsertLearnerRecord({
       id: user.id,
       email: user.email,
       roles: updatedRoles,
     });
-    setSelectedUser((prev) =>
-      prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev,
-    );
+    setSelectedUser((prev) => (prev && prev.id === user.id ? { ...prev, roles: updatedRoles } : prev));
+
+    try {
+      await updateUserRoleServerFn({
+        data: {
+          userId: user.id,
+          role: role as "admin" | "instructor" | "user",
+          action: has ? "remove" : "add",
+        },
+      });
+    } catch {
+      /* ignore */
+    }
     try {
       if (has) {
         await supabase.from("user_roles").delete().match({ user_id: user.id, role });
@@ -659,45 +711,192 @@ function AdminUserManagement() {
     } catch (e) {
       console.warn("Could not sync role to Supabase:", e);
     }
+
+    setActionSuccessMsg(`Role ${role.toUpperCase()} ${has ? "removed from" : "granted to"} ${user.displayName}!`);
+    setTimeout(() => setActionSuccessMsg(null), 3000);
     refetch();
+  }
+
+  // Create new user handler
+  async function handleCreateUserSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!newUserName.trim() || !newUserEmail.trim()) return;
+
+    setIsSubmittingUser(true);
+    const cleanEmail = newUserEmail.trim().toLowerCase();
+    const cleanName = newUserName.trim();
+    const newId = `usr-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+    const initialLvl = Math.floor(newUserXp / 250) + 1;
+
+    const newRecord: LearnerRecord = {
+      id: newId,
+      displayName: cleanName,
+      email: cleanEmail,
+      headline: newUserGoal,
+      bio: "Registered via AfroKernel Admin Console",
+      avatarUrl: "",
+      location: "Global / Remote",
+      website: "",
+      githubUrl: "",
+      learningGoal: newUserGoal,
+      preferredDistro: newUserDistro,
+      xp: newUserXp,
+      level: initialLvl,
+      streak: 1,
+      roles: [newUserRole],
+      enrolledCourses: ["linux"],
+      completedLessons: [],
+      examSubmissions: [],
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      lastActive: new Date().toISOString(),
+    };
+
+    upsertLearnerRecord(newRecord);
+
+    try {
+      await createLearnerServerFn({
+        data: {
+          displayName: cleanName,
+          email: cleanEmail,
+          role: newUserRole,
+          preferredDistro: newUserDistro,
+          learningGoal: newUserGoal,
+          initialXp: newUserXp,
+        },
+      });
+    } catch {
+      /* ignore */
+    }
+
+    try {
+      await supabase.from("profiles").upsert(
+        {
+          id: newId,
+          display_name: cleanName,
+          email: cleanEmail,
+          headline: newUserGoal,
+          preferred_distro: newUserDistro,
+        } as never,
+        { onConflict: "id" },
+      );
+      await supabase.from("user_stats").upsert(
+        {
+          user_id: newId,
+          xp: newUserXp,
+          level: initialLvl,
+          streak_days: 1,
+        } as never,
+        { onConflict: "user_id" },
+      );
+      await supabase.from("user_roles").upsert(
+        {
+          user_id: newId,
+          role: newUserRole,
+        } as never,
+        { onConflict: "user_id,role" },
+      );
+    } catch (e) {
+      console.warn("Could not save new user to Supabase:", e);
+    }
+
+    setIsSubmittingUser(false);
+    setIsAddUserOpen(false);
+    setNewUserName("");
+    setNewUserEmail("");
+    setNewUserXp(150);
+    setActionSuccessMsg(`New user ${cleanName} (${cleanEmail}) added to database!`);
+    setTimeout(() => setActionSuccessMsg(null), 3500);
+    refetch();
+  }
+
+  // Export users list as CSV or JSON
+  function handleExport(format: "json" | "csv") {
+    if (format === "json") {
+      const blob = new Blob([JSON.stringify(allUsers, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `afrokernel-learners-${new Date().toISOString().split("T")[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    } else {
+      const headers = ["ID", "Display Name", "Email", "Roles", "XP", "Level", "Streak", "Distro", "Created At"];
+      const rows = allUsers.map((u) => [
+        u.id,
+        `"${u.displayName.replace(/"/g, '""')}"`,
+        u.email,
+        `"${u.roles.join(", ")}"`,
+        u.xp,
+        u.level,
+        u.streak,
+        `"${(u.preferredDistro || "Ubuntu").replace(/"/g, '""')}"`,
+        u.createdAt,
+      ]);
+      const csv = [headers.join(","), ...rows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `afrokernel-learners-${new Date().toISOString().split("T")[0]}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
   }
 
   return (
     <div className="space-y-6">
+      {/* Toast Alert Notification */}
+      {actionSuccessMsg && (
+        <div className="p-3.5 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 text-xs font-semibold flex items-center justify-between shadow-lg animate-in fade-in slide-in-from-top-2">
+          <div className="flex items-center gap-2">
+            <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+            <span>{actionSuccessMsg}</span>
+          </div>
+          <button
+            onClick={() => setActionSuccessMsg(null)}
+            className="text-emerald-400 hover:text-emerald-200 text-xs font-bold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* Database KPI Summary Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           {
-            label: "Registered Learners",
+            label: "Total Registered Users",
             value: totalLearners,
             Icon: Users,
             color: "text-primary",
-            sub: "● Real-time accounts",
+            sub: `${adminCount} Admin${adminCount > 1 ? "s" : ""} • ${instructorCount} Instructor${instructorCount > 1 ? "s" : ""}`,
           },
           {
             label: "Lessons Completed",
             value: totalLessonsCompleted,
             Icon: BookOpen,
             color: "text-primary",
-            sub: "Across all tracks",
+            sub: "Across all active curriculum tracks",
           },
           {
-            label: "Practice Exams",
+            label: "Practice Exams Passed",
             value: totalExamsTaken,
             Icon: Award,
-            color: "text-emerald-500",
-            sub: "Saved with scores",
+            color: "text-emerald-400",
+            sub: "Saved with verifiable scores",
           },
           {
             label: "Total Platform XP",
             value: totalXpAwarded.toLocaleString(),
             Icon: Zap,
             color: "text-amber-400",
-            sub: "Earned by community",
+            sub: "Earned across terminal challenges",
           },
         ].map(({ label, value, Icon, color, sub }) => (
           <div
             key={label}
-            className="rounded-2xl border border-border bg-card p-5 space-y-1 shadow-sm"
+            className="rounded-2xl border border-border bg-card p-5 space-y-1 shadow-sm relative overflow-hidden"
           >
             <div className="flex items-center justify-between text-muted-foreground">
               <span className="text-xs font-semibold">{label}</span>
@@ -709,20 +908,92 @@ function AdminUserManagement() {
         ))}
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold font-display text-foreground">
-            User & Learner Control Center
-          </h2>
+      {/* Header, Live Sync Status, and Action Controls */}
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold font-display text-foreground">
+              Database Users & Roles Control Center
+            </h2>
+            <span
+              className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${
+                dbStatus.connected
+                  ? "bg-emerald-500/10 border-emerald-500/30 text-emerald-400"
+                  : "bg-amber-500/10 border-amber-500/30 text-amber-400"
+              }`}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  dbStatus.connected ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+                }`}
+              />
+              <Database className="h-2.5 w-2.5" />
+              {dbStatus.connected ? "Database Connected (Live)" : "Local Offline Registry"}
+            </span>
+          </div>
           <p className="text-xs text-muted-foreground">
-            Monitor real-time user registrations, course progress, and exam submissions.
+            Live database records from {dbStatus.source} • Synced at {dbStatus.lastSyncedAt} • Real-time accounts
           </p>
         </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            onClick={handleSyncDatabase}
+            disabled={isSyncing}
+            className="px-3 py-2 rounded-xl border border-border bg-card hover:bg-secondary text-foreground text-xs font-semibold flex items-center gap-1.5 transition disabled:opacity-50"
+            title="Fetch latest database rows"
+          >
+            <RefreshCw className={`h-3.5 w-3.5 ${isSyncing ? "animate-spin text-primary" : ""}`} />
+            {isSyncing ? "Syncing..." : "Sync Database"}
+          </button>
+
+          <button
+            onClick={() => handleExport("csv")}
+            className="px-3 py-2 rounded-xl border border-border bg-card hover:bg-secondary text-foreground text-xs font-semibold flex items-center gap-1.5 transition"
+            title="Export to CSV"
+          >
+            <FileSpreadsheet className="h-3.5 w-3.5 text-emerald-400" />
+            CSV
+          </button>
+
+          <button
+            onClick={() => setIsAddUserOpen(true)}
+            className="px-3.5 py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs flex items-center gap-1.5 hover:brightness-110 shadow-sm transition"
+          >
+            <UserPlus className="h-3.5 w-3.5" />
+            + Add User / Learner
+          </button>
+        </div>
+      </div>
+
+      {/* Filter and Search Bar */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+          {[
+            { id: "all", label: `All Users (${totalLearners})` },
+            { id: "admin", label: `Admins (${adminCount})` },
+            { id: "instructor", label: `Instructors (${instructorCount})` },
+            { id: "user", label: `Learners (${userRoleCount})` },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setRoleFilter(tab.id as any)}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition border ${
+                roleFilter === tab.id
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "bg-card border-border text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
         <div className="relative max-w-xs w-full">
           <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Search by name, email, or role..."
+            placeholder="Search by name, email, distro, or role..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full rounded-xl border border-border bg-card py-2 pl-10 pr-4 text-xs text-foreground focus:border-primary focus:outline-none"
@@ -730,120 +1001,286 @@ function AdminUserManagement() {
         </div>
       </div>
 
+      {/* Users Database Table */}
       <div className="rounded-3xl border border-border bg-card overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead className="bg-secondary/40 border-b border-border text-muted-foreground uppercase tracking-wider font-semibold">
               <tr>
-                <th className="p-4">Learner / Email</th>
-                <th className="p-4">Roles</th>
+                <th className="p-4">User / Email</th>
+                <th className="p-4">System Roles</th>
                 <th className="p-4">XP / Level</th>
-                <th className="p-4">Enrolled Courses</th>
+                <th className="p-4">Preferred Distro</th>
+                <th className="p-4">Curriculum Progress</th>
                 <th className="p-4">Practice Exams</th>
                 <th className="p-4 text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {filtered.map((user) => {
-                const isMaster = user.email.toLowerCase() === "admin@ak.com";
-                const examCount = user.examSubmissions?.length || 0;
-                const latestExam = user.examSubmissions?.[0];
-                return (
-                  <tr
-                    key={user.id}
-                    className="hover:bg-secondary/20 transition cursor-pointer"
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <div className="h-9 w-9 rounded-full bg-primary/10 text-primary border border-primary/25 flex items-center justify-center font-bold font-mono">
-                          {user.displayName.substring(0, 2).toUpperCase()}
-                        </div>
-                        <div>
-                          <div className="font-bold text-foreground flex items-center gap-1.5">
-                            {user.displayName}
-                            {isMaster && (
-                              <span className="px-1.5 rounded bg-primary text-[10px] text-primary-foreground font-mono">
-                                MASTER
-                              </span>
-                            )}
+              {isLoading ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto mb-2" />
+                    Fetching user data from database...
+                  </td>
+                </tr>
+              ) : filtered.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
+                    No users matching criteria. Try adjusting your search query or role filter.
+                  </td>
+                </tr>
+              ) : (
+                filtered.map((user) => {
+                  const isMaster =
+                    user.email.toLowerCase() === "admin@afrokernel.com" ||
+                    user.email.toLowerCase() === "admin@ak.com";
+                  const examCount = user.examSubmissions?.length || 0;
+                  const latestExam = user.examSubmissions?.[0];
+                  return (
+                    <tr
+                      key={user.id}
+                      className="hover:bg-secondary/20 transition cursor-pointer"
+                      onClick={() => setSelectedUser(user)}
+                    >
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-9 w-9 rounded-full bg-primary/10 text-primary border border-primary/25 flex items-center justify-center font-bold font-mono text-xs">
+                            {user.displayName.substring(0, 2).toUpperCase()}
                           </div>
-                          <div className="text-muted-foreground font-mono text-[11px]">
-                            {user.email}
+                          <div>
+                            <div className="font-bold text-foreground flex items-center gap-1.5">
+                              {user.displayName}
+                              {isMaster && (
+                                <span className="px-1.5 rounded bg-primary text-[10px] text-primary-foreground font-mono">
+                                  MASTER
+                                </span>
+                              )}
+                            </div>
+                            <div className="text-muted-foreground font-mono text-[11px]">
+                              {user.email}
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex flex-wrap gap-1">
-                        {user.roles.map((r) => (
-                          <span
-                            key={r}
-                            className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${r === "admin" ? "bg-primary/20 text-primary border border-primary/30" : r === "instructor" ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-secondary text-muted-foreground"}`}
+                      </td>
+                      <td className="p-4">
+                        <div className="flex flex-wrap gap-1">
+                          {user.roles.map((r) => (
+                            <button
+                              key={r}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                toggleRole(user, r);
+                              }}
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition hover:opacity-80 ${
+                                r === "admin"
+                                  ? "bg-primary/20 text-primary border border-primary/30"
+                                  : r === "instructor"
+                                    ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                                    : "bg-secondary text-muted-foreground"
+                              }`}
+                              title="Click to toggle or remove role"
+                            >
+                              {r}
+                            </button>
+                          ))}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="font-bold text-primary flex items-center gap-1 font-mono">
+                          <Zap className="h-3 w-3" /> {user.xp} XP (Lvl {user.level})
+                        </div>
+                        <div className="text-muted-foreground text-[11px]">
+                          🔥 {user.streak || 1} day streak
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-medium text-foreground font-mono text-[11px]">
+                          {user.preferredDistro || "Ubuntu Linux"}
+                        </span>
+                        <div className="text-muted-foreground text-[10px] line-clamp-1 max-w-[140px]">
+                          {user.learningGoal || "Master Linux"}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <span className="font-semibold text-foreground">
+                          {user.enrolledCourses?.length || 1} enrolled
+                        </span>
+                        <div className="text-muted-foreground text-[11px]">
+                          ✓ {user.completedLessons?.length || 0} lessons
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        {examCount > 0 ? (
+                          <div>
+                            <span
+                              className={`font-bold font-mono ${
+                                latestExam?.passed ? "text-emerald-400" : "text-amber-400"
+                              }`}
+                            >
+                              {latestExam?.percentage}% ({latestExam?.passed ? "Passed" : "Failed"})
+                            </span>
+                            <div className="text-muted-foreground text-[10px]">
+                              {examCount} exams total
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground text-[11px]">No exams yet</span>
+                        )}
+                      </td>
+                      <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => grantBonusXp(user, 100)}
+                            className="px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 text-primary font-bold text-[11px] hover:bg-primary hover:text-primary-foreground transition"
+                            title="Award 100 XP"
                           >
-                            {r}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <div className="font-bold text-primary flex items-center gap-1 font-mono">
-                        <Zap className="h-3 w-3" /> {user.xp} XP (Lvl {user.level})
-                      </div>
-                      <div className="text-muted-foreground text-[11px]">
-                        🔥 {user.streak || 1} day streak
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      <span className="font-semibold text-foreground">
-                        {user.enrolledCourses?.length || 0} enrolled
-                      </span>
-                      <div className="text-muted-foreground text-[11px]">
-                        ✓ {user.completedLessons?.length || 0} lessons
-                      </div>
-                    </td>
-                    <td className="p-4">
-                      {examCount > 0 ? (
-                        <div>
-                          <span
-                            className={`font-bold font-mono ${latestExam?.passed ? "text-emerald-400" : "text-amber-400"}`}
+                            +100 XP
+                          </button>
+                          <button
+                            onClick={() => setSelectedUser(user)}
+                            className="px-2.5 py-1 rounded-lg border border-border bg-secondary text-foreground text-[11px] hover:bg-primary hover:text-primary-foreground transition font-semibold"
                           >
-                            {latestExam?.percentage}% ({latestExam?.passed ? "Passed" : "Failed"})
-                          </span>
-                          <div className="text-muted-foreground text-[10px]">
-                            {examCount} exams total
-                          </div>
+                            Details
+                          </button>
                         </div>
-                      ) : (
-                        <span className="text-muted-foreground text-[11px]">No exams yet</span>
-                      )}
-                    </td>
-                    <td className="p-4 text-right" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() => grantBonusXp(user, 100)}
-                          className="px-2.5 py-1 rounded-lg border border-primary/30 bg-primary/10 text-primary font-bold text-[11px] hover:bg-primary hover:text-primary-foreground transition"
-                        >
-                          +100 XP
-                        </button>
-                        <button
-                          onClick={() => setSelectedUser(user)}
-                          className="px-2.5 py-1 rounded-lg border border-border bg-secondary text-foreground text-[11px] hover:bg-primary hover:text-primary-foreground transition font-semibold"
-                        >
-                          Details
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
       </div>
 
+      {/* Add New User Modal */}
+      {isAddUserOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center justify-between pb-3 border-b border-border">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                  <UserPlus className="h-4 w-4" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-base text-foreground">Add New Database Learner</h3>
+                  <p className="text-[11px] text-muted-foreground">
+                    Register a new account directly into profiles and user roles
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsAddUserOpen(false)}
+                className="px-2.5 py-1 rounded-xl border border-border text-xs hover:bg-secondary font-semibold"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateUserSubmit} className="space-y-4 text-xs">
+              <div>
+                <label className="font-semibold text-muted-foreground block mb-1">Display Name</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Kwame Mensah"
+                  value={newUserName}
+                  onChange={(e) => setNewUserName(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-background border border-border focus:border-primary focus:outline-none text-foreground"
+                />
+              </div>
+
+              <div>
+                <label className="font-semibold text-muted-foreground block mb-1">Email Address</label>
+                <input
+                  type="email"
+                  required
+                  placeholder="kwame@afrokernel.dev"
+                  value={newUserEmail}
+                  onChange={(e) => setNewUserEmail(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-background border border-border focus:border-primary focus:outline-none text-foreground"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="font-semibold text-muted-foreground block mb-1">System Role</label>
+                  <select
+                    value={newUserRole}
+                    onChange={(e) => setNewUserRole(e.target.value as any)}
+                    className="w-full px-3 py-2 rounded-xl bg-background border border-border focus:border-primary focus:outline-none text-foreground"
+                  >
+                    <option value="user">Learner (User)</option>
+                    <option value="instructor">Instructor</option>
+                    <option value="admin">Administrator</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="font-semibold text-muted-foreground block mb-1">Starting XP</label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={50}
+                    value={newUserXp}
+                    onChange={(e) => setNewUserXp(Number(e.target.value))}
+                    className="w-full px-3 py-2 rounded-xl bg-background border border-border focus:border-primary focus:outline-none text-foreground font-mono"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="font-semibold text-muted-foreground block mb-1">Preferred Distro</label>
+                <select
+                  value={newUserDistro}
+                  onChange={(e) => setNewUserDistro(e.target.value)}
+                  className="w-full px-3 py-2 rounded-xl bg-background border border-border focus:border-primary focus:outline-none text-foreground"
+                >
+                  <option value="Ubuntu 24.04 LTS">Ubuntu 24.04 LTS</option>
+                  <option value="Debian 12">Debian 12</option>
+                  <option value="Fedora 40 / RHEL">Fedora 40 / RHEL</option>
+                  <option value="Arch Linux">Arch Linux</option>
+                  <option value="AlmaLinux 9">AlmaLinux 9</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="font-semibold text-muted-foreground block mb-1">Learning Goal</label>
+                <input
+                  type="text"
+                  placeholder="e.g. Master Linux Kernel & System Administration"
+                  value={newUserGoal}
+                  onChange={(e) => setNewUserGoal(e.target.value)}
+                  className="w-full px-3.5 py-2 rounded-xl bg-background border border-border focus:border-primary focus:outline-none text-foreground"
+                />
+              </div>
+
+              <div className="pt-2 flex items-center justify-end gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsAddUserOpen(false)}
+                  className="px-4 py-2 rounded-xl border border-border text-foreground hover:bg-secondary font-semibold text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmittingUser}
+                  className="px-4 py-2 rounded-xl bg-primary text-primary-foreground font-bold hover:brightness-110 transition flex items-center gap-1.5 text-xs shadow-md"
+                >
+                  {isSubmittingUser ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <UserPlus className="h-3.5 w-3.5" />}
+                  Create & Save to Database
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* User Details Inspector Modal */}
       {selectedUser && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="rounded-3xl border border-border bg-card p-6 sm:p-8 max-w-2xl w-full max-h-[85vh] overflow-y-auto space-y-6 shadow-2xl animate-in zoom-in-95">
             <div className="flex items-start justify-between gap-4 pb-4 border-b border-border">
               <div className="flex items-center gap-3">
@@ -851,7 +1288,14 @@ function AdminUserManagement() {
                   {selectedUser.displayName.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <h3 className="font-bold text-xl text-foreground">{selectedUser.displayName}</h3>
+                  <h3 className="font-bold text-xl text-foreground flex items-center gap-2">
+                    {selectedUser.displayName}
+                    {selectedUser.roles.includes("admin") && (
+                      <span className="px-2 py-0.5 rounded-full bg-primary/20 text-primary border border-primary/30 text-[10px] font-bold font-mono">
+                        ADMIN
+                      </span>
+                    )}
+                  </h3>
                   <p className="text-xs text-muted-foreground font-mono">{selectedUser.email}</p>
                 </div>
               </div>
@@ -862,24 +1306,47 @@ function AdminUserManagement() {
                 Close
               </button>
             </div>
+
             <div className="grid grid-cols-3 gap-3 text-center text-xs">
               {[
                 ["Total XP", selectedUser.xp, "text-primary"],
                 ["Level", selectedUser.level, "text-foreground"],
                 ["Streak", `🔥 ${selectedUser.streak || 1}d`, "text-amber-400"],
               ].map(([lbl, val, cls]) => (
-                <div
-                  key={String(lbl)}
-                  className="p-3 rounded-2xl bg-secondary/40 border border-border"
-                >
-                  <span className="text-muted-foreground block">{lbl}</span>
+                <div key={String(lbl)} className="p-3 rounded-2xl bg-secondary/40 border border-border">
+                  <span className="text-muted-foreground block text-[11px]">{lbl}</span>
                   <span className={`font-mono text-lg font-bold ${cls}`}>{val}</span>
                 </div>
               ))}
             </div>
+
+            {/* Profile Bio and Goals */}
+            <div className="p-4 rounded-2xl bg-secondary/20 border border-border space-y-2 text-xs">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-muted-foreground">
+                <div>
+                  <span className="font-bold text-foreground">Distro: </span>
+                  {selectedUser.preferredDistro || "Ubuntu Linux"}
+                </div>
+                <div>
+                  <span className="font-bold text-foreground">Location: </span>
+                  {selectedUser.location || "Global"}
+                </div>
+              </div>
+              {selectedUser.learningGoal && (
+                <div className="text-muted-foreground">
+                  <span className="font-bold text-foreground">Goal: </span>
+                  {selectedUser.learningGoal}
+                </div>
+              )}
+              {selectedUser.bio && (
+                <p className="text-muted-foreground italic text-[11px] pt-1">"{selectedUser.bio}"</p>
+              )}
+            </div>
+
+            {/* Role Management */}
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Manage Roles:
+                Database Role Assignment:
               </span>
               <div className="flex gap-2">
                 {["admin", "instructor", "user"].map((r) => {
@@ -888,7 +1355,11 @@ function AdminUserManagement() {
                     <button
                       key={r}
                       onClick={() => toggleRole(selectedUser, r)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${has ? "bg-primary text-primary-foreground border-primary" : "bg-secondary/60 text-muted-foreground border-border hover:text-foreground"}`}
+                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition border ${
+                        has
+                          ? "bg-primary text-primary-foreground border-primary"
+                          : "bg-secondary/60 text-muted-foreground border-border hover:text-foreground"
+                      }`}
                     >
                       {has ? `✓ ${r.toUpperCase()}` : `+ Add ${r}`}
                     </button>
@@ -896,6 +1367,8 @@ function AdminUserManagement() {
                 })}
               </div>
             </div>
+
+            {/* Enrolled Courses */}
             <div className="space-y-2">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Enrolled Tracks:
@@ -911,6 +1384,8 @@ function AdminUserManagement() {
                 ))}
               </div>
             </div>
+
+            {/* Practice Exam Submissions */}
             <div className="space-y-3">
               <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
                 Practice Exam Submissions ({selectedUser.examSubmissions?.length || 0}):
@@ -930,7 +1405,9 @@ function AdminUserManagement() {
                       </div>
                       <div className="text-right">
                         <span
-                          className={`font-bold font-mono text-sm ${exam.passed ? "text-emerald-400" : "text-amber-400"}`}
+                          className={`font-bold font-mono text-sm ${
+                            exam.passed ? "text-emerald-400" : "text-amber-400"
+                          }`}
                         >
                           {exam.percentage}% ({exam.score}/{exam.totalQuestions})
                         </span>
@@ -947,8 +1424,10 @@ function AdminUserManagement() {
                 </div>
               )}
             </div>
+
+            {/* Award Instant XP */}
             <div className="pt-4 border-t border-border flex items-center justify-between">
-              <span className="text-xs text-muted-foreground">Award Instant XP:</span>
+              <span className="text-xs text-muted-foreground">Award Database XP:</span>
               <div className="flex gap-2">
                 {[100, 500, 1000].map((amt) => (
                   <button
@@ -1613,7 +2092,7 @@ const SITE_PAGES: SitePageEntry[] = [
   {
     path: "/courses",
     label: "Courses Catalog",
-    desc: "Master track directory: Linux, Security, DevOps, Cloud",
+    desc: "Curriculum directory: Linux Fundamentals, RHEL 9, and Bash Scripting",
     category: "Learning",
     publishedByDefault: true,
   },

@@ -28,7 +28,7 @@ export const Route = createFileRoute("/exam/practice")({
       {
         name: "description",
         content:
-          "Test your Linux administration, cybersecurity, and DevOps knowledge with timed practice questions, instant grading, and explanations.",
+          "Test your Linux administration, Enterprise Linux, and Bash scripting knowledge with timed practice questions, instant grading, and explanations.",
       },
       { property: "og:title", content: "AfroKernel Linux Practice Exam" },
     ],
@@ -115,10 +115,10 @@ function ExamPracticePage() {
     const { correct, total, percentage, passed } = calculateScore();
 
     const trackLabels: Record<string, string> = {
-      all: "Comprehensive (All Domains)",
+      all: "Comprehensive Linux Exam",
       linux: "Linux Fundamentals",
-      security: "Cybersecurity Fundamentals",
-      devops: "DevOps Fundamentals",
+      rhel: "Enterprise Linux (RHEL 9)",
+      scripting: "Bash Scripting & Automation",
     };
 
     if (user) {
@@ -177,31 +177,25 @@ function ExamPracticePage() {
                 Choose a track to test your specific skills:
               </p>
 
-              <div className="grid sm:grid-cols-2 gap-3">
+              <div className="grid sm:grid-cols-3 gap-3">
                 {[
                   {
                     id: "all",
-                    label: "Comprehensive (All Domains)",
+                    label: "Comprehensive Linux Exam",
                     icon: "🎯",
-                    desc: "Mix of Linux, Security & DevOps",
+                    desc: "Full coverage of Commands, Filesystem, Administration & Shell Logic",
                   },
                   {
                     id: "linux",
                     label: "Linux Fundamentals",
                     icon: "🐧",
-                    desc: "Commands, Permissions, Filesystem & Systemd",
+                    desc: "Commands, Permissions, Filesystem & Systemd Daemons",
                   },
                   {
-                    id: "security",
-                    label: "Cybersecurity Fundamentals",
-                    icon: "🔒",
-                    desc: "Nmap, Wireshark, Hardening & Firewalls",
-                  },
-                  {
-                    id: "devops",
-                    label: "DevOps & Containers",
-                    icon: "⚙️",
-                    desc: "Docker, Kubernetes, CI/CD & Automation",
+                    id: "scripting",
+                    label: "Bash Scripting & Automation",
+                    icon: "⚡",
+                    desc: "Pipes, Redirection, Shell Variables & Automation",
                   },
                 ].map((t) => (
                   <button

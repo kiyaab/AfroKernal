@@ -1,18 +1,11 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
-  BookOpen,
   Search,
   Terminal,
-  Shield,
-  Settings,
   Network,
-  Cloud,
-  Container,
   FileCode,
   CheckCircle2,
   ArrowRight,
-  Sparkles,
-  Award,
   Server,
 } from "lucide-react";
 import { useState, useMemo } from "react";
@@ -32,7 +25,6 @@ interface LearningPath {
   lucideIcon: typeof Terminal;
   tutorialCount: number;
   badge?: string;
-  hasCertificate: boolean;
   modules: string[];
 }
 
@@ -41,12 +33,11 @@ const LEARNING_PATHS: LearningPath[] = [
     slug: "linux",
     name: "Linux Fundamentals 2026",
     description:
-      "From the command line to enterprise system administration. Master file structures, permissions, bash navigation, and systemd.",
+      "Core command line essentials, Unix filesystem navigation, file permissions, users and groups, systemd service management, and process architecture.",
     icon: "🐧",
     lucideIcon: Terminal,
-    tutorialCount: 8,
-    badge: "Core Curriculum",
-    hasCertificate: true,
+    tutorialCount: 38,
+    badge: "Most Popular",
     modules: [
       "Command Line Basics",
       "Navigation & Inodes",
@@ -65,7 +56,6 @@ const LEARNING_PATHS: LearningPath[] = [
     lucideIcon: Server,
     tutorialCount: 8,
     badge: "Enterprise Standard",
-    hasCertificate: true,
     modules: [
       "RHEL 9 & CentOS Stream Architecture",
       "DNF, RPM & Subscription Manager",
@@ -77,42 +67,6 @@ const LEARNING_PATHS: LearningPath[] = [
     ],
   },
   {
-    slug: "security",
-    name: "Cybersecurity Fundamentals",
-    description:
-      "Network scanning with Nmap, Wireshark traffic analysis, Linux system hardening, host firewalls, and penetration testing essentials.",
-    icon: "🔒",
-    lucideIcon: Shield,
-    tutorialCount: 10,
-    badge: "Hands-on Labs",
-    hasCertificate: true,
-    modules: [
-      "Nmap Port Scanning",
-      "Wireshark Packet Analysis",
-      "SSH Hardening & Keys",
-      "UFW & iptables Firewalls",
-      "OWASP Top 10 Basics",
-    ],
-  },
-  {
-    slug: "devops",
-    name: "DevOps Fundamentals",
-    description:
-      "Container architecture, CI/CD automated pipelines, multi-stage Docker builds, Kubernetes clusters, and Ansible infrastructure as code.",
-    icon: "⚙️",
-    lucideIcon: Settings,
-    tutorialCount: 10,
-    badge: "Industry Favorite",
-    hasCertificate: true,
-    modules: [
-      "Docker Engine Architecture",
-      "Dockerfile Optimization",
-      "Docker Compose Multi-Container",
-      "GitHub Actions CI/CD",
-      "Ansible Playbooks",
-    ],
-  },
-  {
     slug: "networking",
     name: "Networking Fundamentals",
     description:
@@ -120,47 +74,12 @@ const LEARNING_PATHS: LearningPath[] = [
     icon: "🌐",
     lucideIcon: Network,
     tutorialCount: 12,
-    hasCertificate: false,
     modules: [
       "OSI & TCP/IP Model",
       "Subnetting & CIDR",
       "DNS Records & Dig",
       "Linux Routing & Gateways",
       "Socket Statistics (ss, netstat)",
-    ],
-  },
-  {
-    slug: "cloud",
-    name: "Cloud & Infrastructure",
-    description:
-      "AWS, GCP, and Azure cloud computing essentials: virtual machines, cloud-init provisioning, IAM security, and Terraform IaC.",
-    icon: "☁️",
-    lucideIcon: Cloud,
-    tutorialCount: 11,
-    hasCertificate: false,
-    modules: [
-      "Cloud Compute & VMs",
-      "Cloud Storage & S3",
-      "IAM Roles & Security",
-      "Terraform Provider Basics",
-      "Cloud-Init Automation",
-    ],
-  },
-  {
-    slug: "containers",
-    name: "Containers & Kubernetes",
-    description:
-      "Deep dive into OCI runtimes, cgroups, namespaces, Kubernetes Pods, Services, Deployments, Persistent Volumes, and Ingress controllers.",
-    icon: "🐳",
-    lucideIcon: Container,
-    tutorialCount: 11,
-    hasCertificate: false,
-    modules: [
-      "Linux Namespaces & Cgroups",
-      "Kubernetes Architecture",
-      "Pods, Deployments & ReplicaSets",
-      "K8s Services & ClusterIP",
-      "Helm Package Manager",
     ],
   },
   {
@@ -171,7 +90,6 @@ const LEARNING_PATHS: LearningPath[] = [
     icon: "📜",
     lucideIcon: FileCode,
     tutorialCount: 11,
-    hasCertificate: false,
     modules: [
       "Bash Strict Mode & Traps",
       "Python Automation Scripts",
@@ -199,18 +117,15 @@ function TutorialsIndex() {
   return (
     <div className="min-h-screen flex flex-col bg-background">
       <HeaderNav />
-      <main className="flex-1 mx-auto max-w-7xl px-6 py-12 w-full">
+
+      <main className="flex-1 mx-auto max-w-7xl px-6 py-12 space-y-8 w-full">
         <BackToHome />
-        {/* Top Banner */}
-        <div className="mb-10 flex flex-col justify-between gap-6 md:flex-row md:items-end">
+        {/* Header & Search */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-6 border-b border-border/80">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-xs font-semibold text-primary mb-3">
-              <BookOpen className="h-3.5 w-3.5" /> Structured Curriculum & Tutorials
-            </div>
             <h1 className="text-4xl font-display font-bold">Linux Courses & Tutorials</h1>
             <p className="text-muted-foreground text-base max-w-2xl mt-1">
-              Structured hands-on tracks with interactive lessons, command line practice, quizzes,
-              and verifiable certifications. 100% free.
+              Structured hands-on tracks with interactive lessons, command line practice, and quizzes. 100% free.
             </p>
           </div>
 
@@ -229,7 +144,6 @@ function TutorialsIndex() {
         {/* Tracks Grid */}
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredPaths.map((path) => {
-            const Icon = path.lucideIcon;
             return (
               <div
                 key={path.slug}
@@ -238,18 +152,11 @@ function TutorialsIndex() {
                 <div>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-3xl p-2 rounded-2xl bg-secondary/80">{path.icon}</span>
-                    <div className="flex items-center gap-2">
-                      {path.hasCertificate && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
-                          <Award className="h-3 w-3" /> Certificate Included
-                        </span>
-                      )}
-                      {path.badge && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                          {path.badge}
-                        </span>
-                      )}
-                    </div>
+                    {path.badge && (
+                      <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">
+                        {path.badge}
+                      </span>
+                    )}
                   </div>
 
                   <h2 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition">

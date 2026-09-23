@@ -36,13 +36,13 @@ export const Route = createFileRoute("/courses/")({
       {
         name: "description",
         content:
-          "Explore hands-on Linux, Cybersecurity, DevOps, and Cloud courses with in-browser terminal labs and practice exams.",
+          "Explore hands-on Linux courses with in-browser terminal labs and practice exams.",
       },
       { property: "og:title", content: "AfroKernel Course Catalog" },
       {
         property: "og:description",
         content:
-          "Master Linux and DevOps hands-on with browser labs, practice quizzes, and certificates.",
+          "Master Linux hands-on with browser labs and practice quizzes.",
       },
     ],
   }),
@@ -53,11 +53,8 @@ const CATEGORIES = [
   "All",
   "Fundamentals",
   "Enterprise Linux",
-  "Cybersecurity",
-  "DevOps",
   "Scripting",
   "Networking",
-  "Cloud",
 ];
 const DIFFICULTIES = ["All", "beginner", "intermediate", "advanced"];
 
@@ -167,8 +164,8 @@ function CoursesIndex() {
                 <span className="text-gradient">modern Linux engineers.</span>
               </h1>
               <p className="text-base sm:text-lg text-muted-foreground leading-relaxed">
-                Step-by-step video courses, interactive command line sandboxes, end-of-module
-                knowledge checks, and verifiable certifications. 100% free.
+                Step-by-step video courses, interactive command line sandboxes, and end-of-module
+                knowledge checks. 100% free.
               </p>
             </div>
 
@@ -266,7 +263,7 @@ function CoursesIndex() {
               <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Search courses, tools (bash, docker, nmap, terraform)..."
+                placeholder="Search courses, topics (bash, permissions, systemd, rhel, grep)..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 className="w-full rounded-2xl border border-border bg-card py-2.5 pl-10 pr-4 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -488,12 +485,6 @@ function CoursesIndex() {
                 className="px-8 py-3 rounded-2xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-[var(--shadow-glow)] flex items-center gap-2"
               >
                 Launch Practice Exam <ArrowRight className="h-4 w-4" />
-              </Link>
-              <Link
-                to="/certification"
-                className="px-6 py-3 rounded-2xl border border-border bg-card text-foreground font-semibold text-xs hover:bg-secondary transition"
-              >
-                Official Certification Info
               </Link>
             </div>
           </div>

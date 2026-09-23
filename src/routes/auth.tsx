@@ -107,10 +107,10 @@ async function ensureProfile(userId: string, displayName: string, email: string)
 
 /* ---------- Feature bullets for the left panel ---------- */
 const FEATURES = [
-  { icon: BookOpen, text: "6 Structured curriculum tracks (Linux, Security, DevOps, Cloud)" },
+  { icon: BookOpen, text: "Comprehensive Linux, RHEL & Bash automation curriculum" },
   { icon: Terminal, text: "Live in-browser Linux terminals & hands-on labs" },
-  { icon: Award, text: "Timed practice certification exams & instant grading" },
-  { icon: Shield, text: "Verifiable digital certificates of completion" },
+  { icon: Award, text: "Timed practice Linux certification exams & instant grading" },
+  { icon: Shield, text: "Enterprise system administration & server workflows" },
   { icon: Zap, text: "AI-powered Linux tutor assistant 24/7" },
 ];
 
@@ -381,8 +381,8 @@ function AuthPage() {
               <span className="text-gradient">the hands-on way.</span>
             </h1>
             <p className="mt-4 text-base text-muted-foreground leading-relaxed">
-              Join thousands of engineers learning Linux system administration, cybersecurity
-              hardening, and DevOps with real browser terminals.
+              Join thousands of engineers learning Linux system administration, enterprise server
+              management, and Bash scripting with real browser terminals.
             </p>
           </div>
 
