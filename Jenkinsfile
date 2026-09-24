@@ -55,6 +55,11 @@ pipeline {
             }
         }
 
+       stage('Generate Prisma Client') {
+           steps {
+               sh 'npx prisma generate'
+             }
+         }
         stage('Lint') {
             steps {
                 sh 'npm run lint'
@@ -128,6 +133,7 @@ pipeline {
                     changeset "src/**"
                     changeset "public/**"
                     changeset "scripts/**"
+                    changeset "prisma/**"
                     changeset "package.json"
                     changeset "package-lock.json"
                     changeset "vite.config.*"
@@ -157,6 +163,7 @@ pipeline {
                     changeset "src/**"
                     changeset "public/**"
                     changeset "scripts/**"
+                    changeset "prisma/**"
                     changeset "package.json"
                     changeset "package-lock.json"
                     changeset "vite.config.*"
@@ -204,6 +211,7 @@ pipeline {
                     changeset "src/**"
                     changeset "public/**"
                     changeset "scripts/**"
+                    changeset "prisma/**"
                     changeset "package.json"
                     changeset "package-lock.json"
                     changeset "vite.config.*"
@@ -240,6 +248,7 @@ pipeline {
                     changeset "src/**"
                     changeset "public/**"
                     changeset "scripts/**"
+                    changeset "prisma/**"
                     changeset "package.json"
                     changeset "package-lock.json"
                     changeset "vite.config.*"
@@ -274,6 +283,7 @@ pipeline {
                     changeset "src/**"
                     changeset "public/**"
                     changeset "scripts/**"
+                    changeset "prisma/**"
                     changeset "package.json"
                     changeset "package-lock.json"
                     changeset "vite.config.*"
@@ -318,6 +328,7 @@ pipeline {
                     changeset "src/**"
                     changeset "public/**"
                     changeset "scripts/**"
+                    changeset "prisma/**"
                     changeset "package.json"
                     changeset "package-lock.json"
                     changeset "vite.config.*"
