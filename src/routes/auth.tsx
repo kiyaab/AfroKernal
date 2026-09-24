@@ -9,7 +9,6 @@ import {
   verifyEmailOtpAndLoginServerFn,
   signInWithGoogleServerFn,
 } from "@/lib/auth.functions";
-import { isMasterAdmin, unlockLocalAdmin, MASTER_ADMIN_EMAIL } from "@/lib/admin-credentials";
 import {
   sendRealEmailOtpServerFn,
   verifyRealEmailOtpServerFn,
@@ -116,18 +115,10 @@ async function ensureProfile(
   email: string,
   avatarUrl?: string,
   emailVerified: boolean = false,
+  role: string = "user",
+  roles: string[] = ["user"],
 ) {
   const cleanEmail = email.trim().toLowerCase();
-  const isMaster =
-    cleanEmail === MASTER_ADMIN_EMAIL.toLowerCase() || cleanEmail === "admin@afrokernel.com";
-  const defaultRole = isMaster ? "admin" : "user";
-  const base = {
-    id: userId,
-    display_name: displayName || cleanEmail.split("@")[0],
-    avatar_url: avatarUrl || "",
-    updated_at: new Date().toISOString(),
-  };
-
   upsertLearnerRecord({
     id: userId,
     displayName: displayName || cleanEmail.split("@")[0],
@@ -137,7 +128,7 @@ async function ensureProfile(
     xp: 150,
     level: 1,
     streak: 1,
-    roles: isMaster ? ["admin", "instructor", "user"] : ["user"],
+    roles: roles && roles.length > 0 ? roles : [role || "user"],
     enrolledCourses: ["linux"],
     completedLessons: [],
     createdAt: new Date().toISOString(),
@@ -288,26 +279,48 @@ function AuthPage() {
               const realName = googleProfile.name || realEmail.split("@")[0];
               const realAvatar = googleProfile.picture || "";
 
-              const realUser = {
-                id: realUserId,
-                email: realEmail,
-                user_metadata: {
-                  full_name: realName,
-                  display_name: realName,
-                  avatar_url: realAvatar,
-                  picture: realAvatar,
-                  provider: "google",
-                  email_verified: googleProfile.email_verified ?? true,
-                },
-                app_metadata: { provider: "google", providers: ["google"] },
-                aud: "authenticated",
-                created_at: new Date().toISOString(),
-              } as User;
+              try {
+                const gRes = await signInWithGoogleServerFn({
+                  data: { email: realEmail, displayName: realName, avatarUrl: realAvatar },
+                });
+                if (gRes?.sessionToken) {
+                  localStorage.setItem("afrokernel_session_token", gRes.sessionToken);
+                }
+                const role = gRes?.user?.role || "user";
+                const roles = gRes?.user?.roles || [role];
+                const realUser = {
+                  id: gRes?.user?.id || realUserId,
+                  email: realEmail,
+                  role,
+                  roles,
+                  user_metadata: {
+                    full_name: realName,
+                    display_name: realName,
+                    avatar_url: realAvatar,
+                    picture: realAvatar,
+                    provider: "google",
+                    email_verified: googleProfile.email_verified ?? true,
+                  },
+                  app_metadata: { provider: "google", providers: ["google"] },
+                  aud: "authenticated",
+                  created_at: gRes?.user?.createdAt || new Date().toISOString(),
+                } as User;
 
-              setLocalSessionUser(realUser);
-              await ensureProfile(realUserId, realName, realEmail, realAvatar, true);
-              window.history.replaceState({}, document.title, window.location.pathname);
-              navigate({ to: afterAuthPath, replace: true });
+                setLocalSessionUser(realUser);
+                await ensureProfile(
+                  realUser.id,
+                  realName,
+                  realEmail,
+                  realAvatar,
+                  true,
+                  role,
+                  roles,
+                );
+                window.history.replaceState({}, document.title, window.location.pathname);
+                navigate({ to: afterAuthPath, replace: true });
+              } catch (err: any) {
+                setError(err?.message || "Failed to authenticate Google user.");
+              }
             }
           })
           .catch(() => {
@@ -322,8 +335,7 @@ function AuthPage() {
 
   useEffect(() => {
     if (user && !isVerifyingOtp) {
-      const goAdmin = sessionStorage.getItem("afrokernel-admin-unlocked") === "true";
-      navigate({ to: goAdmin ? "/admin" : afterAuthPath, replace: true });
+      navigate({ to: afterAuthPath, replace: true });
     }
   }, [user, isVerifyingOtp, navigate, afterAuthPath]);
 
@@ -404,23 +416,32 @@ function AuthPage() {
               } as User;
 
               // Persist and authenticate in Prisma
-              try {
-                const res = await signInWithGoogleServerFn({
-                  data: {
-                    email: realEmail,
-                    displayName: realName,
-                    avatarUrl: realAvatar,
-                  },
-                });
-                if (res?.sessionToken) {
-                  localStorage.setItem("afrokernel_session_token", res.sessionToken);
-                }
-              } catch (prismaErr) {
-                console.warn("Prisma Google login notice:", prismaErr);
+              const res = await signInWithGoogleServerFn({
+                data: {
+                  email: realEmail,
+                  displayName: realName,
+                  avatarUrl: realAvatar,
+                },
+              });
+
+              if (!res?.success || !res?.user) {
+                throw new Error(
+                  res?.message || "Failed to authenticate Google user with database.",
+                );
               }
 
+              if (res.sessionToken) {
+                localStorage.setItem("afrokernel_session_token", res.sessionToken);
+              }
+
+              const role = res.user.role || "user";
+              const roles = res.user.roles || [role];
+              realUser.id = res.user.id;
+              realUser.role = role;
+              realUser.roles = roles;
+
               setLocalSessionUser(realUser);
-              await ensureProfile(realUserId, realName, realEmail, realAvatar, true);
+              await ensureProfile(res.user.id, realName, realEmail, realAvatar, true, role, roles);
               setShowGoogleModal(false);
               navigate({ to: afterAuthPath, replace: true });
             } catch (err: any) {
@@ -574,50 +595,49 @@ function AuthPage() {
         console.warn("Server verifyRealEmailOtp notice:", err);
       }
 
-      // 2. Try native Prisma OTP verification and login
-      try {
-        const prismaOtpRes = await verifyEmailOtpAndLoginServerFn({
-          data: { email: pendingEmail, code: entered, displayName: pendingName },
-        });
-        if (prismaOtpRes?.success) {
-          isVerified = true;
-          if (prismaOtpRes.sessionToken) {
-            localStorage.setItem("afrokernel_session_token", prismaOtpRes.sessionToken);
-          }
-        }
-      } catch (err) {
-        console.warn("Prisma verifyEmailOtp notice:", err);
-      }
+      // 2. Native Prisma OTP verification and login
+      const prismaOtpRes = await verifyEmailOtpAndLoginServerFn({
+        data: { email: pendingEmail, code: entered, displayName: pendingName },
+      });
 
-      // 3. Fallback bypass check for admin testing if offline
-      if (!isVerified && (entered === "123456" || entered === "777888")) {
-        isVerified = true;
-      }
-
-      if (!isVerified) {
+      if (!prismaOtpRes?.success || !prismaOtpRes.user) {
         throw new Error(
-          "Invalid or expired 6-digit code. Please check your Gmail/inbox and try again.",
+          prismaOtpRes?.message ||
+            "Invalid or expired 6-digit code. Please check your Gmail/inbox and try again.",
         );
       }
 
-      // 4. Mark as verified and sign user in
-      const verifiedUserId =
-        pendingUserId || `user-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`;
+      if (prismaOtpRes.sessionToken) {
+        localStorage.setItem("afrokernel_session_token", prismaOtpRes.sessionToken);
+      }
+
+      // 3. Establish active session with PostgreSQL role data
+      const userRecord = prismaOtpRes.user;
       const verifiedUser = {
-        id: verifiedUserId,
-        email: pendingEmail,
+        id: userRecord.id,
+        email: userRecord.email,
+        role: userRecord.role,
+        roles: userRecord.roles,
         user_metadata: {
-          display_name: pendingName,
-          full_name: pendingName,
+          display_name: userRecord.displayName,
+          full_name: userRecord.displayName,
           email_verified: true,
         },
         app_metadata: {},
         aud: "authenticated",
-        created_at: new Date().toISOString(),
+        created_at: userRecord.createdAt,
       } as User;
 
       setLocalSessionUser(verifiedUser);
-      await ensureProfile(verifiedUserId, pendingName, pendingEmail, undefined, true);
+      await ensureProfile(
+        userRecord.id,
+        userRecord.displayName,
+        userRecord.email,
+        undefined,
+        true,
+        userRecord.role,
+        userRecord.roles,
+      );
 
       setSuccess("Email successfully verified! Redirecting to AfroKernel...");
       setTimeout(() => {
@@ -683,31 +703,6 @@ function AuthPage() {
         throw new Error("Please enter your password.");
       }
 
-      /* ── Master Admin Bypass ─────────────────────────────── */
-      if (isMasterAdmin(cleanEmail, cleanPass)) {
-        unlockLocalAdmin(cleanEmail);
-        const adminUser = {
-          id: "master-admin-001",
-          email: cleanEmail,
-          user_metadata: { display_name: "Master Administrator", email_verified: true },
-          app_metadata: {},
-          aud: "authenticated",
-          created_at: new Date().toISOString(),
-        } as User;
-
-        setLocalSessionUser(adminUser);
-        await ensureProfile(
-          "master-admin-001",
-          "Master Administrator",
-          cleanEmail,
-          undefined,
-          true,
-        );
-
-        navigate({ to: "/admin", replace: true });
-        return;
-      }
-
       /* ── Sign Up: Require 6-Digit Email OTP Verification ── */
       if (mode === "signup") {
         if (cleanPass.length < 6) {
@@ -727,70 +722,45 @@ function AuthPage() {
         return;
       }
 
-      /* ── Sign In with Password ──────────────────────────── */
-      let userId = "";
-      let isAuthed = false;
-      let resolvedDisplayName = displayName;
+      /* ── Sign In with Password (Prisma PostgreSQL) ───────── */
+      const authRes = await signInWithEmailPasswordServerFn({
+        data: { email: cleanEmail, password: cleanPass },
+      });
 
-      // 1. Authenticate with Prisma PostgreSQL database
-      try {
-        const authRes = await signInWithEmailPasswordServerFn({
-          data: { email: cleanEmail, password: cleanPass },
-        });
-
-        if (authRes?.success && authRes.user) {
-          userId = authRes.user.id;
-          resolvedDisplayName = authRes.user.displayName || displayName;
-          isAuthed = true;
-          if (authRes.sessionToken) {
-            localStorage.setItem("afrokernel_session_token", authRes.sessionToken);
-          }
-        }
-      } catch (prismaErr) {
-        console.warn("Prisma sign-in notice, checking local registry:", prismaErr);
+      if (!authRes?.success || !authRes.user) {
+        throw new Error(authRes?.message || "Invalid email or password.");
       }
 
-      // 2. Check local user registry (for offline / local accounts)
-      const allLearners = getAllLearnerRecords();
-      const existing = allLearners.find((l) => l.email.toLowerCase() === cleanEmail);
-
-      if (isAuthed) {
-        const loggedUser = {
-          id: userId,
-          email: cleanEmail,
-          user_metadata: { display_name: resolvedDisplayName, email_verified: true },
-          app_metadata: {},
-          aud: "authenticated",
-          created_at: existing?.createdAt || new Date().toISOString(),
-        } as User;
-
-        setLocalSessionUser(loggedUser);
-        await ensureProfile(userId, resolvedDisplayName, cleanEmail, undefined, true);
-        navigate({ to: afterAuthPath, replace: true });
-        return;
+      if (authRes.sessionToken) {
+        localStorage.setItem("afrokernel_session_token", authRes.sessionToken);
       }
 
-      if (existing) {
-        const loggedUser = {
-          id: existing.id,
-          email: cleanEmail,
-          user_metadata: {
-            display_name: existing.displayName,
-            email_verified: existing.emailVerified ?? true,
-          },
-          app_metadata: {},
-          aud: "authenticated",
-          created_at: existing.createdAt,
-        } as User;
+      const loggedUser = {
+        id: authRes.user.id,
+        email: authRes.user.email,
+        role: authRes.user.role,
+        roles: authRes.user.roles,
+        user_metadata: {
+          display_name: authRes.user.displayName,
+          email_verified: authRes.user.emailVerified,
+        },
+        app_metadata: {},
+        aud: "authenticated",
+        created_at: authRes.user.createdAt,
+      } as User;
 
-        setLocalSessionUser(loggedUser);
-        navigate({ to: afterAuthPath, replace: true });
-        return;
-      }
-
-      throw new Error(
-        "No account found with that email. Please check your credentials or create a new account.",
+      setLocalSessionUser(loggedUser);
+      await ensureProfile(
+        authRes.user.id,
+        authRes.user.displayName,
+        authRes.user.email,
+        authRes.user.avatarUrl,
+        authRes.user.emailVerified,
+        authRes.user.role,
+        authRes.user.roles,
       );
+      navigate({ to: afterAuthPath, replace: true });
+      return;
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong during authentication.");
     } finally {

@@ -10,9 +10,9 @@ import {
   upsertLearnerRecord,
   deleteLearnerRecord,
   LearnerRecord,
+  useAuth,
 } from "@/lib/AuthContext";
 import { CATALOG_COURSES } from "@/lib/courses-catalog-data";
-import { isMasterAdmin, unlockLocalAdmin } from "@/lib/admin-credentials";
 import { HARDWARE_DATA, DIAGNOSTIC_COMMANDS, HardwareItem } from "@/lib/hardware-data";
 import { APPS_DATA, WindowsApp, AppAlternative } from "@/lib/apps-data";
 import { DISTROS_DATA, LinuxDistro } from "@/lib/distros-data";
@@ -120,18 +120,7 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 function AdminLayout() {
   const { isEditor, isAdmin, loading } = useRoles();
-  const [unlocked, setUnlocked] = useState(() => {
-    if (typeof window === "undefined") return false;
-    return sessionStorage.getItem("afrokernel-admin-unlocked") === "true";
-  });
-
-  useEffect(() => {
-    if (sessionStorage.getItem("afrokernel-admin-unlocked") === "true") {
-      setUnlocked(true);
-    }
-  }, []);
-
-  const hasAccess = isEditor || isAdmin || unlocked;
+  const hasAccess = isEditor || isAdmin;
 
   return (
     <div className="min-h-screen bg-background">
@@ -161,12 +150,12 @@ function AdminLayout() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {loading && !unlocked && !hasAccess ? (
+        {loading ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" /> Verifying Admin Credentials…
           </div>
         ) : !hasAccess ? (
-          <NoAccess onUnlock={() => setUnlocked(true)} />
+          <NoAccess />
         ) : (
           <Outlet />
         )}
@@ -177,94 +166,31 @@ function AdminLayout() {
 
 /* ──────────── NO ACCESS GATE ──────────── */
 
-function NoAccess({ onUnlock }: { onUnlock: () => void }) {
-  const [busy, setBusy] = useState(false);
-  const [adminEmail, setAdminEmail] = useState("");
-  const [adminPass, setAdminPass] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    const passInput = adminPass.trim();
-    const emailInput = adminEmail.trim().toLowerCase();
-
-    if (isMasterAdmin(emailInput, passInput)) {
-      setBusy(true);
-      unlockLocalAdmin(emailInput);
-      onUnlock();
-      setBusy(false);
-    } else {
-      setMsg("Invalid admin credentials. Please use your admin account.");
-    }
-  }
-
+function NoAccess() {
   return (
     <div className="max-w-md mx-auto text-center py-12">
-      <div className="w-16 h-16 rounded-3xl bg-primary/10 text-primary mx-auto flex items-center justify-center mb-4 ring-4 ring-primary/20">
+      <div className="w-16 h-16 rounded-3xl bg-destructive/10 text-destructive mx-auto flex items-center justify-center mb-4 ring-4 ring-destructive/20">
         <Shield className="w-8 h-8" />
       </div>
-      <h1 className="text-2xl font-bold font-display tracking-tight">Admin Portal Access</h1>
-      <p className="text-muted-foreground text-xs mt-1.5">
-        Enter your admin credentials to access the control center.
+      <h1 className="text-2xl font-bold font-display tracking-tight">Access Restricted</h1>
+      <p className="text-muted-foreground text-xs mt-2 max-w-sm mx-auto">
+        Administrator or instructor permissions required. Your current PostgreSQL account role does
+        not have authorization to access the AfroKernel Control Center.
       </p>
-
-      <form
-        onSubmit={handleSubmit}
-        className="mt-8 rounded-3xl border border-border p-6 bg-card text-left space-y-4 shadow-2xl"
-      >
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Admin Email
-          </label>
-          <input
-            type="email"
-            required
-            placeholder="admin@example.com"
-            value={adminEmail}
-            onChange={(e) => setAdminEmail(e.target.value)}
-            className="mt-1.5 w-full px-4 py-2.5 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-sm"
-          />
-        </div>
-
-        <div>
-          <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-            Admin Password
-          </label>
-          <div className="relative mt-1.5">
-            <input
-              type={showPass ? "text" : "password"}
-              required
-              placeholder="••••••••"
-              value={adminPass}
-              onChange={(e) => setAdminPass(e.target.value)}
-              className="w-full px-4 py-2.5 pr-10 rounded-xl bg-background border border-border focus:outline-none focus:ring-2 focus:ring-primary text-sm font-mono"
-            />
-            <button
-              type="button"
-              onClick={() => setShowPass(!showPass)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-            >
-              {showPass ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-            </button>
-          </div>
-        </div>
-
-        {msg && (
-          <p className="text-xs p-3 rounded-xl border text-destructive bg-destructive/10 border-destructive/20 font-medium">
-            {msg}
-          </p>
-        )}
-
-        <button
-          type="submit"
-          disabled={busy}
-          className="w-full flex items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground font-bold px-4 py-3 hover:brightness-110 transition disabled:opacity-50 text-sm shadow-md"
+      <div className="mt-6 flex items-center justify-center gap-3">
+        <Link
+          to="/dashboard"
+          className="px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-semibold hover:bg-primary/90 transition shadow-sm"
         >
-          {busy ? <Loader2 className="w-4 h-4 animate-spin" /> : <Key className="w-4 h-4" />}
-          Open Admin Control Center
-        </button>
-      </form>
+          Return to Dashboard
+        </Link>
+        <Link
+          to="/auth"
+          className="px-4 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition"
+        >
+          Switch Account
+        </Link>
+      </div>
     </div>
   );
 }
@@ -272,6 +198,7 @@ function NoAccess({ onUnlock }: { onUnlock: () => void }) {
 /* ══════════ DEEP ADMIN CONTROL CENTER ══════════ */
 
 export function AdminControlCenter() {
+  const { user: currentUser } = useAuth();
   const [activeTab, setActiveTab] = useState<
     | "pages"
     | "users"
@@ -424,6 +351,7 @@ export function AdminControlCenter() {
 /* ══════════ TAB 1: USER CONTROL CENTER ══════════ */
 
 function AdminUserManagement() {
+  const { user: currentUser } = useAuth();
   const qc = useQueryClient();
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<"all" | "admin" | "instructor" | "user">("all");
@@ -669,13 +597,10 @@ function AdminUserManagement() {
 
   // Delete user handler
   async function handleDeleteUser(user: LearnerRecord) {
-    const isMaster =
-      user.email.toLowerCase() === "admin@afrokernel.com" ||
-      user.email.toLowerCase() === "admin@ak.com" ||
-      user.id === "master-admin-001";
-
-    if (isMaster) {
-      setActionSuccessMsg("Protected Account: Master Administrator cannot be deleted.");
+    if (currentUser?.id && user.id === currentUser.id) {
+      setActionSuccessMsg(
+        "Protected Account: You cannot delete your own active administrator account.",
+      );
       setTimeout(() => setActionSuccessMsg(null), 3000);
       setUserToDelete(null);
       return;
@@ -943,9 +868,7 @@ function AdminUserManagement() {
                 </tr>
               ) : (
                 filtered.map((user) => {
-                  const isMaster =
-                    user.email.toLowerCase() === "admin@afrokernel.com" ||
-                    user.email.toLowerCase() === "admin@ak.com";
+                  const isMaster = user.roles?.includes("admin") || (user as any).role === "admin";
                   const examCount = user.examSubmissions?.length || 0;
                   const latestExam = user.examSubmissions?.[0];
                   return (
@@ -1054,7 +977,7 @@ function AdminUserManagement() {
                           >
                             Details
                           </button>
-                          {!isMaster && (
+                          {user.id !== currentUser?.id && (
                             <button
                               onClick={() => setUserToDelete(user)}
                               className="p-1.5 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground transition cursor-pointer"
@@ -1383,27 +1306,25 @@ function AdminUserManagement() {
             </div>
 
             {/* Danger Zone: Delete User Account */}
-            {selectedUser.email.toLowerCase() !== "admin@afrokernel.com" &&
-              selectedUser.email.toLowerCase() !== "admin@ak.com" &&
-              selectedUser.id !== "master-admin-001" && (
-                <div className="pt-4 border-t border-destructive/20 flex items-center justify-between">
-                  <div>
-                    <span className="text-xs font-bold text-destructive flex items-center gap-1.5">
-                      <Trash2 className="h-3.5 w-3.5" /> Danger Zone
-                    </span>
-                    <span className="text-[11px] text-muted-foreground block">
-                      Permanently delete this user, roles, and progress from the system.
-                    </span>
-                  </div>
-                  <button
-                    onClick={() => setUserToDelete(selectedUser)}
-                    className="px-3.5 py-1.5 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Delete User Account
-                  </button>
+            {selectedUser.id !== currentUser?.id && (
+              <div className="pt-4 border-t border-destructive/20 flex items-center justify-between">
+                <div>
+                  <span className="text-xs font-bold text-destructive flex items-center gap-1.5">
+                    <Trash2 className="h-3.5 w-3.5" /> Danger Zone
+                  </span>
+                  <span className="text-[11px] text-muted-foreground block">
+                    Permanently delete this user, roles, and progress from the system.
+                  </span>
                 </div>
-              )}
+                <button
+                  onClick={() => setUserToDelete(selectedUser)}
+                  className="px-3.5 py-1.5 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete User Account
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}

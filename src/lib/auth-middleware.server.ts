@@ -75,22 +75,5 @@ export const requirePrismaAuth = createMiddleware({ type: "function" }).server(a
     });
   }
 
-  // Check master admin mock/token fallback
-  if (token === "master-admin-session-token" || token.startsWith("local-admin-")) {
-    return next({
-      context: {
-        prisma,
-        userId: "master-admin-001",
-        user: {
-          id: "master-admin-001",
-          email: "admin@afrokernel.com",
-          displayName: "Master Administrator",
-          role: "admin",
-        } as any,
-        sessionToken: token,
-      },
-    });
-  }
-
   throw new Error("Unauthorized: Invalid or expired session");
 });

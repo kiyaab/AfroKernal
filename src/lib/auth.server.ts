@@ -23,9 +23,13 @@ export function hashPassword(password: string): string {
 }
 
 /**
- * Verify password against stored salt:hash
+ * Verify password against stored salt:hash.
+ * Strictly rejects users whose passwordHash is null, undefined, or invalid.
  */
-export function verifyPassword(password: string, storedHash: string): boolean {
+export function verifyPassword(password: string, storedHash: string | null | undefined): boolean {
+  if (!storedHash || typeof storedHash !== "string" || storedHash.trim() === "") {
+    return false;
+  }
   try {
     const [salt, originalHash] = storedHash.split(":");
     if (!salt || !originalHash) return false;

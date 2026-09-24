@@ -1,13 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { prisma, isDatabaseAvailable } from "./prisma.server";
-import {
-  hashPassword,
-  verifyPassword,
-  createPrismaSession,
-  generateSessionToken,
-} from "./auth.server";
+import { hashPassword, verifyPassword, createPrismaSession } from "./auth.server";
 import { verifyStoredOtp } from "./email-otp.server";
-import { MASTER_ADMIN_EMAIL } from "./admin-credentials";
 
 export interface AuthResponse {
   success: boolean;
@@ -32,21 +26,6 @@ export interface AuthResponse {
 }
 
 /**
- * Determine default user roles based on email
- */
-function resolveRolesForEmail(email: string): { primaryRole: string; allRoles: string[] } {
-  const clean = email.toLowerCase().trim();
-  if (
-    clean === MASTER_ADMIN_EMAIL.toLowerCase() ||
-    clean === "bogemamo124@gmail.com" ||
-    clean.includes("admin@")
-  ) {
-    return { primaryRole: "admin", allRoles: ["admin", "instructor", "user"] };
-  }
-  return { primaryRole: "user", allRoles: ["user"] };
-}
-
-/**
  * Server Function: Get live database health and connection status
  */
 export const getDatabaseConnectionStatusServerFn = createServerFn({ method: "GET" }).handler(
@@ -62,6 +41,8 @@ export const getDatabaseConnectionStatusServerFn = createServerFn({ method: "GET
 
 /**
  * Server Function: Sign Up with Email and Password
+ * Fails closed when PostgreSQL is offline.
+ * Default role is strictly "user"; administrative roles must be assigned in PostgreSQL.
  */
 export const signUpWithEmailServerFn = createServerFn({ method: "POST" })
   .validator((input: { email: string; password?: string; displayName?: string }) => input)
@@ -73,108 +54,102 @@ export const signUpWithEmailServerFn = createServerFn({ method: "POST" })
 
     const displayName = data.displayName?.trim() || email.split("@")[0];
     const password = data.password?.trim();
-    const { primaryRole, allRoles } = resolveRolesForEmail(email);
 
     const dbOk = await isDatabaseAvailable();
-
-    if (dbOk) {
-      try {
-        const existing = await prisma.user.findUnique({ where: { email } });
-        if (existing) {
-          return { success: false, message: "An account with this email already exists." };
-        }
-
-        const passwordHash = password ? hashPassword(password) : null;
-
-        const user = await prisma.user.create({
-          data: {
-            email,
-            passwordHash,
-            displayName,
-            role: primaryRole,
-            emailVerified: false,
-            authProvider: "email",
-            profile: {
-              create: {
-                displayName,
-                xp: 100,
-                level: 1,
-                streakDays: 1,
-              },
-            },
-            userRoles: {
-              createMany: {
-                data: allRoles.map((r) => ({ role: r })),
-              },
-            },
-            userStats: {
-              create: {
-                xp: 100,
-                level: 1,
-                streakDays: 1,
-              },
-            },
-          },
-          include: {
-            profile: true,
-            userRoles: true,
-          },
-        });
-
-        const session = await createPrismaSession(user.id);
-
-        return {
-          success: true,
-          message: "Account created successfully.",
-          sessionToken: session?.token,
-          user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName || displayName,
-            avatarUrl: user.avatarUrl || undefined,
-            role: user.role,
-            roles: user.userRoles.map((r) => r.role),
-            emailVerified: user.emailVerified,
-            authProvider: user.authProvider,
-            xp: user.profile?.xp ?? 100,
-            level: user.profile?.level ?? 1,
-            streakDays: user.profile?.streakDays ?? 1,
-            enrolledCourses: ["linux"],
-            completedLessons: [],
-            createdAt: user.createdAt.toISOString(),
-          },
-        };
-      } catch (err: any) {
-        console.error("Prisma signUp error:", err);
-      }
+    if (!dbOk) {
+      return {
+        success: false,
+        message: "Authentication service unavailable. PostgreSQL database is offline.",
+      };
     }
 
-    // Fallback if database is not currently connected
-    const fallbackId = "usr_" + Math.random().toString(36).slice(2, 10);
-    return {
-      success: true,
-      message: "Account registered.",
-      sessionToken: "local-session-" + generateSessionToken(),
-      user: {
-        id: fallbackId,
-        email,
-        displayName,
-        role: primaryRole,
-        roles: allRoles,
-        emailVerified: false,
-        authProvider: "email",
-        xp: 100,
-        level: 1,
-        streakDays: 1,
-        enrolledCourses: ["linux"],
-        completedLessons: [],
-        createdAt: new Date().toISOString(),
-      },
-    };
+    try {
+      const existing = await prisma.user.findUnique({ where: { email } });
+      if (existing) {
+        return { success: false, message: "An account with this email already exists." };
+      }
+
+      const passwordHash = password ? hashPassword(password) : null;
+
+      const user = await prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          displayName,
+          role: "user",
+          emailVerified: false,
+          authProvider: "email",
+          profile: {
+            create: {
+              displayName,
+              xp: 100,
+              level: 1,
+              streakDays: 1,
+            },
+          },
+          userRoles: {
+            create: {
+              role: "user",
+            },
+          },
+          userStats: {
+            create: {
+              xp: 100,
+              level: 1,
+              streakDays: 1,
+            },
+          },
+        },
+        include: {
+          profile: true,
+          userRoles: true,
+        },
+      });
+
+      const session = await createPrismaSession(user.id);
+      if (!session) {
+        return {
+          success: false,
+          message: "Failed to create session in database.",
+        };
+      }
+
+      return {
+        success: true,
+        message: "Account created successfully.",
+        sessionToken: session.token,
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName || displayName,
+          avatarUrl: user.avatarUrl || undefined,
+          role: user.role,
+          roles: user.userRoles.map((r) => r.role),
+          emailVerified: user.emailVerified,
+          authProvider: user.authProvider,
+          xp: user.profile?.xp ?? 100,
+          level: user.profile?.level ?? 1,
+          streakDays: user.profile?.streakDays ?? 1,
+          enrolledCourses: ["linux"],
+          completedLessons: [],
+          createdAt: user.createdAt.toISOString(),
+        },
+      };
+    } catch (err: any) {
+      console.error("Prisma signUp error:", err);
+      return {
+        success: false,
+        message: err?.message || "Failed to create account. Database error.",
+      };
+    }
   });
 
 /**
  * Server Function: Sign In with Email & Password
+ * 1. Fails closed when PostgreSQL is unavailable.
+ * 2. Explicitly rejects users whose passwordHash is null (e.g. OTP/OAuth-only users).
+ * 3. Does not permit any hardcoded master-admin or local fallback sessions.
+ * 4. Derives authorization roles exclusively from PostgreSQL records.
  */
 export const signInWithEmailPasswordServerFn = createServerFn({ method: "POST" })
   .validator((input: { email: string; password?: string }) => input)
@@ -187,84 +162,79 @@ export const signInWithEmailPasswordServerFn = createServerFn({ method: "POST" }
     }
 
     const dbOk = await isDatabaseAvailable();
-
-    if (dbOk) {
-      try {
-        const user = await prisma.user.findUnique({
-          where: { email },
-          include: {
-            profile: true,
-            userRoles: true,
-            userStats: true,
-          },
-        });
-
-        if (!user) {
-          return { success: false, message: "Invalid email or password." };
-        }
-
-        if (user.passwordHash && !verifyPassword(password, user.passwordHash)) {
-          return { success: false, message: "Invalid email or password." };
-        }
-
-        const session = await createPrismaSession(user.id);
-
-        return {
-          success: true,
-          message: "Signed in successfully.",
-          sessionToken: session?.token,
-          user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName || user.profile?.displayName || email.split("@")[0],
-            avatarUrl: user.avatarUrl || user.profile?.avatarUrl || undefined,
-            role: user.role,
-            roles: user.userRoles.length > 0 ? user.userRoles.map((r) => r.role) : [user.role],
-            emailVerified: user.emailVerified,
-            authProvider: user.authProvider,
-            xp: user.profile?.xp ?? user.userStats?.xp ?? 100,
-            level: user.profile?.level ?? user.userStats?.level ?? 1,
-            streakDays: user.profile?.streakDays ?? user.userStats?.streakDays ?? 1,
-            enrolledCourses: ["linux"],
-            completedLessons: [],
-            createdAt: user.createdAt.toISOString(),
-          },
-        };
-      } catch (err) {
-        console.error("Prisma signIn error:", err);
-      }
-    }
-
-    // Fallback if local admin credentials match
-    if (email === MASTER_ADMIN_EMAIL.toLowerCase() || email === "bogemamo124@gmail.com") {
-      const { primaryRole, allRoles } = resolveRolesForEmail(email);
+    if (!dbOk) {
       return {
-        success: true,
-        message: "Signed in successfully.",
-        sessionToken: "local-admin-" + generateSessionToken(),
-        user: {
-          id: "master-admin-001",
-          email,
-          displayName: "Master Administrator",
-          role: primaryRole,
-          roles: allRoles,
-          emailVerified: true,
-          authProvider: "email",
-          xp: 5400,
-          level: 21,
-          streakDays: 32,
-          enrolledCourses: ["linux", "security", "enterprise-linux"],
-          completedLessons: ["lf-01", "lf-02"],
-          createdAt: new Date().toISOString(),
-        },
+        success: false,
+        message: "Authentication service unavailable. PostgreSQL database is offline.",
       };
     }
 
-    return { success: false, message: "Invalid credentials or user not found." };
+    try {
+      const user = await prisma.user.findUnique({
+        where: { email },
+        include: {
+          profile: true,
+          userRoles: true,
+          userStats: true,
+        },
+      });
+
+      if (!user) {
+        return { success: false, message: "Invalid email or password." };
+      }
+
+      // Explicitly reject users whose passwordHash is null, undefined, or invalid
+      if (!user.passwordHash || !verifyPassword(password, user.passwordHash)) {
+        return { success: false, message: "Invalid email or password." };
+      }
+
+      const session = await createPrismaSession(user.id);
+      if (!session) {
+        return {
+          success: false,
+          message: "Failed to initialize user session in database.",
+        };
+      }
+
+      const resolvedRoles =
+        user.userRoles && user.userRoles.length > 0
+          ? user.userRoles.map((r) => r.role)
+          : [user.role || "user"];
+
+      return {
+        success: true,
+        message: "Signed in successfully.",
+        sessionToken: session.token,
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName || user.profile?.displayName || email.split("@")[0],
+          avatarUrl: user.avatarUrl || user.profile?.avatarUrl || undefined,
+          role: user.role,
+          roles: resolvedRoles,
+          emailVerified: user.emailVerified,
+          authProvider: user.authProvider,
+          xp: user.profile?.xp ?? user.userStats?.xp ?? 100,
+          level: user.profile?.level ?? user.userStats?.level ?? 1,
+          streakDays: user.profile?.streakDays ?? user.userStats?.streakDays ?? 1,
+          enrolledCourses: ["linux"],
+          completedLessons: [],
+          createdAt: user.createdAt.toISOString(),
+        },
+      };
+    } catch (err) {
+      console.error("Prisma signIn error:", err);
+      return {
+        success: false,
+        message: "Authentication service error. Please try again.",
+      };
+    }
   });
 
 /**
  * Server Function: Verify 6-Digit Email OTP and Log In (Prisma Native Auth)
+ * Fails closed if PostgreSQL is offline.
+ * Default role is "user" for new signups; preserves existing roles for established accounts.
  */
 export const verifyEmailOtpAndLoginServerFn = createServerFn({ method: "POST" })
   .validator((input: { email: string; code: string; displayName?: string }) => input)
@@ -285,113 +255,107 @@ export const verifyEmailOtpAndLoginServerFn = createServerFn({ method: "POST" })
       };
     }
 
-    const { primaryRole, allRoles } = resolveRolesForEmail(email);
     const displayName = data.displayName?.trim() || email.split("@")[0];
 
     const dbOk = await isDatabaseAvailable();
-
-    if (dbOk) {
-      try {
-        // Upsert user in Prisma
-        let user = await prisma.user.findUnique({
-          where: { email },
-          include: { profile: true, userRoles: true, userStats: true },
-        });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email,
-              displayName,
-              role: primaryRole,
-              emailVerified: true,
-              authProvider: "email",
-              profile: {
-                create: {
-                  displayName,
-                  xp: 150,
-                  level: 1,
-                  streakDays: 1,
-                },
-              },
-              userRoles: {
-                createMany: {
-                  data: allRoles.map((r) => ({ role: r })),
-                },
-              },
-              userStats: {
-                create: {
-                  xp: 150,
-                  level: 1,
-                  streakDays: 1,
-                },
-              },
-            },
-            include: { profile: true, userRoles: true, userStats: true },
-          });
-        } else {
-          // Mark email as verified
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: { emailVerified: true },
-            include: { profile: true, userRoles: true, userStats: true },
-          });
-        }
-
-        const session = await createPrismaSession(user.id);
-
-        return {
-          success: true,
-          message: "Email verified! You are now logged in.",
-          sessionToken: session?.token,
-          user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName || user.profile?.displayName || displayName,
-            avatarUrl: user.avatarUrl || user.profile?.avatarUrl || undefined,
-            role: user.role,
-            roles: user.userRoles.length > 0 ? user.userRoles.map((r) => r.role) : [user.role],
-            emailVerified: true,
-            authProvider: user.authProvider,
-            xp: user.profile?.xp ?? user.userStats?.xp ?? 150,
-            level: user.profile?.level ?? user.userStats?.level ?? 1,
-            streakDays: user.profile?.streakDays ?? user.userStats?.streakDays ?? 1,
-            enrolledCourses: ["linux"],
-            completedLessons: [],
-            createdAt: user.createdAt.toISOString(),
-          },
-        };
-      } catch (err) {
-        console.error("Prisma OTP login error:", err);
-      }
+    if (!dbOk) {
+      return {
+        success: false,
+        message: "Authentication service unavailable. PostgreSQL database is offline.",
+      };
     }
 
-    // Fallback for local session
-    const fallbackId = "usr_" + Math.random().toString(36).slice(2, 10);
-    return {
-      success: true,
-      message: "Email verified successfully.",
-      sessionToken: "local-session-" + generateSessionToken(),
-      user: {
-        id: fallbackId,
-        email,
-        displayName,
-        role: primaryRole,
-        roles: allRoles,
-        emailVerified: true,
-        authProvider: "email",
-        xp: 150,
-        level: 1,
-        streakDays: 1,
-        enrolledCourses: ["linux"],
-        completedLessons: [],
-        createdAt: new Date().toISOString(),
-      },
-    };
+    try {
+      let user = await prisma.user.findUnique({
+        where: { email },
+        include: { profile: true, userRoles: true, userStats: true },
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email,
+            displayName,
+            role: "user",
+            emailVerified: true,
+            authProvider: "email",
+            profile: {
+              create: {
+                displayName,
+                xp: 150,
+                level: 1,
+                streakDays: 1,
+              },
+            },
+            userRoles: {
+              create: { role: "user" },
+            },
+            userStats: {
+              create: {
+                xp: 150,
+                level: 1,
+                streakDays: 1,
+              },
+            },
+          },
+          include: { profile: true, userRoles: true, userStats: true },
+        });
+      } else {
+        // Mark email as verified, preserving all existing roles in database
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { emailVerified: true },
+          include: { profile: true, userRoles: true, userStats: true },
+        });
+      }
+
+      const session = await createPrismaSession(user.id);
+      if (!session) {
+        return {
+          success: false,
+          message: "Failed to establish database session.",
+        };
+      }
+
+      const resolvedRoles =
+        user.userRoles && user.userRoles.length > 0
+          ? user.userRoles.map((r) => r.role)
+          : [user.role || "user"];
+
+      return {
+        success: true,
+        message: "Email verified! You are now logged in.",
+        sessionToken: session.token,
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName || user.profile?.displayName || displayName,
+          avatarUrl: user.avatarUrl || user.profile?.avatarUrl || undefined,
+          role: user.role,
+          roles: resolvedRoles,
+          emailVerified: true,
+          authProvider: user.authProvider,
+          xp: user.profile?.xp ?? user.userStats?.xp ?? 150,
+          level: user.profile?.level ?? user.userStats?.level ?? 1,
+          streakDays: user.profile?.streakDays ?? user.userStats?.streakDays ?? 1,
+          enrolledCourses: ["linux"],
+          completedLessons: [],
+          createdAt: user.createdAt.toISOString(),
+        },
+      };
+    } catch (err: any) {
+      console.error("Prisma OTP login error:", err);
+      return {
+        success: false,
+        message: err?.message || "Failed to authenticate with database.",
+      };
+    }
   });
 
 /**
  * Server Function: Sign In with Google OAuth (Prisma Native Auth)
+ * Fails closed if PostgreSQL is offline.
+ * Default role is "user" for new signups; preserves existing roles for established accounts.
  */
 export const signInWithGoogleServerFn = createServerFn({ method: "POST" })
   .validator((input: { email: string; displayName?: string; avatarUrl?: string }) => input)
@@ -403,111 +367,105 @@ export const signInWithGoogleServerFn = createServerFn({ method: "POST" })
 
     const displayName = data.displayName || email.split("@")[0];
     const avatarUrl = data.avatarUrl;
-    const { primaryRole, allRoles } = resolveRolesForEmail(email);
 
     const dbOk = await isDatabaseAvailable();
-
-    if (dbOk) {
-      try {
-        let user = await prisma.user.findUnique({
-          where: { email },
-          include: { profile: true, userRoles: true, userStats: true },
-        });
-
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              email,
-              displayName,
-              avatarUrl,
-              role: primaryRole,
-              emailVerified: true,
-              authProvider: "google",
-              profile: {
-                create: {
-                  displayName,
-                  avatarUrl,
-                  xp: 200,
-                  level: 1,
-                  streakDays: 1,
-                },
-              },
-              userRoles: {
-                createMany: {
-                  data: allRoles.map((r) => ({ role: r })),
-                },
-              },
-              userStats: {
-                create: {
-                  xp: 200,
-                  level: 1,
-                  streakDays: 1,
-                },
-              },
-            },
-            include: { profile: true, userRoles: true, userStats: true },
-          });
-        } else {
-          user = await prisma.user.update({
-            where: { id: user.id },
-            data: {
-              emailVerified: true,
-              avatarUrl: avatarUrl || user.avatarUrl,
-              displayName: displayName || user.displayName,
-            },
-            include: { profile: true, userRoles: true, userStats: true },
-          });
-        }
-
-        const session = await createPrismaSession(user.id);
-
-        return {
-          success: true,
-          message: "Signed in with Google.",
-          sessionToken: session?.token,
-          user: {
-            id: user.id,
-            email: user.email,
-            displayName: user.displayName || displayName,
-            avatarUrl: user.avatarUrl || avatarUrl,
-            role: user.role,
-            roles: user.userRoles.length > 0 ? user.userRoles.map((r) => r.role) : [user.role],
-            emailVerified: true,
-            authProvider: "google",
-            xp: user.profile?.xp ?? user.userStats?.xp ?? 200,
-            level: user.profile?.level ?? user.userStats?.level ?? 1,
-            streakDays: user.profile?.streakDays ?? user.userStats?.streakDays ?? 1,
-            enrolledCourses: ["linux"],
-            completedLessons: [],
-            createdAt: user.createdAt.toISOString(),
-          },
-        };
-      } catch (err) {
-        console.error("Prisma Google login error:", err);
-      }
+    if (!dbOk) {
+      return {
+        success: false,
+        message: "Authentication service unavailable. PostgreSQL database is offline.",
+      };
     }
 
-    return {
-      success: true,
-      message: "Signed in with Google.",
-      sessionToken: "local-google-" + generateSessionToken(),
-      user: {
-        id: "usr_google_" + Math.random().toString(36).slice(2, 9),
-        email,
-        displayName,
-        avatarUrl,
-        role: primaryRole,
-        roles: allRoles,
-        emailVerified: true,
-        authProvider: "google",
-        xp: 200,
-        level: 1,
-        streakDays: 1,
-        enrolledCourses: ["linux"],
-        completedLessons: [],
-        createdAt: new Date().toISOString(),
-      },
-    };
+    try {
+      let user = await prisma.user.findUnique({
+        where: { email },
+        include: { profile: true, userRoles: true, userStats: true },
+      });
+
+      if (!user) {
+        user = await prisma.user.create({
+          data: {
+            email,
+            displayName,
+            avatarUrl,
+            role: "user",
+            emailVerified: true,
+            authProvider: "google",
+            profile: {
+              create: {
+                displayName,
+                avatarUrl,
+                xp: 200,
+                level: 1,
+                streakDays: 1,
+              },
+            },
+            userRoles: {
+              create: { role: "user" },
+            },
+            userStats: {
+              create: {
+                xp: 200,
+                level: 1,
+                streakDays: 1,
+              },
+            },
+          },
+          include: { profile: true, userRoles: true, userStats: true },
+        });
+      } else {
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: {
+            emailVerified: true,
+            avatarUrl: avatarUrl || user.avatarUrl,
+            displayName: displayName || user.displayName,
+          },
+          include: { profile: true, userRoles: true, userStats: true },
+        });
+      }
+
+      const session = await createPrismaSession(user.id);
+      if (!session) {
+        return {
+          success: false,
+          message: "Failed to establish database session.",
+        };
+      }
+
+      const resolvedRoles =
+        user.userRoles && user.userRoles.length > 0
+          ? user.userRoles.map((r) => r.role)
+          : [user.role || "user"];
+
+      return {
+        success: true,
+        message: "Signed in with Google.",
+        sessionToken: session.token,
+        user: {
+          id: user.id,
+          email: user.email,
+          displayName: user.displayName || displayName,
+          avatarUrl: user.avatarUrl || avatarUrl,
+          role: user.role,
+          roles: resolvedRoles,
+          emailVerified: true,
+          authProvider: "google",
+          xp: user.profile?.xp ?? user.userStats?.xp ?? 200,
+          level: user.profile?.level ?? user.userStats?.level ?? 1,
+          streakDays: user.profile?.streakDays ?? user.userStats?.streakDays ?? 1,
+          enrolledCourses: ["linux"],
+          completedLessons: [],
+          createdAt: user.createdAt.toISOString(),
+        },
+      };
+    } catch (err: any) {
+      console.error("Prisma Google login error:", err);
+      return {
+        success: false,
+        message: err?.message || "Failed to authenticate with database.",
+      };
+    }
   });
 
 /**
@@ -581,6 +539,7 @@ export const adminGetUsersServerFn = createServerFn({ method: "GET" }).handler(a
 
 /**
  * Server Function: Delete User from System (Prisma)
+ * Strictly fails closed when PostgreSQL is unavailable.
  */
 export const adminDeleteUserServerFn = createServerFn({ method: "POST" })
   .validator((input: { userId: string }) => input)
@@ -590,7 +549,7 @@ export const adminDeleteUserServerFn = createServerFn({ method: "POST" })
 
     const dbOk = await isDatabaseAvailable();
     if (!dbOk) {
-      return { success: true, message: "User deleted locally." };
+      return { success: false, message: "PostgreSQL database is offline. Cannot delete user." };
     }
 
     try {

@@ -5,52 +5,6 @@ import type { LearnerRecord, PracticeExamSubmission } from "./AuthContext";
 /** Initial curated community learners representing real-world distribution */
 export const INITIAL_DATABASE_LEARNERS: LearnerRecord[] = [
   {
-    id: "master-admin-001",
-    displayName: "Master Administrator",
-    email: "admin@afrokernel.com",
-    headline: "AfroKernel Infrastructure Lead & Chief Architect",
-    bio: "Core platform architect, Linux kernel contributor, and curriculum maintainer.",
-    avatarUrl: "",
-    location: "Global / Remote",
-    website: "https://afrokernel.com",
-    githubUrl: "https://github.com/afrokernel",
-    learningGoal: "Master Linux Kernel & Enterprise Cloud Infrastructure",
-    preferredDistro: "Ubuntu 24.04 LTS",
-    xp: 5400,
-    level: 21,
-    streak: 32,
-    roles: ["admin", "instructor", "user"],
-    enrolledCourses: ["linux", "security", "enterprise-linux", "scripting", "networking", "cloud"],
-    completedLessons: [
-      "lf-01",
-      "lf-02",
-      "lf-03",
-      "lf-04",
-      "lf-05",
-      "lf-06",
-      "lf-07",
-      "lf-08",
-      "el-01",
-      "el-02",
-    ],
-    examSubmissions: [
-      {
-        id: "exam-admin-01",
-        userId: "master-admin-001",
-        trackId: "all",
-        trackLabel: "Comprehensive Linux Exam",
-        score: 10,
-        totalQuestions: 10,
-        percentage: 100,
-        passed: true,
-        submittedAt: new Date(Date.now() - 86400000 * 2).toISOString(),
-      },
-    ],
-    createdAt: new Date(Date.now() - 86400000 * 60).toISOString(),
-    updatedAt: new Date().toISOString(),
-    lastActive: new Date().toISOString(),
-  },
-  {
     id: "learner-002",
     displayName: "Amara Diallo",
     email: "amara.diallo@afrokernel.dev",
@@ -210,7 +164,7 @@ export const getAdminLearnersServerFn = createServerFn({ method: "GET" }).handle
 
     if (!dbOk) {
       return {
-        learners: INITIAL_DATABASE_LEARNERS,
+        learners: [],
         isDatabaseConnected: false,
         totalDbRecords: 0,
         source: "cached-database",
@@ -228,49 +182,46 @@ export const getAdminLearnersServerFn = createServerFn({ method: "GET" }).handle
         },
       });
 
-      if (users.length > 0) {
-        const learners: LearnerRecord[] = users.map((u) => ({
-          id: u.id,
-          displayName: u.displayName || u.profile?.displayName || u.email.split("@")[0],
-          email: u.email,
-          headline: u.profile?.headline || undefined,
-          bio: u.profile?.bio || undefined,
-          avatarUrl: u.avatarUrl || u.profile?.avatarUrl || undefined,
-          location: u.profile?.location || undefined,
-          preferredDistro: u.profile?.preferredDistro || undefined,
-          xp: u.profile?.xp ?? u.userStats?.xp ?? 100,
-          level: u.profile?.level ?? u.userStats?.level ?? 1,
-          streak: u.profile?.streakDays ?? u.userStats?.streakDays ?? 1,
-          roles: u.userRoles.length > 0 ? u.userRoles.map((r) => r.role) : [u.role],
-          enrolledCourses: ["linux"],
-          completedLessons: [],
-          examSubmissions: [],
-          emailVerified: u.emailVerified,
-          authProvider: u.authProvider as "email" | "google",
-          createdAt: u.createdAt.toISOString(),
-          updatedAt: u.updatedAt.toISOString(),
-          lastActive: u.updatedAt.toISOString(),
-        }));
+      const learners: LearnerRecord[] = users.map((u) => ({
+        id: u.id,
+        displayName: u.displayName || u.profile?.displayName || u.email.split("@")[0],
+        email: u.email,
+        headline: u.profile?.headline || undefined,
+        bio: u.profile?.bio || undefined,
+        avatarUrl: u.avatarUrl || u.profile?.avatarUrl || undefined,
+        location: u.profile?.location || undefined,
+        preferredDistro: u.profile?.preferredDistro || undefined,
+        xp: u.profile?.xp ?? u.userStats?.xp ?? 100,
+        level: u.profile?.level ?? u.userStats?.level ?? 1,
+        streak: u.profile?.streakDays ?? u.userStats?.streakDays ?? 1,
+        roles: u.userRoles.length > 0 ? u.userRoles.map((r) => r.role) : [u.role],
+        enrolledCourses: ["linux"],
+        completedLessons: [],
+        examSubmissions: [],
+        emailVerified: u.emailVerified,
+        authProvider: u.authProvider as "email" | "google",
+        createdAt: u.createdAt.toISOString(),
+        updatedAt: u.updatedAt.toISOString(),
+        lastActive: u.updatedAt.toISOString(),
+      }));
 
-        return {
-          learners,
-          isDatabaseConnected: true,
-          totalDbRecords: users.length,
-          source: "database-tables",
-          fetchedAt,
-        };
-      }
+      return {
+        learners,
+        isDatabaseConnected: true,
+        totalDbRecords: users.length,
+        source: "database-tables",
+        fetchedAt,
+      };
     } catch (err) {
       console.warn("Prisma getAdminLearnersServerFn error:", err);
+      return {
+        learners: [],
+        isDatabaseConnected: false,
+        totalDbRecords: 0,
+        source: "cached-database",
+        fetchedAt,
+      };
     }
-
-    return {
-      learners: INITIAL_DATABASE_LEARNERS,
-      isDatabaseConnected: false,
-      totalDbRecords: 0,
-      source: "cached-database",
-      fetchedAt,
-    };
   },
 );
 
@@ -433,7 +384,9 @@ export const deleteUserServerFn = createServerFn({ method: "POST" })
   .validator((input: { userId: string; email?: string }) => input)
   .handler(async ({ data }) => {
     const dbOk = await isDatabaseAvailable();
-    if (!dbOk) return { success: true, message: "Local record removed" };
+    if (!dbOk) {
+      return { success: false, message: "PostgreSQL database is offline. Cannot delete user." };
+    }
 
     try {
       await prisma.user.delete({ where: { id: data.userId } });
