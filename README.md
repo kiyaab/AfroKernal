@@ -299,11 +299,9 @@ Runs on pushes to `main`/`master` or release tags (`v*`):
 - **Automated Tagging**: Generates `latest`, `sha-<commit>`, and semantic version tags (`v1.0.0`, `1.0`)
 - **Deployment Trigger**: Extensible deployment hook for automated deployment rollouts
 
-#### Required GitHub Repository Secrets (Optional for Custom Supabase Config)
+#### Required Environment Variables (PostgreSQL & Prisma)
 
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
-- `VITE_SUPABASE_PROJECT_ID`
+- `DATABASE_URL` (e.g. `postgresql://postgres:postgres@localhost:5432/afrokernel?schema=public`)
 - `DEPLOY_WEBHOOK_URL` (optional, for triggering webhook deployment)
 
 ---

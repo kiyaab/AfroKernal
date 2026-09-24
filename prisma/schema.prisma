@@ -59,15 +59,16 @@ model UserRole {
 }
 
 model UserStats {
-  id         String   @id @default(uuid()) @db.Uuid
-  userId     String   @unique @map("user_id") @db.Uuid
-  xp         Int      @default(0)
-  level      Int      @default(1)
-  streakDays Int      @default(0) @map("streak_days")
-  createdAt  DateTime @default(now()) @map("created_at")
-  updatedAt  DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @unique @map("user_id") @db.Uuid
+  xp           Int      @default(0)
+  level        Int      @default(1)
+  streakDays   Int      @default(0) @map("streak_days")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
-  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("user_stats")
 }
@@ -103,22 +104,23 @@ model Profile {
 
 // ─── COURSES ───────────────────────────────────────────────────────
 model Course {
-  id          String   @id @default(uuid()) @db.Uuid
-  slug        String   @unique
-  title       String
-  subtitle    String?
-  description String   @db.Text
-  category    String   // "Fundamentals", "Enterprise Linux", "Scripting", "Networking"
-  difficulty  String   @default("beginner") // "beginner", "intermediate", "advanced"
-  duration    Float    @default(0) // Duration in hours
-  rating      Float    @default(5.0)
-  reviewCount Int      @default(0) @map("review_count")
-  learnerCount Int     @default(0) @map("learner_count")
-  featured    Boolean  @default(false)
-  published   Boolean  @default(true)
-  sortOrder   Int      @default(0) @map("sort_order")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(uuid()) @db.Uuid
+  slug         String   @unique
+  title        String
+  subtitle     String?
+  description  String   @default("") @db.Text
+  category     String   @default("Fundamentals") // "Fundamentals", "Enterprise Linux", "Scripting", "Networking"
+  difficulty   String   @default("beginner") // "beginner", "intermediate", "advanced"
+  coverUrl     String?  @map("cover_url")
+  duration     Float    @default(0) // Duration in hours
+  rating       Float    @default(5.0)
+  reviewCount  Int      @default(0) @map("review_count")
+  learnerCount Int      @default(0) @map("learner_count")
+  featured     Boolean  @default(false)
+  published    Boolean  @default(true)
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   lessons     Lesson[]
   enrollments Enrollment[]
@@ -134,10 +136,13 @@ model Lesson {
   title           String
   lessonType      String   @default("notes") @map("lesson_type") // "video", "notes", "lab", "quiz"
   videoUrl        String?  @map("video_url")
+  pdfUrl          String?  @map("pdf_url")
+  starterCode     String?  @map("starter_code")
   durationMinutes Int      @default(15) @map("duration_minutes")
   xpReward        Int      @default(20) @map("xp_reward")
   sortOrder       Int      @default(0) @map("sort_order")
-  contentMarkdown String   @map("content_markdown") @db.Text
+  contentMarkdown String   @default("") @map("content_markdown") @db.Text
+  published       Boolean  @default(true)
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
@@ -202,6 +207,7 @@ model LessonProgress {
   profileId   String    @map("profile_id") @db.Uuid
   lessonId    String    @map("lesson_id") @db.Uuid
   completed   Boolean   @default(false)
+  score       Int?      @default(100)
   completedAt DateTime? @map("completed_at")
 
   profile     Profile   @relation(fields: [profileId], references: [id], onDelete: Cascade)
@@ -262,6 +268,7 @@ model Quiz {
   title        String
   description  String?
   passingScore Int      @default(70) @map("passing_score")
+  xpReward     Int      @default(25) @map("xp_reward")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
@@ -286,13 +293,14 @@ model QuizQuestion {
 }
 
 model WeeklyGoal {
-  id        String   @id @default(uuid()) @db.Uuid
-  userId    String   @map("user_id") @db.Uuid
-  weekStart String   @map("week_start")
-  targetXp  Int      @default(500) @map("target_xp")
-  earnedXp  Int      @default(0) @map("earned_xp")
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
+  id               String   @id @default(uuid()) @db.Uuid
+  userId           String   @map("user_id") @db.Uuid
+  weekStart        String   @map("week_start")
+  targetXp         Int      @default(500) @map("target_xp")
+  earnedXp         Int      @default(0) @map("earned_xp")
+  remindersEnabled Boolean  @default(true) @map("reminders_enabled")
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, weekStart])
   @@map("weekly_goals")

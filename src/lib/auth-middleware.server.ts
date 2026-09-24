@@ -33,11 +33,6 @@ export const attachPrismaAuth = createMiddleware({ type: "function" }).client(as
 });
 
 /**
- * Backward-compatible alias for attachSupabaseAuth
- */
-export const attachSupabaseAuth = attachPrismaAuth;
-
-/**
  * Server-side middleware: verifies the session token against PostgreSQL via Prisma.
  */
 export const requirePrismaAuth = createMiddleware({ type: "function" }).server(async ({ next }) => {
@@ -99,8 +94,3 @@ export const requirePrismaAuth = createMiddleware({ type: "function" }).server(a
 
   throw new Error("Unauthorized: Invalid or expired session");
 });
-
-/**
- * Backward-compatibility export so existing server functions continue working smoothly
- */
-export const requireSupabaseAuth = requirePrismaAuth;

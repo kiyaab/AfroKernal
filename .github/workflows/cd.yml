@@ -63,13 +63,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
-          build-args: |
-            VITE_SUPABASE_URL=${{ secrets.VITE_SUPABASE_URL != '' && secrets.VITE_SUPABASE_URL || 'https://placeholder.supabase.co' }}
-            VITE_SUPABASE_PUBLISHABLE_KEY=${{ secrets.VITE_SUPABASE_PUBLISHABLE_KEY != '' && secrets.VITE_SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key' }}
-            VITE_SUPABASE_PROJECT_ID=${{ secrets.VITE_SUPABASE_PROJECT_ID != '' && secrets.VITE_SUPABASE_PROJECT_ID || 'placeholder-project-id' }}
-            SUPABASE_URL=${{ secrets.SUPABASE_URL != '' && secrets.SUPABASE_URL || 'https://placeholder.supabase.co' }}
-            SUPABASE_PUBLISHABLE_KEY=${{ secrets.SUPABASE_PUBLISHABLE_KEY != '' && secrets.SUPABASE_PUBLISHABLE_KEY || 'placeholder-anon-key' }}
-            SUPABASE_PROJECT_ID=${{ secrets.SUPABASE_PROJECT_ID != '' && secrets.SUPABASE_PROJECT_ID || 'placeholder-project-id' }}
 
   deploy:
     name: Trigger Deployment

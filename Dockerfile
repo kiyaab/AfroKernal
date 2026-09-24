@@ -9,8 +9,9 @@ WORKDIR /app
 # Install build dependencies if needed
 RUN apk add --no-cache libc6-compat
 
-# Copy package manifests
+# Copy package manifests & prisma schema
 COPY package.json package-lock.json* ./
+COPY prisma ./prisma/
 
 # Install dependencies using clean install
 RUN npm ci
@@ -25,20 +26,10 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Build arguments for Vite/client environment variables
-ARG VITE_SUPABASE_URL
-ARG VITE_SUPABASE_PUBLISHABLE_KEY
-ARG VITE_SUPABASE_PROJECT_ID
-ARG SUPABASE_URL
-ARG SUPABASE_PUBLISHABLE_KEY
-ARG SUPABASE_PROJECT_ID
+# Ensure Prisma client is generated
+RUN npx prisma generate
 
-ENV VITE_SUPABASE_URL=$VITE_SUPABASE_URL \
-    VITE_SUPABASE_PUBLISHABLE_KEY=$VITE_SUPABASE_PUBLISHABLE_KEY \
-    VITE_SUPABASE_PROJECT_ID=$VITE_SUPABASE_PROJECT_ID \
-    SUPABASE_URL=$SUPABASE_URL \
-    SUPABASE_PUBLISHABLE_KEY=$SUPABASE_PUBLISHABLE_KEY \
-    SUPABASE_PROJECT_ID=$SUPABASE_PROJECT_ID \
+ENV DATABASE_URL=postgresql://postgres:postgres@localhost:5432/afrokernel?schema=public \
     NODE_ENV=production
 
 # Disable telemetry and build the application

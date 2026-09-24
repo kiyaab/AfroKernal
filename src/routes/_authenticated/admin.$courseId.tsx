@@ -1,7 +1,14 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  adminGetCourseDetailsServerFn,
+  adminUpdateCourseServerFn,
+  adminDeleteCourseServerFn,
+  adminAddLessonServerFn,
+  adminUpdateLessonServerFn,
+  adminDeleteLessonServerFn,
+} from "@/lib/course.functions";
 import {
   getLessonQuizForAdmin,
   upsertQuiz,
@@ -51,31 +58,15 @@ function CourseEditor() {
   const navigate = useNavigate();
   const qc = useQueryClient();
 
-  const { data: course, isLoading } = useQuery({
-    queryKey: ["admin-course", courseId],
-    queryFn: async (): Promise<any> => {
-      const { data, error } = await supabase
-        .from("courses")
-        .select("*")
-        .eq("id", courseId)
-        .maybeSingle();
-      if (error) throw error;
-      return data;
+  const { data: courseData, isLoading } = useQuery({
+    queryKey: ["admin-course-details", courseId],
+    queryFn: async () => {
+      return await adminGetCourseDetailsServerFn({ data: courseId });
     },
   });
 
-  const { data: lessons } = useQuery({
-    queryKey: ["admin-lessons", courseId],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("lessons")
-        .select("*")
-        .eq("course_id", courseId)
-        .order("sort_order");
-      if (error) throw error;
-      return (data ?? []) as Lesson[];
-    },
-  });
+  const course = courseData?.course;
+  const lessons = (courseData?.lessons ?? []) as Lesson[];
 
   const [form, setForm] = useState({
     title: "",
@@ -105,34 +96,30 @@ function CourseEditor() {
 
   const save = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase
-        .from("courses")
-        .update(form as never)
-        .eq("id", courseId);
-      if (error) throw error;
-      // Publishing a course should unlock its lessons for learners
-      if (form.published) {
-        await supabase
-          .from("lessons")
-          .update({ published: true } as never)
-          .eq("course_id", courseId);
-      }
+      await adminUpdateCourseServerFn({
+        data: {
+          courseId,
+          title: form.title,
+          slug: form.slug,
+          description: form.description,
+          category: form.category,
+          difficulty: form.difficulty,
+          cover_url: form.cover_url,
+          published: form.published,
+          sort_order: form.sort_order,
+        },
+      });
     },
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["admin-course", courseId] });
-      qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-course-details", courseId] });
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
       qc.invalidateQueries({ queryKey: ["public-courses"] });
-      qc.invalidateQueries({ queryKey: ["public-course"] });
-      qc.invalidateQueries({ queryKey: ["public-course-lessons"] });
-      qc.invalidateQueries({ queryKey: ["public-lesson"] });
     },
   });
 
   const del = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("courses").delete().eq("id", courseId);
-      if (error) throw error;
+      await adminDeleteCourseServerFn({ data: courseId });
     },
     onSuccess: () => navigate({ to: "/admin" }),
   });
@@ -149,19 +136,19 @@ function CourseEditor() {
           .trim()
           .replace(/[^a-z0-9]+/g, "-")
           .replace(/^-|-$/g, "") || `lesson-${Date.now()}`;
-      const { error } = await supabase.from("lessons").insert({
-        course_id: courseId,
-        title: newLesson.title.trim(),
-        slug,
-        lesson_type: newLesson.type,
-        published: true,
-        sort_order: (lessons?.length ?? 0) + 1,
-      } as never);
-      if (error) throw error;
+      await adminAddLessonServerFn({
+        data: {
+          courseId,
+          title: newLesson.title.trim(),
+          slug,
+          lesson_type: newLesson.type,
+          sort_order: (lessons?.length ?? 0) + 1,
+        },
+      });
     },
     onSuccess: () => {
       setNewLesson({ title: "", type: "notes" });
-      qc.invalidateQueries({ queryKey: ["admin-lessons", courseId] });
+      qc.invalidateQueries({ queryKey: ["admin-course-details", courseId] });
     },
   });
 
@@ -346,8 +333,7 @@ function CourseEditor() {
 function LessonRow({ lesson, onChange }: { lesson: Lesson; onChange: () => void }) {
   const del = useMutation({
     mutationFn: async () => {
-      const { error } = await supabase.from("lessons").delete().eq("id", lesson.id);
-      if (error) throw error;
+      await adminDeleteLessonServerFn({ data: lesson.id });
     },
     onSuccess: onChange,
   });
@@ -389,25 +375,27 @@ function LessonEditor({ lesson, onSaved }: { lesson: Lesson; onSaved: () => void
   const save = useMutation({
     mutationFn: async () => {
       const pdfUrl = form.pdf_url || null;
-      const { error } = await supabase
-        .from("lessons")
-        .update({
+      await adminUpdateLessonServerFn({
+        data: {
+          lessonId: lesson.id,
           title: form.title,
           slug: form.slug,
           lesson_type: form.lesson_type,
-          video_url: form.lesson_type === "pdf" ? pdfUrl || form.video_url : form.video_url,
-          pdf_url: pdfUrl,
-          content: form.content,
-          // Keep starter_code as optional PDF fallback for older clients
+          video_url:
+            form.lesson_type === "pdf"
+              ? pdfUrl || form.video_url || undefined
+              : form.video_url || undefined,
+          pdf_url: pdfUrl || undefined,
+          content: form.content || undefined,
           starter_code:
-            form.lesson_type === "practice" ? form.starter_code : pdfUrl || form.starter_code,
-          expected_output: form.expected_output,
+            (form.lesson_type === "practice" ? form.starter_code : pdfUrl || form.starter_code) ||
+            undefined,
+          expected_output: form.expected_output || undefined,
           xp_reward: form.xp_reward,
           sort_order: form.sort_order,
           published: form.published,
-        } as never)
-        .eq("id", lesson.id);
-      if (error) throw error;
+        },
+      });
     },
     onSuccess: onSaved,
   });

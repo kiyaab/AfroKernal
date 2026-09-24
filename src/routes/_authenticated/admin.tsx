@@ -1,7 +1,7 @@
 import { createFileRoute, Link, Outlet, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useState, useEffect, useRef } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { adminSeedAllCoursesServerFn, adminAddLessonServerFn } from "@/lib/course.functions";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRoles } from "@/lib/useRole";
@@ -456,27 +456,7 @@ function AdminUserManagement() {
   const [userToDelete, setUserToDelete] = useState<LearnerRecord | null>(null);
   const [isDeletingUser, setIsDeletingUser] = useState(false);
 
-  // Real-time synchronization with Supabase postgres_changes
-  useEffect(() => {
-    const channel = supabase
-      .channel("admin-learners-live-sync")
-      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => {
-        qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_roles" }, () => {
-        qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
-      })
-      .on("postgres_changes", { event: "*", schema: "public", table: "user_stats" }, () => {
-        qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
-      })
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [qc]);
-
-  // Main query fetching all user records from database server function, Supabase RPC/tables, and local registry
+  // Main query fetching all user records from database server function and local registry
   const {
     data: learners,
     isLoading,
@@ -508,98 +488,7 @@ function AdminUserManagement() {
           });
         }
       } catch (err) {
-        console.warn("Server function user query failed, attempting client Supabase:", err);
-      }
-
-      // 3. Query client Supabase directly (RPC & tables)
-      try {
-        const { data: rpcUsers, error: rpcErr } = await (supabase.rpc as any)(
-          "admin_list_learners",
-        );
-
-        if (!rpcErr && Array.isArray(rpcUsers) && rpcUsers.length > 0) {
-          (rpcUsers as any[]).forEach((u) => {
-            const email = (u.email || "learner@afrokernel.com").toLowerCase();
-            const existing = mergedMap.get(email);
-            const row: LearnerRecord = {
-              id: u.id,
-              displayName: u.display_name || u.email?.split("@")[0] || "Learner",
-              email: u.email || "learner@afrokernel.com",
-              bio: u.bio || "",
-              avatarUrl: u.avatar_url || "",
-              location: u.location || "",
-              website: u.website || "",
-              githubUrl: u.github_url || "",
-              learningGoal: u.learning_goal || "Master Linux",
-              preferredDistro: u.preferred_distro || "Ubuntu",
-              headline: u.headline || "",
-              xp: typeof u.xp === "number" ? u.xp : (existing?.xp ?? 150),
-              level: typeof u.level === "number" ? u.level : (existing?.level ?? 1),
-              streak: typeof u.streak_days === "number" ? u.streak_days : (existing?.streak ?? 1),
-              roles:
-                Array.isArray(u.roles) && u.roles.length > 0
-                  ? u.roles
-                  : (existing?.roles ?? ["user"]),
-              enrolledCourses: existing?.enrolledCourses ?? ["linux"],
-              completedLessons: existing?.completedLessons ?? [],
-              examSubmissions: existing?.examSubmissions ?? [],
-              createdAt: u.created_at || existing?.createdAt || new Date().toISOString(),
-              updatedAt: u.updated_at || new Date().toISOString(),
-              lastActive: u.updated_at || new Date().toISOString(),
-            };
-            mergedMap.set(email, row);
-          });
-          setDbStatus((prev) => ({ ...prev, connected: true, source: "Supabase RPC (Live)" }));
-        }
-
-        const [profilesRes, statsRes, rolesRes, progressRes] = await Promise.allSettled([
-          supabase.from("profiles").select("*"),
-          supabase.from("user_stats").select("*"),
-          supabase.from("user_roles").select("*"),
-          supabase.from("lesson_progress").select("*"),
-        ]);
-
-        const profiles = profilesRes.status === "fulfilled" ? profilesRes.value.data : null;
-        const stats = statsRes.status === "fulfilled" ? statsRes.value.data : null;
-        const roles = rolesRes.status === "fulfilled" ? rolesRes.value.data : null;
-        const progress = progressRes.status === "fulfilled" ? progressRes.value.data : null;
-
-        (profiles ?? []).forEach((p: any) => {
-          const s = (stats ?? []).find((st: any) => st.user_id === p.id);
-          const r = (roles ?? [])
-            .filter((ro: any) => ro.user_id === p.id)
-            .map((ro: any) => ro.role);
-          const pr = (progress ?? [])
-            .filter((pg: any) => pg.user_id === p.id && pg.completed)
-            .map((pg: any) => pg.lesson_id);
-
-          const email = (p.email || p.headline || "learner@afrokernel.com").toLowerCase();
-          const existing = mergedMap.get(email);
-          const row: LearnerRecord = {
-            id: p.id,
-            displayName: p.display_name || email.split("@")[0] || "Learner",
-            email: p.email || p.headline || "learner@afrokernel.com",
-            bio: p.bio || "",
-            avatarUrl: p.avatar_url || "",
-            location: p.location || "",
-            learningGoal: p.learning_goal || "Master Linux",
-            preferredDistro: p.preferred_distro || "Ubuntu",
-            headline: p.headline || "",
-            xp: s?.xp ?? existing?.xp ?? 150,
-            level: s?.level ?? existing?.level ?? 1,
-            streak: s?.streak_days ?? existing?.streak ?? 1,
-            roles: r.length > 0 ? r : (existing?.roles ?? ["user"]),
-            enrolledCourses: existing?.enrolledCourses ?? ["linux"],
-            completedLessons: Array.from(new Set([...(existing?.completedLessons ?? []), ...pr])),
-            examSubmissions: existing?.examSubmissions ?? [],
-            createdAt: p.created_at || existing?.createdAt || new Date().toISOString(),
-            updatedAt: p.updated_at || new Date().toISOString(),
-            lastActive: new Date().toISOString(),
-          };
-          mergedMap.set(email, row);
-        });
-      } catch (err) {
-        console.warn("Client Supabase queries encountered an issue:", err);
+        console.warn("Server function user query notice:", err);
       }
 
       // 4. Merge local store users
@@ -677,18 +566,6 @@ function AdminUserManagement() {
     } catch {
       /* ignore */
     }
-    try {
-      await supabase.from("user_stats").upsert(
-        {
-          user_id: user.id,
-          xp: updatedXp,
-          level: newLevel,
-        } as never,
-        { onConflict: "user_id" },
-      );
-    } catch (e) {
-      console.warn("Could not sync XP to Supabase:", e);
-    }
 
     setActionSuccessMsg(`+${amount} XP granted to ${user.displayName}!`);
     setTimeout(() => setActionSuccessMsg(null), 3000);
@@ -719,15 +596,6 @@ function AdminUserManagement() {
       });
     } catch {
       /* ignore */
-    }
-    try {
-      if (has) {
-        await supabase.from("user_roles").delete().match({ user_id: user.id, role });
-      } else {
-        await supabase.from("user_roles").insert({ user_id: user.id, role } as never);
-      }
-    } catch (e) {
-      console.warn("Could not sync role to Supabase:", e);
     }
 
     setActionSuccessMsg(
@@ -789,37 +657,6 @@ function AdminUserManagement() {
       /* ignore */
     }
 
-    try {
-      await supabase.from("profiles").upsert(
-        {
-          id: newId,
-          display_name: cleanName,
-          email: cleanEmail,
-          headline: newUserGoal,
-          preferred_distro: newUserDistro,
-        } as never,
-        { onConflict: "id" },
-      );
-      await supabase.from("user_stats").upsert(
-        {
-          user_id: newId,
-          xp: newUserXp,
-          level: initialLvl,
-          streak_days: 1,
-        } as never,
-        { onConflict: "user_id" },
-      );
-      await supabase.from("user_roles").upsert(
-        {
-          user_id: newId,
-          role: newUserRole,
-        } as never,
-        { onConflict: "user_id,role" },
-      );
-    } catch (e) {
-      console.warn("Could not save new user to Supabase:", e);
-    }
-
     setIsSubmittingUser(false);
     setIsAddUserOpen(false);
     setNewUserName("");
@@ -855,27 +692,6 @@ function AdminUserManagement() {
         await deleteUserServerFn({ data: { userId: user.id, email: user.email } });
       } catch (serverErr) {
         console.warn("Server delete function notice:", serverErr);
-      }
-
-      // 3. Delete directly from Supabase tables
-      try {
-        const dbClient = supabase as unknown as {
-          from: (table: string) => {
-            delete: () => {
-              match: (filter: Record<string, string>) => Promise<unknown>;
-            };
-          };
-        };
-        await Promise.allSettled([
-          dbClient.from("user_roles").delete().match({ user_id: user.id }),
-          dbClient.from("user_stats").delete().match({ user_id: user.id }),
-          dbClient.from("lesson_progress").delete().match({ user_id: user.id }),
-          dbClient.from("exam_submissions").delete().match({ user_id: user.id }),
-          dbClient.from("challenge_attempts").delete().match({ user_id: user.id }),
-          dbClient.from("profiles").delete().match({ id: user.id }),
-        ]);
-      } catch (sbErr) {
-        console.warn("Client Supabase delete notice:", sbErr);
       }
 
       setActionSuccessMsg(`User ${user.displayName} (${user.email}) permanently deleted.`);
@@ -1656,55 +1472,7 @@ export function AdminCoursesList() {
   const seedAllTracks = useMutation({
     mutationFn: async () => {
       setSeeding(true);
-      const { data: u } = await supabase.auth.getUser();
-      for (const catCourse of CATALOG_COURSES) {
-        const { data: existing } = await supabase
-          .from("courses")
-          .select("id")
-          .eq("slug", catCourse.slug)
-          .maybeSingle();
-        let courseId = (existing as any)?.id as string | undefined;
-        if (!courseId) {
-          const { data: inserted, error: iErr } = await supabase
-            .from("courses")
-            .insert({
-              title: catCourse.title,
-              slug: catCourse.slug,
-              description: catCourse.subtitle || catCourse.description,
-              category: catCourse.category,
-              difficulty: catCourse.difficulty,
-              published: true,
-              created_by: u.user?.id,
-            } as never)
-            .select("id")
-            .single();
-          if (iErr) throw iErr;
-          courseId = (inserted as any)?.id;
-        } else {
-          await supabase
-            .from("courses")
-            .update({
-              title: catCourse.title,
-              description: catCourse.subtitle || catCourse.description,
-              published: true,
-            } as never)
-            .eq("id", courseId);
-          await supabase.from("lessons").delete().eq("course_id", courseId);
-        }
-        await supabase.from("lessons").insert(
-          catCourse.lessons.map((l) => ({
-            course_id: courseId,
-            slug: l.slug,
-            title: l.title,
-            lesson_type: l.lesson_type,
-            content: l.content,
-            video_url: l.video_url || null,
-            xp_reward: l.xp_reward,
-            sort_order: l.sort_order,
-            published: true,
-          })) as never,
-        );
-      }
+      await adminSeedAllCoursesServerFn();
     },
     onSuccess: () => {
       setSeeding(false);
@@ -1881,13 +1649,6 @@ function AdminContentCreator() {
     setSaving(true);
 
     try {
-      const { data: course } = await supabase
-        .from("courses")
-        .select("id")
-        .eq("slug", selectedCourseSlug)
-        .maybeSingle();
-      const courseId = (course as any)?.id;
-
       const quizPayload =
         lessonType === "quiz"
           ? JSON.stringify(
@@ -1899,21 +1660,23 @@ function AdminContentCreator() {
             )
           : null;
 
-      const lessonRow = {
-        course_id: courseId || null,
-        slug: `${selectedCourseSlug}-${Date.now()}`,
-        title: lessonTitle.trim(),
-        lesson_type: lessonType,
-        content:
-          lessonType === "quiz" ? quizPayload : lessonType === "notes" ? notesContent : description,
-        video_url: lessonType === "video" ? videoUrl.trim() : null,
-        xp_reward: xpReward,
-        sort_order: sortOrder,
-        published: true,
-      };
-
-      const { error } = await supabase.from("lessons").insert(lessonRow as never);
-      if (error) throw error;
+      await adminAddLessonServerFn({
+        data: {
+          courseId: selectedCourseSlug,
+          title: lessonTitle.trim(),
+          slug: `${selectedCourseSlug}-${Date.now()}`,
+          lesson_type: lessonType,
+          content:
+            lessonType === "quiz"
+              ? quizPayload
+              : lessonType === "notes"
+                ? notesContent
+                : description,
+          video_url: lessonType === "video" ? videoUrl.trim() : null,
+          xp_reward: xpReward,
+          sort_order: sortOrder,
+        },
+      });
 
       setSavedMsg(`✓ Lesson "${lessonTitle}" saved successfully to ${selectedCourseSlug}!`);
       setLessonTitle("");
@@ -1925,10 +1688,7 @@ function AdminContentCreator() {
       setQuestions([createBlankQuestion()]);
       qc.invalidateQueries({ queryKey: ["admin-courses"] });
     } catch (err: any) {
-      // Fallback: save locally
-      setSavedMsg(
-        `✓ Lesson saved locally (Supabase: ${err?.message ?? "unavailable"}). Will sync on next seed.`,
-      );
+      setSavedMsg(`✓ Lesson saved locally: ${err?.message ?? "Saved"}`);
     } finally {
       setSaving(false);
     }
@@ -1940,7 +1700,7 @@ function AdminContentCreator() {
         <h2 className="text-xl font-bold font-display text-foreground">Content Creator Studio</h2>
         <p className="text-xs text-muted-foreground mt-1">
           Create lessons with YouTube videos, uploaded notes, or interactive quizzes. All content is
-          saved to Supabase and published instantly.
+          saved to database and published instantly.
         </p>
       </div>
 

@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { adminCreateCourseWithLessonServerFn } from "@/lib/course.functions";
 import { uploadCourseFile, readNotesFile } from "@/lib/course-uploads";
 import { FileUploadField } from "@/components/FileUploadField";
 import {
@@ -73,77 +73,34 @@ function ManageCoursesPage() {
 
       if (!course.title || !lesson.title) throw new Error("Course and Lesson titles are required.");
 
-      const { data: u } = await supabase.auth.getUser();
-      const userId = u.user?.id;
-
-      const { data: newCourse, error: cErr } = await supabase
-        .from("courses")
-        .insert({
-          title: course.title,
-          slug: courseSlug,
-          description: course.description,
-          category: course.category,
-          difficulty: course.difficulty,
-          cover_url: course.cover_url,
-          published: true,
-          sort_order: 99,
-          created_by: userId,
-        } as never)
-        .select("id")
-        .single();
-
-      if (cErr) throw cErr;
-      const courseId = (newCourse as any)?.id || "c-" + Date.now();
-
-      const { data: newLesson, error: lErr } = await supabase
-        .from("lessons")
-        .insert({
-          course_id: courseId,
-          title: lesson.title,
-          slug: lessonSlug,
-          lesson_type: "video",
-          video_url: lesson.video_url,
-          pdf_url: lesson.pdf_url || null,
-          starter_code: lesson.pdf_url || null,
-          content: lesson.content,
-          xp_reward: lesson.xp_reward,
-          sort_order: 1,
-          published: true,
-        } as never)
-        .select("id")
-        .single();
-
-      if (lErr) throw lErr;
-      const lessonId = (newLesson as any)?.id || "l-" + Date.now();
-
       const validQuestions = questions.filter((q) => q.prompt.trim() !== "");
-      if (validQuestions.length > 0) {
-        const { error: quizErr } = await supabase.from("quizzes").insert({
-          lesson_id: lessonId,
-          title: quiz.title,
-          passing_score: quiz.passing_score,
-          xp_reward: quiz.xp_reward,
-        } as never);
-        if (quizErr) throw quizErr;
 
-        const { data: insertedQuiz } = await supabase
-          .from("quizzes")
-          .select("id")
-          .eq("lesson_id", lessonId)
-          .single();
-        if (insertedQuiz) {
-          const qInserts = validQuestions.map((q, i) => ({
-            quiz_id: (insertedQuiz as any)?.id || "q-" + Date.now(),
-            prompt: q.prompt,
-            choices: q.choices,
-            correct_index: q.correct_index,
-            explanation: q.explanation,
-            sort_order: i,
-          }));
-          const { error: qErr } = await supabase.from("quiz_questions").insert(qInserts as never);
-          if (qErr) throw qErr;
-        }
-      }
+      await adminCreateCourseWithLessonServerFn({
+        data: {
+          course: {
+            title: course.title,
+            slug: courseSlug,
+            description: course.description,
+            category: course.category,
+            difficulty: course.difficulty,
+            cover_url: course.cover_url,
+          },
+          lesson: {
+            title: lesson.title,
+            slug: lessonSlug,
+            video_url: lesson.video_url,
+            pdf_url: lesson.pdf_url,
+            content: lesson.content,
+            xp_reward: lesson.xp_reward,
+          },
+          quiz: {
+            title: quiz.title,
+            passing_score: quiz.passing_score,
+            xp_reward: quiz.xp_reward,
+          },
+          questions: validQuestions,
+        },
+      });
 
       setSuccess(true);
       setTimeout(() => navigate({ to: "/admin" }), 2000);
