@@ -219,13 +219,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       );
 
       const email = userEmail || "learner@afrokernel.com";
-      const metaName =
-        userMetadata?.full_name ||
-        userMetadata?.name ||
-        userMetadata?.display_name;
-      const metaAvatar =
-        userMetadata?.avatar_url ||
-        userMetadata?.picture;
+      const metaName = userMetadata?.full_name || userMetadata?.name || userMetadata?.display_name;
+      const metaAvatar = userMetadata?.avatar_url || userMetadata?.picture;
 
       if (match) {
         let hasUpdates = false;
@@ -512,9 +507,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       const redirectUrl =
         redirectTo ||
-        (typeof window !== "undefined"
-          ? `${window.location.origin}/auth`
-          : undefined);
+        (typeof window !== "undefined" ? `${window.location.origin}/auth` : undefined);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "google",

@@ -353,7 +353,9 @@ function AuthPage() {
           scope: "openid profile email",
           callback: async (tokenResponse: any) => {
             if (tokenResponse.error) {
-              setError(`Google authentication failed: ${tokenResponse.error_description || tokenResponse.error}`);
+              setError(
+                `Google authentication failed: ${tokenResponse.error_description || tokenResponse.error}`,
+              );
               setOauthLoading(false);
               return;
             }
@@ -447,7 +449,8 @@ function AuthPage() {
       const demoId = `google-user-${Date.now()}`;
       const demoEmail = "google.learner@afrokernel.com";
       const demoName = "Google Verified Learner";
-      const demoAvatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80";
+      const demoAvatar =
+        "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&auto=format&fit=crop&q=80";
 
       const demoUser = {
         id: demoId,
@@ -641,7 +644,13 @@ function AuthPage() {
         } as User;
 
         setLocalSessionUser(adminUser);
-        await ensureProfile("master-admin-001", "Master Administrator", cleanEmail, undefined, true);
+        await ensureProfile(
+          "master-admin-001",
+          "Master Administrator",
+          cleanEmail,
+          undefined,
+          true,
+        );
 
         try {
           await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPass });
@@ -720,7 +729,10 @@ function AuthPage() {
         const loggedUser = {
           id: existing.id,
           email: cleanEmail,
-          user_metadata: { display_name: existing.displayName, email_verified: existing.emailVerified ?? true },
+          user_metadata: {
+            display_name: existing.displayName,
+            email_verified: existing.emailVerified ?? true,
+          },
           app_metadata: {},
           aud: "authenticated",
           created_at: existing.createdAt,
@@ -809,7 +821,8 @@ function AuthPage() {
             <div>
               <span className="font-bold text-foreground block">Verified & Secure Access</span>
               <span className="text-muted-foreground">
-                6-digit email OTP verification and Google Single Sign-On with encrypted session tokens.
+                6-digit email OTP verification and Google Single Sign-On with encrypted session
+                tokens.
               </span>
             </div>
           </div>
@@ -858,7 +871,8 @@ function AuthPage() {
                 }}
                 className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground hover:text-foreground transition cursor-pointer"
               >
-                <ArrowLeft className="h-3.5 w-3.5" /> Back to {mode === "signup" ? "sign up" : "sign in"}
+                <ArrowLeft className="h-3.5 w-3.5" /> Back to{" "}
+                {mode === "signup" ? "sign up" : "sign in"}
               </button>
 
               <div className="text-center space-y-2">
@@ -873,8 +887,8 @@ function AuthPage() {
                 </h2>
                 <p className="text-xs text-muted-foreground max-w-sm mx-auto leading-relaxed">
                   We've sent a 6-digit confirmation code to{" "}
-                  <strong className="text-foreground font-semibold">{pendingEmail}</strong>.
-                  Enter the code below to complete activation.
+                  <strong className="text-foreground font-semibold">{pendingEmail}</strong>. Enter
+                  the code below to complete activation.
                 </p>
               </div>
 
@@ -904,15 +918,33 @@ function AuthPage() {
                     }}
                   >
                     <InputOTPGroup>
-                      <InputOTPSlot index={0} className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border" />
-                      <InputOTPSlot index={1} className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border" />
-                      <InputOTPSlot index={2} className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border" />
+                      <InputOTPSlot
+                        index={0}
+                        className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border"
+                      />
+                      <InputOTPSlot
+                        index={1}
+                        className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border"
+                      />
+                      <InputOTPSlot
+                        index={2}
+                        className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border"
+                      />
                     </InputOTPGroup>
                     <InputOTPSeparator />
                     <InputOTPGroup>
-                      <InputOTPSlot index={3} className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border" />
-                      <InputOTPSlot index={4} className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border" />
-                      <InputOTPSlot index={5} className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border" />
+                      <InputOTPSlot
+                        index={3}
+                        className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border"
+                      />
+                      <InputOTPSlot
+                        index={4}
+                        className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border"
+                      />
+                      <InputOTPSlot
+                        index={5}
+                        className="h-12 w-11 sm:h-14 sm:w-12 text-lg font-bold bg-card border-border"
+                      />
                     </InputOTPGroup>
                   </InputOTP>
                 </div>
@@ -1146,7 +1178,11 @@ function AuthPage() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground cursor-pointer"
                       >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4" />
+                        ) : (
+                          <Eye className="h-4 w-4" />
+                        )}
                       </button>
                     </div>
                   </div>
@@ -1160,7 +1196,9 @@ function AuthPage() {
                       onClick={() => setUseOtpSignIn(!useOtpSignIn)}
                       className="text-xs text-primary hover:underline font-medium cursor-pointer"
                     >
-                      {useOtpSignIn ? "Use Password to Sign In" : "Sign in with 6-digit email code instead"}
+                      {useOtpSignIn
+                        ? "Use Password to Sign In"
+                        : "Sign in with 6-digit email code instead"}
                     </button>
                   </div>
                 )}
@@ -1198,14 +1236,20 @@ function AuthPage() {
                 {mode === "signup" ? (
                   <p>
                     Already have an account?{" "}
-                    <button onClick={toggleMode} className="font-bold text-primary hover:underline cursor-pointer">
+                    <button
+                      onClick={toggleMode}
+                      className="font-bold text-primary hover:underline cursor-pointer"
+                    >
                       Sign in here
                     </button>
                   </p>
                 ) : (
                   <p>
                     Don't have an account yet?{" "}
-                    <button onClick={toggleMode} className="font-bold text-primary hover:underline cursor-pointer">
+                    <button
+                      onClick={toggleMode}
+                      className="font-bold text-primary hover:underline cursor-pointer"
+                    >
                       Sign up for free
                     </button>
                   </p>
@@ -1235,13 +1279,16 @@ function AuthPage() {
 
           {googleSavedToast && (
             <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-500 font-medium flex items-center gap-2 animate-in fade-in">
-              <CheckCircle2 className="h-4 w-4 shrink-0" /> Google Client ID saved! Opening sign-in...
+              <CheckCircle2 className="h-4 w-4 shrink-0" /> Google Client ID saved! Opening
+              sign-in...
             </div>
           )}
 
           <div className="space-y-4 pt-2">
             <div className="rounded-xl border border-border/70 bg-secondary/40 p-3.5 text-xs space-y-2">
-              <span className="font-bold text-foreground block">Google Cloud Setup (Free & Instant):</span>
+              <span className="font-bold text-foreground block">
+                Google Cloud Setup (Free & Instant):
+              </span>
               <ol className="list-decimal pl-4 space-y-1 text-muted-foreground text-[11px] leading-relaxed">
                 <li>
                   Open{" "}
@@ -1254,11 +1301,16 @@ function AuthPage() {
                     Google Cloud Console <ExternalLink className="h-2.5 w-2.5" />
                   </a>
                 </li>
-                <li>Create an <strong>OAuth 2.0 Client ID</strong> (Application type: <em>Web application</em>).</li>
+                <li>
+                  Create an <strong>OAuth 2.0 Client ID</strong> (Application type:{" "}
+                  <em>Web application</em>).
+                </li>
                 <li>
                   Add Authorized JavaScript origin:{" "}
                   <code className="px-1 py-0.5 rounded bg-muted font-mono text-[10px]">
-                    {typeof window !== "undefined" ? window.location.origin : "http://localhost:8080"}
+                    {typeof window !== "undefined"
+                      ? window.location.origin
+                      : "http://localhost:8080"}
                   </code>
                 </li>
                 <li>Paste the resulting Client ID below:</li>
