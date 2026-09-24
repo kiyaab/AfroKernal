@@ -28,8 +28,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set lower case image name
+        id: image_name
         run: |
-          echo "IMAGE_NAME=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
+          echo "image=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -45,7 +46,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/${{ steps.image_name.outputs.image }}
           tags: |
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
             type=sha,format=short,prefix=sha-
@@ -72,5 +73,5 @@ jobs:
     steps:
       - name: Deployment Notification & Hook
         run: |
-          echo "Container image successfully pushed to ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          echo "Container image successfully built and pushed to ${{ env.REGISTRY }}."
           echo "Ready for production deployment rollouts."
