@@ -5,7 +5,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRoles } from "@/lib/useRole";
-import { getAllLearnerRecords, upsertLearnerRecord, LearnerRecord } from "@/lib/AuthContext";
+import {
+  getAllLearnerRecords,
+  upsertLearnerRecord,
+  deleteLearnerRecord,
+  LearnerRecord,
+} from "@/lib/AuthContext";
 import { CATALOG_COURSES } from "@/lib/courses-catalog-data";
 import { isMasterAdmin, unlockLocalAdmin } from "@/lib/admin-credentials";
 import { HARDWARE_DATA, DIAGNOSTIC_COMMANDS, HardwareItem } from "@/lib/hardware-data";
@@ -21,6 +26,7 @@ import {
   updateUserRoleServerFn,
   grantUserXpServerFn,
   createLearnerServerFn,
+  deleteUserServerFn,
   INITIAL_DATABASE_LEARNERS,
 } from "@/lib/admin.functions";
 import {
@@ -446,6 +452,10 @@ function AdminUserManagement() {
   const [newUserXp, setNewUserXp] = useState(150);
   const [isSubmittingUser, setIsSubmittingUser] = useState(false);
 
+  // Delete user state
+  const [userToDelete, setUserToDelete] = useState<LearnerRecord | null>(null);
+  const [isDeletingUser, setIsDeletingUser] = useState(false);
+
   // Real-time synchronization with Supabase postgres_changes
   useEffect(() => {
     const channel = supabase
@@ -823,6 +833,71 @@ function AdminUserManagement() {
     refetch();
   }
 
+  // Delete user handler
+  async function handleDeleteUser(user: LearnerRecord) {
+    const isMaster =
+      user.email.toLowerCase() === "admin@afrokernel.com" ||
+      user.email.toLowerCase() === "admin@ak.com" ||
+      user.id === "master-admin-001";
+
+    if (isMaster) {
+      setActionSuccessMsg("Protected Account: Master Administrator cannot be deleted.");
+      setTimeout(() => setActionSuccessMsg(null), 3000);
+      setUserToDelete(null);
+      return;
+    }
+
+    setIsDeletingUser(true);
+    try {
+      // 1. Delete from local registry
+      deleteLearnerRecord(user.id);
+      deleteLearnerRecord(user.email);
+
+      // 2. Call server function to wipe across tables
+      try {
+        await deleteUserServerFn({ data: { userId: user.id, email: user.email } });
+      } catch (serverErr) {
+        console.warn("Server delete function notice:", serverErr);
+      }
+
+      // 3. Delete directly from Supabase tables
+      try {
+        const dbClient = supabase as unknown as {
+          from: (table: string) => {
+            delete: () => {
+              match: (filter: Record<string, string>) => Promise<unknown>;
+            };
+          };
+        };
+        await Promise.allSettled([
+          dbClient.from("user_roles").delete().match({ user_id: user.id }),
+          dbClient.from("user_stats").delete().match({ user_id: user.id }),
+          dbClient.from("lesson_progress").delete().match({ user_id: user.id }),
+          dbClient.from("exam_submissions").delete().match({ user_id: user.id }),
+          dbClient.from("challenge_attempts").delete().match({ user_id: user.id }),
+          dbClient.from("profiles").delete().match({ id: user.id }),
+        ]);
+      } catch (sbErr) {
+        console.warn("Client Supabase delete notice:", sbErr);
+      }
+
+      setActionSuccessMsg(`User ${user.displayName} (${user.email}) permanently deleted.`);
+      setTimeout(() => setActionSuccessMsg(null), 3500);
+
+      if (selectedUser?.id === user.id) {
+        setSelectedUser(null);
+      }
+      setUserToDelete(null);
+      refetch();
+      qc.invalidateQueries({ queryKey: ["admin-learners-master"] });
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Unknown error";
+      setActionSuccessMsg(`Failed to delete user: ${message}`);
+    } finally {
+      setIsDeletingUser(false);
+    }
+  }
+
   // Export users list as CSV or JSON
   function handleExport(format: "json" | "csv") {
     if (format === "json") {
@@ -1166,6 +1241,15 @@ function AdminUserManagement() {
                           >
                             Details
                           </button>
+                          {!isMaster && (
+                            <button
+                              onClick={() => setUserToDelete(user)}
+                              className="p-1.5 rounded-lg border border-destructive/30 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground transition cursor-pointer"
+                              title={`Delete ${user.displayName}`}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -1483,6 +1567,81 @@ function AdminUserManagement() {
                   </button>
                 ))}
               </div>
+            </div>
+
+            {/* Danger Zone: Delete User Account */}
+            {selectedUser.email.toLowerCase() !== "admin@afrokernel.com" &&
+              selectedUser.email.toLowerCase() !== "admin@ak.com" &&
+              selectedUser.id !== "master-admin-001" && (
+                <div className="pt-4 border-t border-destructive/20 flex items-center justify-between">
+                  <div>
+                    <span className="text-xs font-bold text-destructive flex items-center gap-1.5">
+                      <Trash2 className="h-3.5 w-3.5" /> Danger Zone
+                    </span>
+                    <span className="text-[11px] text-muted-foreground block">
+                      Permanently delete this user, roles, and progress from the system.
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setUserToDelete(selectedUser)}
+                    className="px-3.5 py-1.5 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive hover:bg-destructive hover:text-destructive-foreground font-bold text-xs transition flex items-center gap-1.5 cursor-pointer shadow-sm"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                    Delete User Account
+                  </button>
+                </div>
+              )}
+          </div>
+        </div>
+      )}
+
+      {/* Delete User Confirmation Dialog */}
+      {userToDelete && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="rounded-3xl border border-destructive/30 bg-card p-6 sm:p-8 max-w-md w-full space-y-5 shadow-2xl animate-in zoom-in-95">
+            <div className="flex items-center gap-3 text-destructive">
+              <div className="h-10 w-10 rounded-2xl bg-destructive/15 border border-destructive/30 flex items-center justify-center">
+                <Trash2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h3 className="font-bold text-base text-foreground">Delete User Account</h3>
+                <p className="text-[11px] text-muted-foreground">This action cannot be undone.</p>
+              </div>
+            </div>
+
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              Are you sure you want to permanently delete{" "}
+              <strong className="text-foreground">{userToDelete.displayName}</strong> (
+              <span className="font-mono text-foreground">{userToDelete.email}</span>)? All
+              associated progress, practice exam scores, XP, and roles will be removed from the
+              system.
+            </p>
+
+            <div className="flex items-center justify-end gap-2.5 pt-2">
+              <button
+                type="button"
+                onClick={() => setUserToDelete(null)}
+                disabled={isDeletingUser}
+                className="px-4 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-secondary transition cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => handleDeleteUser(userToDelete)}
+                disabled={isDeletingUser}
+                className="px-4 py-2 rounded-xl bg-destructive text-destructive-foreground font-bold text-xs hover:brightness-110 transition flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
+              >
+                {isDeletingUser ? (
+                  <>
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" /> Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="h-3.5 w-3.5" /> Confirm Delete
+                  </>
+                )}
+              </button>
             </div>
           </div>
         </div>

@@ -187,6 +187,22 @@ export function upsertLearnerRecord(
   }
 }
 
+/** Helper to permanently remove a learner record from global local registry */
+export function deleteLearnerRecord(idOrEmail: string): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    const list = getAllLearnerRecords();
+    const filtered = list.filter(
+      (u) => u.id !== idOrEmail && (!u.email || u.email.toLowerCase() !== idOrEmail.toLowerCase()),
+    );
+    localStorage.setItem(LOCAL_STORAGE_USERS_KEY, JSON.stringify(filtered));
+    return true;
+  } catch (err) {
+    console.error("Failed to delete learner record:", err);
+    return false;
+  }
+}
+
 function getStoredLocalUser(): User | null {
   if (typeof window === "undefined") return null;
   try {

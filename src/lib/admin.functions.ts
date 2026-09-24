@@ -520,3 +520,42 @@ export const createLearnerServerFn = createServerFn({ method: "POST" })
       return { success: false, message: err?.message || "Failed to create learner in database" };
     }
   });
+
+/**
+ * Server function to delete a user from the system across tables
+ */
+export const deleteUserServerFn = createServerFn({ method: "POST" })
+  .validator((input: { userId: string; email?: string }) => input)
+  .handler(async ({ data }) => {
+    const sb = getSupabaseServerClient();
+    if (!sb) return { success: true, message: "Local record removed" };
+
+    try {
+      const rawSb = sb as unknown as {
+        from: (table: string) => {
+          delete: () => {
+            eq: (col: string, val: string) => Promise<unknown>;
+          };
+        };
+      };
+      await Promise.allSettled([
+        rawSb.from("user_roles").delete().eq("user_id", data.userId),
+        rawSb.from("user_stats").delete().eq("user_id", data.userId),
+        rawSb.from("lesson_progress").delete().eq("user_id", data.userId),
+        rawSb.from("challenge_attempts").delete().eq("user_id", data.userId),
+        rawSb.from("exam_submissions").delete().eq("user_id", data.userId),
+        rawSb.from("profiles").delete().eq("id", data.userId),
+      ]);
+
+      try {
+        await sb.auth.admin.deleteUser(data.userId);
+      } catch {
+        /* ignore if service key is unavailable */
+      }
+
+      return { success: true };
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : "Failed to delete user in database";
+      return { success: false, message };
+    }
+  });
