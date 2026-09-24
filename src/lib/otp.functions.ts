@@ -93,9 +93,59 @@ export const sendRealEmailOtpServerFn = createServerFn({ method: "POST" })
       deliveryError,
       message: isLiveDelivered
         ? `A 6-digit verification code has been sent directly to ${email}.`
-        : `Verification code generated for ${email}. (Live Gmail SMTP not configured in .env - code stored securely on server)`,
-      // Only include fallback code when live delivery is unavailable so developer is not blocked
-      backupCode: isLiveDelivered ? undefined : code,
+        : `Verification code generated for ${email}. Live Gmail SMTP awaiting configuration.`,
+    };
+  });
+
+/**
+ * Server Function: Save and connect Gmail SMTP credentials
+ */
+export const saveSmtpConfigServerFn = createServerFn({ method: "POST" })
+  .validator((input: { gmailUser: string; appPassword: string }) => input)
+  .handler(async ({ data }) => {
+    const user = data.gmailUser?.trim();
+    const pass = data.appPassword?.replace(/\s+/g, "").trim();
+
+    if (!user || !user.includes("@")) {
+      return { success: false, message: "A valid email address is required." };
+    }
+    if (!pass || pass.length < 10) {
+      return {
+        success: false,
+        message: "A valid Google App Password (16 characters) is required.",
+      };
+    }
+
+    process.env.GMAIL_USER = user;
+    process.env.GMAIL_APP_PASSWORD = pass;
+
+    try {
+      const fs = await import("node:fs");
+      const path = await import("node:path");
+      const envPath = path.resolve(process.cwd(), ".env");
+
+      let content = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf-8") : "";
+
+      if (content.includes("GMAIL_USER=")) {
+        content = content.replace(/GMAIL_USER=.*/g, `GMAIL_USER=${user}`);
+      } else {
+        content += `\nGMAIL_USER=${user}\n`;
+      }
+
+      if (content.includes("GMAIL_APP_PASSWORD=")) {
+        content = content.replace(/GMAIL_APP_PASSWORD=.*/g, `GMAIL_APP_PASSWORD=${pass}`);
+      } else {
+        content += `GMAIL_APP_PASSWORD=${pass}\n`;
+      }
+
+      fs.writeFileSync(envPath, content, "utf-8");
+    } catch (fsErr) {
+      console.warn("Could not persist to .env file, process.env updated:", fsErr);
+    }
+
+    return {
+      success: true,
+      message: `Gmail sender (${user}) connected successfully! Live emails will now be sent directly to user inboxes.`,
     };
   });
 

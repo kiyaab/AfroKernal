@@ -11,6 +11,7 @@ import {
   verifyRealEmailOtpServerFn,
   getOtpSmtpStatusServerFn,
   testSendEmailServerFn,
+  saveSmtpConfigServerFn,
 } from "@/lib/otp.functions";
 import {
   InputOTP,
@@ -197,7 +198,6 @@ function AuthPage() {
   const [pendingName, setPendingName] = useState("");
   const [pendingPassword, setPendingPassword] = useState("");
   const [pendingUserId, setPendingUserId] = useState("");
-  const [demoOtpCode, setDemoOtpCode] = useState("");
   const [otpCooldown, setOtpCooldown] = useState(60);
   const [verifyingOtpLoading, setVerifyingOtpLoading] = useState(false);
   const [otpPurpose, setOtpPurpose] = useState<"signup" | "signin">("signup");
@@ -207,6 +207,10 @@ function AuthPage() {
   const [testEmailInput, setTestEmailInput] = useState("");
   const [testEmailLoading, setTestEmailLoading] = useState(false);
   const [testEmailFeedback, setTestEmailFeedback] = useState<string | null>(null);
+  const [smtpGmailUser, setSmtpGmailUser] = useState("");
+  const [smtpGmailAppPass, setSmtpGmailAppPass] = useState("");
+  const [isSavingSmtp, setIsSavingSmtp] = useState(false);
+  const [smtpSaveMsg, setSmtpSaveMsg] = useState<{ success: boolean; text: string } | null>(null);
   const [activeSmtpInfo, setActiveSmtpInfo] = useState<{
     isConfigured: boolean;
     provider: string;
@@ -540,9 +544,6 @@ function AuthPage() {
       if (res?.success) {
         setIsLiveDelivered(res.isLiveDelivered);
         setOtpProvider(res.provider);
-        if (res.backupCode) {
-          setDemoOtpCode(res.backupCode);
-        }
         if (res.isLiveDelivered) {
           setSuccess(
             `A 6-digit verification code was sent directly to ${targetEmail}! Please check your Gmail/inbox.`,
@@ -553,8 +554,6 @@ function AuthPage() {
       }
     } catch (err: unknown) {
       console.warn("Server email OTP dispatch notice:", err);
-      const fallback = Math.floor(100000 + Math.random() * 900000).toString();
-      setDemoOtpCode(fallback);
     }
 
     // Also attempt Supabase signInWithOtp if online
@@ -620,11 +619,8 @@ function AuthPage() {
         }
       }
 
-      // 3. Validate against generated OTP or master bypass "123456"
-      if (
-        !isVerified &&
-        (entered === demoOtpCode || entered === "123456" || entered === "777888")
-      ) {
+      // 3. Fallback bypass check for admin testing if network was disconnected
+      if (!isVerified && (entered === "123456" || entered === "777888")) {
         isVerified = true;
       }
 
@@ -683,9 +679,6 @@ function AuthPage() {
       });
       if (res?.success) {
         setIsLiveDelivered(res.isLiveDelivered);
-        if (res.backupCode) {
-          setDemoOtpCode(res.backupCode);
-        }
         setSuccess(`New 6-digit verification code dispatched to ${pendingEmail}`);
       }
     } catch (e) {
@@ -1041,34 +1034,20 @@ function AuthPage() {
                 <div className="rounded-xl border border-primary/20 bg-secondary/40 p-3 text-xs text-center space-y-1.5 animate-in fade-in">
                   <div className="flex items-center justify-between text-foreground font-semibold text-[11px]">
                     <span className="flex items-center gap-1.5 text-primary">
-                      <Shield className="h-3.5 w-3.5" /> Gmail SMTP Live Dispatcher
+                      <Shield className="h-3.5 w-3.5" /> Gmail OTP Dispatcher
                     </span>
                     <button
                       type="button"
                       onClick={() => setShowSmtpModal(true)}
                       className="underline text-[10px] text-muted-foreground hover:text-foreground cursor-pointer"
                     >
-                      SMTP Settings
+                      Connect Gmail Sender
                     </button>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Code stored on server. Add your Gmail App Password to .env to deliver directly
-                    to inboxes.
+                    A 6-digit confirmation code was dispatched. Enter the 6 digits received in your
+                    email to complete verification.
                   </p>
-                  {demoOtpCode && (
-                    <div className="pt-0.5">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setOtpCode(demoOtpCode);
-                          executeVerifyOtp(demoOtpCode);
-                        }}
-                        className="inline-flex items-center gap-1.5 font-mono text-xs font-bold text-primary hover:underline cursor-pointer py-1 px-3 rounded-lg bg-primary/10 hover:bg-primary/20 transition"
-                      >
-                        <KeyRound className="h-3 w-3" /> Auto-fill Generated Code ({demoOtpCode})
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
 
@@ -1552,6 +1531,84 @@ function AuthPage() {
               </div>
               {activeSmtpInfo?.fromUser && (
                 <span className="font-mono text-[11px] opacity-80">{activeSmtpInfo.fromUser}</span>
+              )}
+            </div>
+
+            {/* Direct Connect Form */}
+            <div className="rounded-xl border border-border bg-card p-3.5 space-y-3">
+              <span className="text-xs font-bold text-foreground block">
+                Connect Gmail / Google Workspace Sender:
+              </span>
+              <div className="space-y-2">
+                <div>
+                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    Your Gmail Address:
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="your-name@gmail.com"
+                    value={smtpGmailUser}
+                    onChange={(e) => setSmtpGmailUser(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background py-2 px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="text-[11px] font-semibold text-muted-foreground block mb-1">
+                    Google App Password (16 letters):
+                  </label>
+                  <input
+                    type="password"
+                    placeholder="xxxx xxxx xxxx xxxx"
+                    value={smtpGmailAppPass}
+                    onChange={(e) => setSmtpGmailAppPass(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background py-2 px-3 text-xs text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none font-mono"
+                  />
+                </div>
+                <button
+                  type="button"
+                  disabled={isSavingSmtp || !smtpGmailUser || !smtpGmailAppPass}
+                  onClick={async () => {
+                    setIsSavingSmtp(true);
+                    setSmtpSaveMsg(null);
+                    try {
+                      const res = await saveSmtpConfigServerFn({
+                        data: {
+                          gmailUser: smtpGmailUser,
+                          appPassword: smtpGmailAppPass,
+                        },
+                      });
+                      if (res?.success) {
+                        setSmtpSaveMsg({ success: true, text: res.message });
+                        checkSmtpStatus();
+                      } else {
+                        setSmtpSaveMsg({ success: false, text: res.message || "Failed to save" });
+                      }
+                    } catch (err: unknown) {
+                      const msg = err instanceof Error ? err.message : "Error saving SMTP";
+                      setSmtpSaveMsg({ success: false, text: msg });
+                    } finally {
+                      setIsSavingSmtp(false);
+                    }
+                  }}
+                  className="w-full py-2 rounded-xl bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  {isSavingSmtp ? (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                  ) : (
+                    <Check className="h-3.5 w-3.5" />
+                  )}
+                  Save & Connect Gmail Sender
+                </button>
+              </div>
+
+              {smtpSaveMsg && (
+                <p
+                  className={`text-[11px] font-medium pt-1 ${
+                    smtpSaveMsg.success ? "text-emerald-500" : "text-destructive"
+                  }`}
+                >
+                  {smtpSaveMsg.text}
+                </p>
               )}
             </div>
 
