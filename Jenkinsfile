@@ -74,29 +74,13 @@ pipeline {
 
         stage('Build') {
             steps {
-                withCredentials([
-                    string(
-                        credentialsId: 'afrokernel-vite-supabase-url',
-                        variable: 'VITE_SUPABASE_URL'
-                    ),
-                    string(
-                        credentialsId: 'afrokernel-vite-supabase-key',
-                        variable: 'VITE_SUPABASE_PUBLISHABLE_KEY'
-                    ),
-                    string(
-                        credentialsId: 'afrokernel-vite-supabase-project-id',
-                        variable: 'VITE_SUPABASE_PROJECT_ID'
-                    )
-                ]) {
-                    sh '''
-                        echo "================================"
-                        echo "Building AfroKernel"
-                        echo "================================"
-                        echo "Supabase client configuration supplied by Jenkins credentials."
+                sh '''
+                    echo "================================"
+                    echo "Building AfroKernel"
+                    echo "================================"
 
-                        npm run build
-                    '''
-                }
+                    npm run build
+                '''
             }
         }
 
