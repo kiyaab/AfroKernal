@@ -1,5 +1,7 @@
 import tls from "node:tls";
 import crypto from "node:crypto";
+import fs from "node:fs";
+import path from "node:path";
 
 export interface SmtpConfig {
   host: string;
@@ -49,9 +51,25 @@ if (typeof setInterval !== "undefined") {
  * Retrieve active SMTP configuration from environment variables
  */
 export function getActiveSmtpConfig(): SmtpConfig | null {
-  const user = process.env.GMAIL_USER || process.env.SMTP_USER || process.env.EMAIL_USER || "";
-  const pass =
+  let user = process.env.GMAIL_USER || process.env.SMTP_USER || process.env.EMAIL_USER || "";
+  let pass =
     process.env.GMAIL_APP_PASSWORD || process.env.SMTP_PASS || process.env.EMAIL_PASSWORD || "";
+
+  // If not yet in process.env, parse from .env directly
+  if (!user || !pass) {
+    try {
+      const envPath = path.resolve(process.cwd(), ".env");
+      if (fs.existsSync(envPath)) {
+        const raw = fs.readFileSync(envPath, "utf-8");
+        const userMatch = raw.match(/GMAIL_USER=(.*)/);
+        const passMatch = raw.match(/GMAIL_APP_PASSWORD=(.*)/);
+        if (userMatch?.[1]) user = userMatch[1].trim().replace(/['"]/g, "");
+        if (passMatch?.[1]) pass = passMatch[1].trim().replace(/['"]/g, "");
+      }
+    } catch {
+      /* ignore */
+    }
+  }
 
   if (!user || !pass) {
     return null;
