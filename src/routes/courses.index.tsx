@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
@@ -72,25 +71,10 @@ function CoursesIndex() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
 
-  // Query database courses with fallback to rich catalog data
   const { data: dbCourses, isLoading } = useQuery({
     queryKey: ["public-courses-catalog"],
     queryFn: async () => {
-      try {
-        const { data, error } = await supabase
-          .from("courses")
-          .select("*")
-          .eq("published", true)
-          .order("sort_order")
-          .order("created_at");
-        if (error || !data || data.length === 0) {
-          return getAllCourses();
-        }
-        // Merge with catalog metadata
-        return getAllCourses();
-      } catch {
-        return getAllCourses();
-      }
+      return getAllCourses();
     },
   });
 

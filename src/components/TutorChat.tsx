@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { askTutor, saveConversation } from "@/lib/rag.functions";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/AuthContext";
 import {
   Send,
   Sparkles,
@@ -125,6 +125,7 @@ export function TutorChat({
   suggestions,
   className = "",
 }: TutorChatProps) {
+  const { user } = useAuth();
   const [messages, setMessages] = useState<Msg[]>([]);
   const [input, setInput] = useState(initialQuestion ?? "");
   const [open, setOpen] = useState(!compact);
@@ -164,8 +165,7 @@ export function TutorChat({
         { role: "assistant", content: res.answer, sources: res.sources as Source[] },
       ]);
       try {
-        const { data } = await supabase.auth.getUser();
-        if (data.user) await saveConversation({ data: { question, answer: res.answer } });
+        if (user) await saveConversation({ data: { question, answer: res.answer } });
       } catch {
         /* skip */
       }

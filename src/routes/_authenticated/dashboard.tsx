@@ -7,7 +7,6 @@ import {
   buyStreakFreeze,
   markNotificationsRead,
 } from "@/lib/quiz.functions";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -83,12 +82,16 @@ function Dashboard() {
     navigate({ to: "/", replace: true });
   }
 
-  const profile = data?.profile;
-  const displayName = profile?.display_name || user?.email?.split("@")[0] || "Learner";
+  const profile = data?.profile as any;
+  const displayName =
+    profile?.displayName || profile?.display_name || user?.email?.split("@")[0] || "Learner";
   const goal = weekly?.goal as any;
   const currentXp = Math.max(stats.xp, data?.stats?.xp ?? 0);
   const currentLevel = Math.max(stats.level, data?.stats?.level ?? 1);
-  const currentStreak = Math.max(stats.streak_days, data?.stats?.streak_days ?? 1);
+  const currentStreak = Math.max(
+    stats.streak_days,
+    (data?.stats as any)?.streakDays ?? (data?.stats as any)?.streak_days ?? 1,
+  );
 
   const goalPct = goal
     ? Math.min(100, Math.round(((goal.earned_xp ?? 0) / Math.max(1, goal.target_xp)) * 100))

@@ -53,7 +53,7 @@ function CourseEditor() {
 
   const { data: course, isLoading } = useQuery({
     queryKey: ["admin-course", courseId],
-    queryFn: async () => {
+    queryFn: async (): Promise<any> => {
       const { data, error } = await supabase
         .from("courses")
         .select("*")

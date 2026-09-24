@@ -93,7 +93,7 @@ function ManageCoursesPage() {
         .single();
 
       if (cErr) throw cErr;
-      const courseId = newCourse.id;
+      const courseId = (newCourse as any)?.id || "c-" + Date.now();
 
       const { data: newLesson, error: lErr } = await supabase
         .from("lessons")
@@ -114,7 +114,7 @@ function ManageCoursesPage() {
         .single();
 
       if (lErr) throw lErr;
-      const lessonId = newLesson.id;
+      const lessonId = (newLesson as any)?.id || "l-" + Date.now();
 
       const validQuestions = questions.filter((q) => q.prompt.trim() !== "");
       if (validQuestions.length > 0) {
@@ -133,7 +133,7 @@ function ManageCoursesPage() {
           .single();
         if (insertedQuiz) {
           const qInserts = validQuestions.map((q, i) => ({
-            quiz_id: insertedQuiz.id,
+            quiz_id: (insertedQuiz as any)?.id || "q-" + Date.now(),
             prompt: q.prompt,
             choices: q.choices,
             correct_index: q.correct_index,

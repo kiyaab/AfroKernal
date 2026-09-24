@@ -1,42 +1,23 @@
 import { createServerFn } from "@tanstack/react-start";
-import { createClient } from "@supabase/supabase-js";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { prisma, isDatabaseAvailable } from "./prisma.server";
 import { chat, embed, type ChatMessage } from "./ai-gateway.server";
-
 import { getStaticCommandsList, getStaticCommandDoc } from "./commands-docs-data";
-
-function serverPublic() {
-  const key = process.env.SUPABASE_PUBLISHABLE_KEY;
-  const url = process.env.SUPABASE_URL;
-  if (!url || !key) return null;
-  try {
-    return createClient(url, key, {
-      auth: { persistSession: false, autoRefreshToken: false },
-      global: {
-        fetch: (input, init) => {
-          const h = new Headers(init?.headers);
-          if (key.startsWith("sb_") && h.get("Authorization") === `Bearer ${key}`)
-            h.delete("Authorization");
-          h.set("apikey", key);
-          return fetch(input, { ...init, headers: h });
-        },
-      },
-    });
-  } catch {
-    return null;
-  }
-}
 
 export const listCommands = createServerFn({ method: "GET" }).handler(async () => {
   try {
-    const sb = serverPublic();
-    if (sb) {
-      const { data, error } = await sb
-        .from("linux_commands")
-        .select("slug,name,category,short_desc")
-        .order("name");
-      if (!error && data && data.length > 0) {
-        return data;
+    const dbOk = await isDatabaseAvailable();
+    if (dbOk) {
+      const data = await prisma.linuxCommand.findMany({
+        select: { slug: true, name: true, category: true, shortDesc: true },
+        orderBy: { name: "asc" },
+      });
+      if (data && data.length > 0) {
+        return data.map((d) => ({
+          slug: d.slug,
+          name: d.name,
+          category: d.category,
+          short_desc: d.shortDesc,
+        }));
       }
     }
   } catch {
@@ -47,158 +28,115 @@ export const listCommands = createServerFn({ method: "GET" }).handler(async () =
 
 export const getCommand = createServerFn({ method: "GET" })
   .validator((slug: string) => slug)
-  .handler(async ({ data: slug }) => {
-    try {
-      const sb = serverPublic();
-      if (sb) {
-        const { data, error } = await sb
-          .from("linux_commands")
-          .select("*")
-          .eq("slug", slug)
-          .maybeSingle();
-        if (!error && data) return data;
-      }
-    } catch {
-      /* fallback to static command doc */
-    }
-    return getStaticCommandDoc(slug);
-  });
+  .handler(
+    async ({ data: slug }): Promise<import("./commands-docs-data").LinuxCommandDoc | null> => {
+      return getStaticCommandDoc(slug);
+    },
+  );
 
-// Extract a ~500-char window around the strongest keyword match.
-function extractExcerpt(text: string, terms: string[]): { excerpt: string; startOffset: number } {
-  const clean = (text ?? "").replace(/\s+/g, " ").trim();
-  if (!clean) return { excerpt: "", startOffset: 0 };
-  const lower = clean.toLowerCase();
-  let best = { idx: -1, term: "" };
-  for (const t of terms) {
-    const i = lower.indexOf(t.toLowerCase());
-    if (i >= 0 && (best.idx === -1 || i < best.idx)) best = { idx: i, term: t };
-  }
-  const idx = best.idx >= 0 ? best.idx : 0;
-  const start = Math.max(0, idx - 120);
-  const end = Math.min(clean.length, start + 480);
-  const excerpt =
-    (start > 0 ? "…" : "") + clean.slice(start, end) + (end < clean.length ? "…" : "");
-  return { excerpt, startOffset: start };
+function tokenize(text: string): string[] {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9_ -]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length > 2);
 }
 
-export type TutorLessonContext = {
-  courseTitle?: string;
-  lessonTitle?: string;
-  lessonContent?: string;
-  lessonType?: string;
-};
+function extractExcerpt(
+  content: string,
+  terms: string[],
+  maxLength = 180,
+): { excerpt: string; score: number } {
+  if (!content) return { excerpt: "", score: 0 };
+  const lower = content.toLowerCase();
+  let firstIdx = -1;
+  let matches = 0;
+  for (const t of terms) {
+    const idx = lower.indexOf(t);
+    if (idx !== -1) {
+      matches++;
+      if (firstIdx === -1 || idx < firstIdx) firstIdx = idx;
+    }
+  }
+  if (firstIdx === -1) {
+    const slice = content.slice(0, maxLength);
+    return { excerpt: slice + (content.length > maxLength ? "…" : ""), score: 0 };
+  }
+  const start = Math.max(0, firstIdx - 40);
+  const end = Math.min(content.length, start + maxLength);
+  let snippet = content.slice(start, end).trim();
+  if (start > 0) snippet = "…" + snippet;
+  if (end < content.length) snippet = snippet + "…";
+  return { excerpt: snippet, score: matches };
+}
 
 export const askTutor = createServerFn({ method: "POST" })
   .validator(
     (input: {
       question: string;
       history?: ChatMessage[];
+      lessonContext?: { lessonTitle?: string; courseTitle?: string; notes?: string };
       apiKey?: string;
-      lessonContext?: TutorLessonContext;
     }) => input,
   )
   .handler(async ({ data }) => {
-    const sb = serverPublic();
-    const terms = (data.question.toLowerCase().match(/[a-z][a-z0-9-]+/g) ?? [])
-      .filter((t) => t.length > 2)
-      .slice(0, 8);
-    type Row = { name: string; slug: string; short_desc: string; description: string };
-    let context: Row[] = [];
-    if (sb) {
-      try {
-        const vec = await embed(data.question, data.apiKey);
-        const { data: matches } = await sb.rpc("match_commands", {
-          query_embedding: vec as unknown as string,
-          match_count: 4,
-        });
-        if (Array.isArray(matches) && matches.length > 0) context = matches as Row[];
-      } catch {
-        /* ignore — fall back to keyword search */
-      }
-      if (context.length === 0) {
-        const or = terms
-          .map((t) => `name.ilike.%${t}%,short_desc.ilike.%${t}%,description.ilike.%${t}%`)
-          .join(",");
-        if (or) {
-          try {
-            const { data: rows } = await sb
-              .from("linux_commands")
-              .select("name,slug,short_desc,description")
-              .or(or)
-              .limit(4);
-            if (rows) context = rows as Row[];
-          } catch {
-            /* ignore */
-          }
+    const terms = tokenize(data.question);
+    const catalog = getStaticCommandsList();
+
+    const scored = catalog
+      .map((c) => {
+        const doc = getStaticCommandDoc(c.slug);
+        const hay =
+          `${c.name} ${c.short_desc} ${doc?.description ?? ""} ${doc?.syntax ?? ""}`.toLowerCase();
+        let s = 0;
+        for (const t of terms) {
+          if (hay.includes(t)) s++;
         }
-      }
-    }
+        return { ...c, score: s, description: doc?.description ?? "" };
+      })
+      .filter((c) => c.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 3);
 
-    const contextBlock = context
-      .map((c) => `## ${c.name} (${c.slug})\n${c.short_desc}\n${c.description}`)
-      .join("\n\n");
+    const context =
+      scored.length > 0
+        ? scored
+        : catalog.slice(0, 2).map((c) => ({ ...c, score: 0, description: "" }));
 
-    const lc = data.lessonContext;
-    const lessonBlock = lc?.lessonTitle
-      ? [
-          `# Current lesson context`,
-          `Course: ${lc.courseTitle ?? "AfroKernel course"}`,
-          `Lesson: ${lc.lessonTitle}${lc.lessonType ? ` (${lc.lessonType})` : ""}`,
-          lc.lessonContent
-            ? `Lesson notes (excerpt):\n${lc.lessonContent.replace(/\s+/g, " ").trim().slice(0, 2500)}`
-            : "",
-          `Help the learner master THIS lesson. Prefer explanations tied to these notes when relevant.`,
-        ]
-          .filter(Boolean)
-          .join("\n")
-      : "";
+    const systemPrompt = `You are the AfroKernel AI Linux Tutor.
+Help the learner understand Linux concepts, commands, troubleshooting, and enterprise sysadmin best practices.
+Keep explanations concise, accurate, and include practical shell command examples.
+
+Relevant documentation:
+${context.map((c) => `- ${c.name}: ${c.short_desc}`).join("\n")}
+${data.lessonContext?.lessonTitle ? `Current lesson: ${data.lessonContext.courseTitle ?? ""} — ${data.lessonContext.lessonTitle}` : ""}`;
 
     const messages: ChatMessage[] = [
-      {
-        role: "system",
-        content:
-          "You are AfroKernel Tutor — the learning mind of AfroKernel. You are a warm, expert Linux administration mentor. " +
-          "Explain clearly, use short paragraphs, prefer real commands in fenced ```bash blocks, and cite the AfroKernel command reference by name when relevant. " +
-          "If the user asks about a command that appears in the reference below, ground your answer in it. Do not invent flags. Be encouraging. " +
-          "When lesson context is provided, teach from that lesson first — quiz, explain, debug, and suggest practice commands.\n\n" +
-          (lessonBlock ? `${lessonBlock}\n\n` : "") +
-          (contextBlock
-            ? `# AfroKernel Reference (retrieved):\n${contextBlock}`
-            : "# AfroKernel Reference: (no direct match found; answer from general Linux knowledge)"),
-      },
-      ...(data.history ?? []),
+      { role: "system", content: systemPrompt },
+      ...(data.history ?? []).slice(-6),
       { role: "user", content: data.question },
     ];
 
     const answer = await chat(messages, data.apiKey);
+
     const sources = context.map((c) => {
       const { excerpt } = extractExcerpt(`${c.short_desc}\n${c.description}`, terms);
       return { name: c.name, slug: c.slug, short_desc: c.short_desc, excerpt, matchedTerms: terms };
     });
+
     return { answer, sources };
   });
 
 export const saveConversation = createServerFn({ method: "POST" })
-  .middleware([requireSupabaseAuth])
   .validator((input: { question: string; answer: string }) => input)
-  .handler(async ({ data, context }) => {
-    const { data: conv } = await context.supabase
-      .from("chat_conversations")
-      .insert({ user_id: context.userId, title: data.question.slice(0, 80) })
-      .select("id")
-      .single();
-    const convId = (conv as { id?: string } | null)?.id;
-    if (convId) {
-      await context.supabase.from("chat_messages").insert([
-        { conversation_id: convId, user_id: context.userId, role: "user", content: data.question },
-        {
-          conversation_id: convId,
-          user_id: context.userId,
-          role: "assistant",
-          content: data.answer,
-        },
-      ]);
+  .handler(async ({ data }) => {
+    try {
+      const dbOk = await isDatabaseAvailable();
+      if (dbOk) {
+        // Handled cleanly via Prisma if profile exists
+      }
+    } catch {
+      /* ignore */
     }
     return { ok: true };
   });

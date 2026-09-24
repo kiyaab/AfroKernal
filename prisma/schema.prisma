@@ -1,7 +1,7 @@
 // ─── AFROKERNEL DATABASE SCHEMA (PRISMA) ─────────────────────────
-// This schema models the complete data layer for AfroKernel,
-// including user profiles, courses, lessons, interactive terminal challenges,
-// practice exam submissions, and AI tutor conversations.
+// Complete native PostgreSQL data layer for AfroKernel,
+// replacing Supabase with Prisma ORM for all authentication,
+// user management, course curriculum, quizzes, labs, and AI tutor features.
 
 datasource db {
   provider = "postgresql"
@@ -12,7 +12,67 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// ─── PROFILES & USERS ─────────────────────────────────────────────
+// ─── USERS & AUTHENTICATION ──────────────────────────────────────
+model User {
+  id            String    @id @default(uuid()) @db.Uuid
+  email         String    @unique
+  passwordHash  String?   @map("password_hash")
+  displayName   String?   @map("display_name")
+  avatarUrl     String?   @map("avatar_url")
+  role          String    @default("user") // "admin", "instructor", "user"
+  emailVerified Boolean   @default(false) @map("email_verified")
+  authProvider  String    @default("email") @map("auth_provider") // "email" | "google"
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  profile       Profile?
+  sessions      Session[]
+  userRoles     UserRole[]
+  userStats     UserStats?
+
+  @@map("users")
+}
+
+model Session {
+  id           String   @id @default(uuid()) @db.Uuid
+  userId       String   @map("user_id") @db.Uuid
+  token        String   @unique
+  expiresAt    DateTime @map("expires_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  lastActiveAt DateTime @default(now()) @map("last_active_at")
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model UserRole {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  role      String   // "admin", "instructor", "student", "user"
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, role])
+  @@map("user_roles")
+}
+
+model UserStats {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @unique @map("user_id") @db.Uuid
+  xp         Int      @default(0)
+  level      Int      @default(1)
+  streakDays Int      @default(0) @map("streak_days")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_stats")
+}
+
+// ─── PROFILES ─────────────────────────────────────────────────────
 model Profile {
   id              String   @id @default(uuid()) @db.Uuid
   userId          String   @unique @map("user_id") @db.Uuid
@@ -20,6 +80,10 @@ model Profile {
   avatarUrl       String?  @map("avatar_url")
   bio             String?
   headline        String?
+  location        String?
+  website         String?
+  githubUrl       String?  @map("github_url")
+  learningGoal    String?  @map("learning_goal")
   preferredDistro String?  @map("preferred_distro")
   xp              Int      @default(0)
   level           Int      @default(1)
@@ -27,6 +91,7 @@ model Profile {
   createdAt       DateTime @default(now()) @map("created_at")
   updatedAt       DateTime @updatedAt @map("updated_at")
 
+  user              User               @relation(fields: [userId], references: [id], onDelete: Cascade)
   enrollments       Enrollment[]
   lessonProgress    LessonProgress[]
   challengeAttempts ChallengeAttempt[]
@@ -188,6 +253,49 @@ model ChatMessage {
   conversation   ChatConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
 
   @@map("chat_messages")
+}
+
+// ─── QUIZZES & ASSESSMENT ─────────────────────────────────────────
+model Quiz {
+  id           String   @id @default(uuid()) @db.Uuid
+  lessonId     String   @unique @map("lesson_id") @db.Uuid
+  title        String
+  description  String?
+  passingScore Int      @default(70) @map("passing_score")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  questions    QuizQuestion[]
+
+  @@map("quizzes")
+}
+
+model QuizQuestion {
+  id           String   @id @default(uuid()) @db.Uuid
+  quizId       String   @map("quiz_id") @db.Uuid
+  prompt       String
+  choices      Json     // list of strings: ["choice 1", "choice 2"]
+  correctIndex Int      @map("correct_index")
+  explanation  String?
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  quiz         Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+
+  @@map("quiz_questions")
+}
+
+model WeeklyGoal {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @map("user_id") @db.Uuid
+  weekStart String   @map("week_start")
+  targetXp  Int      @default(500) @map("target_xp")
+  earnedXp  Int      @default(0) @map("earned_xp")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, weekStart])
+  @@map("weekly_goals")
 }
 
 // ─── LINUX COMMANDS REFERENCE (DOCS) ──────────────────────────────

@@ -500,12 +500,9 @@ function AdminUserManagement() {
           });
           setDbStatus({
             connected: serverResult.isDatabaseConnected,
-            source:
-              serverResult.source === "database-rpc"
-                ? "Supabase RPC"
-                : serverResult.source === "database-tables"
-                  ? "Supabase Tables"
-                  : "Database Registry",
+            source: serverResult.isDatabaseConnected
+              ? "Prisma (PostgreSQL)"
+              : "Local Database Registry",
             totalDbRecords: serverResult.totalDbRecords,
             lastSyncedAt: new Date().toLocaleTimeString(),
           });
@@ -1666,7 +1663,7 @@ export function AdminCoursesList() {
           .select("id")
           .eq("slug", catCourse.slug)
           .maybeSingle();
-        let courseId = existing?.id as string | undefined;
+        let courseId = (existing as any)?.id as string | undefined;
         if (!courseId) {
           const { data: inserted, error: iErr } = await supabase
             .from("courses")
@@ -1682,7 +1679,7 @@ export function AdminCoursesList() {
             .select("id")
             .single();
           if (iErr) throw iErr;
-          courseId = inserted.id;
+          courseId = (inserted as any)?.id;
         } else {
           await supabase
             .from("courses")
@@ -1889,7 +1886,7 @@ function AdminContentCreator() {
         .select("id")
         .eq("slug", selectedCourseSlug)
         .maybeSingle();
-      const courseId = course?.id;
+      const courseId = (course as any)?.id;
 
       const quizPayload =
         lessonType === "quiz"

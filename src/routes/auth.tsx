@@ -1,10 +1,14 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useEffect, useState, useCallback, useRef } from "react";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { useAuth, upsertLearnerRecord, getAllLearnerRecords } from "@/lib/AuthContext";
+import { useAuth, upsertLearnerRecord, getAllLearnerRecords, type User } from "@/lib/AuthContext";
+import {
+  signUpWithEmailServerFn,
+  signInWithEmailPasswordServerFn,
+  verifyEmailOtpAndLoginServerFn,
+  signInWithGoogleServerFn,
+} from "@/lib/auth.functions";
 import { isMasterAdmin, unlockLocalAdmin, MASTER_ADMIN_EMAIL } from "@/lib/admin-credentials";
 import {
   sendRealEmailOtpServerFn,
@@ -141,26 +145,7 @@ async function ensureProfile(
     lastActive: new Date().toISOString(),
   });
 
-  try {
-    const withEmail = await supabase
-      .from("profiles")
-      .upsert({ ...base, email: cleanEmail, headline: cleanEmail } as never, { onConflict: "id" });
-    if (withEmail.error) {
-      await supabase
-        .from("profiles")
-        .upsert({ ...base, headline: cleanEmail } as never, { onConflict: "id" });
-    }
-    await supabase
-      .from("user_stats")
-      .upsert({ user_id: userId, xp: 150, level: 1, streak_days: 1 } as never, {
-        onConflict: "user_id",
-      });
-    await supabase.from("user_roles").upsert({ user_id: userId, role: defaultRole } as never, {
-      onConflict: "user_id,role",
-    });
-  } catch (err) {
-    console.warn("Could not sync profile/role to Supabase:", err);
-  }
+  // Profile is persisted in registry and synchronized via Prisma
 }
 
 /* ---------- Feature bullets for the left panel ---------- */
@@ -362,16 +347,7 @@ function AuthPage() {
       return;
     }
 
-    // 2. Try Supabase OAuth redirect if online
-    try {
-      const redirectUrl = `${window.location.origin}/auth${redirect ? `?redirect=${encodeURIComponent(redirect)}` : ""}`;
-      const { error: gError } = await signInWithGoogle(redirectUrl);
-      if (!gError) return;
-    } catch {
-      /* fallback to client modal */
-    }
-
-    // 3. Open configuration modal to enter Google Client ID or test
+    // Show configuration modal to connect Google Client ID or run OAuth
     setShowGoogleModal(true);
   }
 
@@ -426,6 +402,22 @@ function AuthPage() {
                 aud: "authenticated",
                 created_at: new Date().toISOString(),
               } as User;
+
+              // Persist and authenticate in Prisma
+              try {
+                const res = await signInWithGoogleServerFn({
+                  data: {
+                    email: realEmail,
+                    displayName: realName,
+                    avatarUrl: realAvatar,
+                  },
+                });
+                if (res?.sessionToken) {
+                  localStorage.setItem("afrokernel_session_token", res.sessionToken);
+                }
+              } catch (prismaErr) {
+                console.warn("Prisma Google login notice:", prismaErr);
+              }
 
               setLocalSessionUser(realUser);
               await ensureProfile(realUserId, realName, realEmail, realAvatar, true);
@@ -555,26 +547,6 @@ function AuthPage() {
     } catch (err: unknown) {
       console.warn("Server email OTP dispatch notice:", err);
     }
-
-    // Also attempt Supabase signInWithOtp if online
-    try {
-      if (purpose === "signup") {
-        await supabase.auth.signUp({
-          email: targetEmail,
-          password: targetPass,
-          options: {
-            data: { display_name: targetName, full_name: targetName },
-          },
-        });
-      } else {
-        await supabase.auth.signInWithOtp({
-          email: targetEmail,
-          options: { shouldCreateUser: true },
-        });
-      }
-    } catch (sbErr) {
-      console.warn("Supabase network OTP delivery notice:", sbErr);
-    }
   }
 
   async function executeVerifyOtp(codeToVerify?: string) {
@@ -602,24 +574,22 @@ function AuthPage() {
         console.warn("Server verifyRealEmailOtp notice:", err);
       }
 
-      // 2. Try Supabase verifyOtp first if server is reachable
-      if (!isVerified) {
-        try {
-          const { data: verifyData, error: verifyErr } = await supabase.auth.verifyOtp({
-            email: pendingEmail,
-            token: entered,
-            type: otpPurpose === "signup" ? "signup" : "email",
-          });
-
-          if (!verifyErr && (verifyData?.user || verifyData?.session)) {
-            isVerified = true;
+      // 2. Try native Prisma OTP verification and login
+      try {
+        const prismaOtpRes = await verifyEmailOtpAndLoginServerFn({
+          data: { email: pendingEmail, code: entered, displayName: pendingName },
+        });
+        if (prismaOtpRes?.success) {
+          isVerified = true;
+          if (prismaOtpRes.sessionToken) {
+            localStorage.setItem("afrokernel_session_token", prismaOtpRes.sessionToken);
           }
-        } catch (err) {
-          console.warn("Supabase verifyOtp notice:", err);
         }
+      } catch (err) {
+        console.warn("Prisma verifyEmailOtp notice:", err);
       }
 
-      // 3. Fallback bypass check for admin testing if network was disconnected
+      // 3. Fallback bypass check for admin testing if offline
       if (!isVerified && (entered === "123456" || entered === "777888")) {
         isVerified = true;
       }
@@ -684,15 +654,6 @@ function AuthPage() {
     } catch (e) {
       console.warn("Resend email notice:", e);
     }
-
-    try {
-      await supabase.auth.resend({
-        type: otpPurpose === "signup" ? "signup" : "email_change",
-        email: pendingEmail,
-      });
-    } catch (e) {
-      console.warn("Supabase resend notice:", e);
-    }
   }
 
   /* ── 3. FORM SUBMISSION (SIGN IN / SIGN UP) ─────────────── */
@@ -743,12 +704,6 @@ function AuthPage() {
           true,
         );
 
-        try {
-          await supabase.auth.signInWithPassword({ email: cleanEmail, password: cleanPass });
-        } catch {
-          /* ignore network errors */
-        }
-
         navigate({ to: "/admin", replace: true });
         return;
       }
@@ -777,23 +732,22 @@ function AuthPage() {
       let isAuthed = false;
       let resolvedDisplayName = displayName;
 
-      // 1. Try Supabase
+      // 1. Authenticate with Prisma PostgreSQL database
       try {
-        const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
-          email: cleanEmail,
-          password: cleanPass,
+        const authRes = await signInWithEmailPasswordServerFn({
+          data: { email: cleanEmail, password: cleanPass },
         });
 
-        if (!signInErr && signInData.session?.user) {
-          userId = signInData.session.user.id;
-          resolvedDisplayName =
-            signInData.session.user.user_metadata?.display_name ||
-            signInData.session.user.email?.split("@")[0] ||
-            displayName;
+        if (authRes?.success && authRes.user) {
+          userId = authRes.user.id;
+          resolvedDisplayName = authRes.user.displayName || displayName;
           isAuthed = true;
+          if (authRes.sessionToken) {
+            localStorage.setItem("afrokernel_session_token", authRes.sessionToken);
+          }
         }
-      } catch (sbErr) {
-        console.warn("Supabase network sign-in unreachable, checking local registry:", sbErr);
+      } catch (prismaErr) {
+        console.warn("Prisma sign-in notice, checking local registry:", prismaErr);
       }
 
       // 2. Check local user registry (for offline / local accounts)

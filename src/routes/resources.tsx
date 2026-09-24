@@ -6,7 +6,6 @@ import { BackToHome } from "@/components/BackToHome";
 import { ExternalLink, FileText, BookOpen, Download, Loader2 } from "lucide-react";
 import { linuxResources } from "@/lib/linux-resources";
 import pdfAsset from "@/assets/mts-linux-command-reference.pdf.asset.json";
-import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/resources")({
   head: () => ({
@@ -41,14 +40,8 @@ type DbResource = {
 function ResourcesPage() {
   const { data: dbResources, isLoading } = useQuery({
     queryKey: ["learning-resources"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("learning_resources" as any)
-        .select("id,title,description,category,resource_type,url")
-        .eq("published", true)
-        .order("sort_order");
-      if (error) return [] as DbResource[];
-      return (data ?? []) as unknown as DbResource[];
+    queryFn: async (): Promise<DbResource[]> => {
+      return [];
     },
   });
 

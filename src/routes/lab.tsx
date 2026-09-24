@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/AuthContext";
 import { logTerminalSession } from "@/lib/dashboard.functions";
 import {
   BASE_PACKAGES,
@@ -232,13 +232,10 @@ function cloneFS(fs: DirNode): DirNode {
 
 function Lab() {
   const [splitView, setSplitView] = useState(true);
+  const { user } = useAuth();
   const [commandCount, setCommandCount] = useState(0);
-  const [signedIn, setSignedIn] = useState(false);
+  const signedIn = !!user;
   const [globalDistro, setGlobalDistro] = useState<Distro>("ubuntu");
-
-  useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => setSignedIn(!!data.user));
-  }, []);
 
   async function saveSnapshot() {
     if (!signedIn) return;

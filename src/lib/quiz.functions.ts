@@ -450,6 +450,5 @@ export const getLessonUnlocks = createServerFn({ method: "GET" })
       (data ?? []).filter((r: any) => r.completed).map((r: any) => r.lesson_id as string),
     );
     // return list of completed lesson ids; UI computes next
-    void courseId;
-    return { completed: [...completed] };
+    return { completed: [...completed] as string[] };
   });

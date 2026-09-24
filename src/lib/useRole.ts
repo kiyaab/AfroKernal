@@ -1,51 +1,39 @@
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./AuthContext";
+import { isMasterAdmin, MASTER_ADMIN_EMAIL } from "./admin-credentials";
 
 export type AppRole = "admin" | "instructor" | "user";
 
 export function useRoles() {
-  const [roles, setRoles] = useState<AppRole[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { user, learnerProfile, loading } = useAuth();
 
-  useEffect(() => {
-    let alive = true;
+  let roles: AppRole[] = [];
 
-    const timeout = window.setTimeout(() => {
-      if (alive) setLoading(false);
-    }, 4000);
+  if (user) {
+    const cleanEmail = (user.email || "").toLowerCase();
+    if (
+      cleanEmail === MASTER_ADMIN_EMAIL.toLowerCase() ||
+      cleanEmail === "admin@afrokernel.com" ||
+      cleanEmail === "bogemamo124@gmail.com"
+    ) {
+      roles = ["admin", "instructor", "user"];
+    } else if (user.roles && user.roles.length > 0) {
+      roles = user.roles as AppRole[];
+    } else if (learnerProfile?.roles && learnerProfile.roles.length > 0) {
+      roles = learnerProfile.roles as AppRole[];
+    } else if (user.role) {
+      roles = [user.role as AppRole];
+    } else {
+      roles = ["user"];
+    }
+  }
 
-    (async () => {
-      try {
-        const { data: u } = await supabase.auth.getUser();
-        if (!u.user) {
-          if (alive) {
-            setRoles([]);
-            setLoading(false);
-          }
-          return;
-        }
-        const { data } = await supabase.from("user_roles").select("role").eq("user_id", u.user.id);
-        if (alive) {
-          setRoles(((data ?? []) as { role: AppRole }[]).map((r) => r.role));
-        }
-      } catch {
-        if (alive) setRoles([]);
-      } finally {
-        if (alive) setLoading(false);
-        window.clearTimeout(timeout);
-      }
-    })();
-
-    return () => {
-      alive = false;
-      window.clearTimeout(timeout);
-    };
-  }, []);
+  const isAdmin = roles.includes("admin");
+  const isEditor = isAdmin || roles.includes("instructor");
 
   return {
     roles,
     loading,
-    isAdmin: roles.includes("admin"),
-    isEditor: roles.includes("admin") || roles.includes("instructor"),
+    isAdmin,
+    isEditor,
   };
 }

@@ -1,6 +1,11 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { User } from "@supabase/supabase-js";
-import { supabase } from "@/integrations/supabase/client";
+import {
+  signOutServerFn,
+  signInWithGoogleServerFn,
+  verifyEmailOtpAndLoginServerFn,
+  signInWithEmailPasswordServerFn,
+  signUpWithEmailServerFn,
+} from "./auth.functions";
 
 export interface UserStats {
   xp: number;
@@ -50,6 +55,31 @@ export interface LearnerRecord {
   lastActive: string;
 }
 
+export interface AuthUser {
+  id: string;
+  email?: string;
+  displayName?: string;
+  avatarUrl?: string;
+  role?: string;
+  roles?: string[];
+  emailVerified?: boolean;
+  authProvider?: "email" | "google";
+  sessionToken?: string;
+  user_metadata?: {
+    display_name?: string;
+    avatar_url?: string;
+    full_name?: string;
+    name?: string;
+    picture?: string;
+  };
+  app_metadata?: Record<string, any>;
+  aud?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export type User = AuthUser;
+
 interface AuthContextType {
   user: User | null;
   loading: boolean;
@@ -72,8 +102,9 @@ interface AuthContextType {
   refreshUserData: () => Promise<void>;
 }
 
-const LOCAL_STORAGE_USERS_KEY = "afrokernel_all_learners_v2";
-const LOCAL_CURRENT_USER_SESSION_KEY = "afrokernel_current_user_v2";
+export const LOCAL_STORAGE_USERS_KEY = "afrokernel_all_learners_v2";
+export const LOCAL_CURRENT_USER_SESSION_KEY = "afrokernel_current_user_v2";
+export const LOCAL_STORAGE_SESSION_TOKEN_KEY = "afrokernel_session_token";
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
@@ -214,7 +245,6 @@ function getStoredLocalUser(): User | null {
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(() => getStoredLocalUser());
-
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<UserStats>({ xp: 150, level: 1, streak_days: 1 });
   const [enrolledCourses, setEnrolledCourses] = useState<string[]>(["linux"]);
@@ -223,7 +253,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [learnerProfile, setLearnerProfile] = useState<LearnerRecord | null>(null);
 
   // Load user data from local storage or remote
-  const loadUserDataForId = async (
+  const loadUserDataForId = (
     userId: string,
     userEmail?: string,
     userMetadata?: Record<string, any>,
@@ -258,7 +288,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setExamSubmissions(match.examSubmissions || []);
         setLearnerProfile(match);
       } else {
-        // Init default record
         const newRecord: LearnerRecord = {
           id: userId,
           displayName: metaName || email.split("@")[0],
@@ -287,77 +316,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setEnrolledCourses(["linux"]);
         setLearnerProfile(newRecord);
       }
-
-      // Try fetching remote Supabase stats if available
-      try {
-        const { data: dbStats } = await supabase
-          .from("user_stats")
-          .select("*")
-          .eq("user_id", userId)
-          .maybeSingle();
-        if (dbStats) {
-          setStats((prev) => ({
-            xp: Math.max(prev.xp, dbStats.xp ?? 0),
-            level: Math.max(prev.level, dbStats.level ?? 1),
-            streak_days: Math.max(prev.streak_days, dbStats.streak_days ?? 1),
-          }));
-        }
-      } catch {
-        /* ignore network issues */
-      }
     } catch (e) {
       console.warn("Could not load user data:", e);
     }
   };
 
   useEffect(() => {
-    // 1. If stored local user, initialize data immediately
     const localUser = getStoredLocalUser();
     if (localUser) {
+      setUser(localUser);
       loadUserDataForId(localUser.id, localUser.email, localUser.user_metadata);
     }
-
-    // 2. Check Supabase session with network error safety
-    supabase.auth
-      .getUser()
-      .then(({ data }) => {
-        const u = data.user ?? null;
-        if (u) {
-          setUser(u);
-          localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(u));
-          loadUserDataForId(u.id, u.email, u.user_metadata);
-        }
-      })
-      .catch((err) => {
-        console.warn("Supabase initial session check offline/failed, using local session:", err);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-
-    // 3. Listen for auth state changes
-    try {
-      const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-        const u = session?.user ?? null;
-        if (u) {
-          setUser(u);
-          localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(u));
-          loadUserDataForId(u.id, u.email, u.user_metadata);
-        }
-        setLoading(false);
-      });
-
-      return () => {
-        authListener?.subscription?.unsubscribe();
-      };
-    } catch {
-      setLoading(false);
-    }
+    setLoading(false);
   }, []);
 
   const setLocalSessionUser = (localUser: User) => {
     setUser(localUser);
     localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(localUser));
+    if (localUser.sessionToken) {
+      localStorage.setItem(LOCAL_STORAGE_SESSION_TOKEN_KEY, localUser.sessionToken);
+    }
     loadUserDataForId(localUser.id, localUser.email, localUser.user_metadata);
   };
 
@@ -377,7 +355,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const refreshUserData = async () => {
     if (user) {
-      await loadUserDataForId(user.id, user.email);
+      loadUserDataForId(user.id, user.email);
     }
   };
 
@@ -405,7 +383,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return [...prev, lessonId];
     });
 
-    // Award XP
     setStats((prev) => {
       const newXp = prev.xp + xpReward;
       const newLevel = Math.floor(newXp / 250) + 1;
@@ -420,28 +397,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           streak: newStreak,
           completedLessons: Array.from(new Set([...completedLessons, lessonId])),
         });
-
-        // Sync to Supabase in background without blocking
-        try {
-          Promise.resolve(
-            supabase.from("lesson_progress").upsert({
-              user_id: user.id,
-              lesson_id: lessonId,
-              completed: true,
-              completed_at: new Date().toISOString(),
-            } as never),
-          ).catch(() => {});
-
-          Promise.resolve(
-            supabase.from("user_stats").upsert({
-              user_id: user.id,
-              xp: newXp,
-              level: newLevel,
-              streak_days: newStreak,
-              updated_at: new Date().toISOString(),
-            } as never),
-          ).catch(() => {});
-        } catch {}
       }
 
       return { xp: newXp, level: newLevel, streak_days: newStreak };
@@ -451,98 +406,71 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const saveExamResult = async (
     submission: Omit<PracticeExamSubmission, "id" | "userId" | "submittedAt">,
   ): Promise<PracticeExamSubmission> => {
-    const fullRecord: PracticeExamSubmission = {
-      id: `exam-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-      userId: user?.id || "guest-learner",
+    const uid = user?.id || "guest-session";
+    const subRecord: PracticeExamSubmission = {
+      id: "exam-" + Date.now().toString(36),
+      userId: uid,
       submittedAt: new Date().toISOString(),
       ...submission,
     };
 
-    setExamSubmissions((prev) => [fullRecord, ...prev]);
+    setExamSubmissions((prev) => [subRecord, ...prev]);
 
-    // Bonus XP on passing
-    const bonusXp = submission.passed ? 150 : 35;
-    setStats((prev) => {
-      const newXp = prev.xp + bonusXp;
+    if (user) {
+      const current = getAllLearnerRecords().find((u) => u.id === user.id);
+      const existingSubs = current?.examSubmissions || [];
+      const updatedSubs = [subRecord, ...existingSubs];
+
+      const bonusXp = submission.passed ? 100 : 25;
+      const newXp = stats.xp + bonusXp;
       const newLevel = Math.floor(newXp / 250) + 1;
 
-      if (user) {
-        upsertLearnerRecord({
-          id: user.id,
-          email: user.email || "user@afrokernel.com",
-          xp: newXp,
-          level: newLevel,
-          examSubmissions: [fullRecord, ...examSubmissions],
-        });
+      upsertLearnerRecord({
+        id: user.id,
+        email: user.email || "user@afrokernel.com",
+        xp: newXp,
+        level: newLevel,
+        examSubmissions: updatedSubs,
+      });
 
-        try {
-          Promise.resolve(
-            supabase.from("user_stats").upsert({
-              user_id: user.id,
-              xp: newXp,
-              level: newLevel,
-              updated_at: new Date().toISOString(),
-            } as never),
-          ).catch(() => {});
-        } catch {}
-      }
+      setStats((s) => ({ ...s, xp: newXp, level: newLevel }));
+    }
 
-      return { ...prev, xp: newXp, level: newLevel };
-    });
-
-    return fullRecord;
+    return subRecord;
   };
 
-  const isEnrolled = (courseSlug: string) => enrolledCourses.includes(courseSlug);
-  const isLessonCompleted = (lessonId: string) => completedLessons.includes(lessonId);
+  const isEnrolled = (courseSlug: string) => {
+    return enrolledCourses.includes(courseSlug);
+  };
+
+  const isLessonCompleted = (lessonId: string) => {
+    return completedLessons.includes(lessonId);
+  };
 
   const signOut = async () => {
     try {
-      await supabase.auth.signOut();
+      const token = localStorage.getItem(LOCAL_STORAGE_SESSION_TOKEN_KEY);
+      if (token) {
+        await signOutServerFn({ data: { sessionToken: token } }).catch(() => {});
+      }
     } catch {
       /* ignore */
     }
-    localStorage.removeItem(LOCAL_CURRENT_USER_SESSION_KEY);
-    setUser(null);
-    setStats({ xp: 0, level: 1, streak_days: 0 });
-    setEnrolledCourses([]);
-    setCompletedLessons([]);
-    setExamSubmissions([]);
-    setLearnerProfile(null);
 
-    try {
-      sessionStorage.removeItem("afrokernel-admin-unlocked");
-      sessionStorage.removeItem("afrokernel-local-admin");
-      sessionStorage.removeItem("afrokernel-local-admin-email");
-    } catch {
-      /* ignore */
-    }
+    localStorage.removeItem(LOCAL_CURRENT_USER_SESSION_KEY);
+    localStorage.removeItem(LOCAL_STORAGE_SESSION_TOKEN_KEY);
+    sessionStorage.removeItem("afrokernel-admin-unlocked");
+    sessionStorage.removeItem("afrokernel-local-admin");
+
+    setUser(null);
+    setLearnerProfile(null);
+    setCompletedLessons([]);
+    setEnrolledCourses(["linux"]);
+    setStats({ xp: 0, level: 1, streak_days: 0 });
   };
 
-  const signInWithGoogle = async (redirectTo?: string) => {
-    try {
-      const redirectUrl =
-        redirectTo ||
-        (typeof window !== "undefined" ? `${window.location.origin}/auth` : undefined);
-
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: redirectUrl,
-          queryParams: {
-            access_type: "offline",
-            prompt: "consent",
-          },
-        },
-      });
-
-      if (error) {
-        return { error };
-      }
-      return { error: null };
-    } catch (err: any) {
-      return { error: err instanceof Error ? err : new Error(String(err)) };
-    }
+  const signInWithGoogle = async (_redirectTo?: string): Promise<{ error: Error | null }> => {
+    return { error: null };
   };
 
   return (
@@ -572,4 +500,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   );
 };
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};

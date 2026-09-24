@@ -1,6 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { HeaderNav } from "@/components/HeaderNav";
 import { FooterNav } from "@/components/FooterNav";
@@ -55,46 +54,7 @@ function CourseDetailPage() {
   const { data: course, isLoading } = useQuery({
     queryKey: ["public-course-detail", slug],
     queryFn: async () => {
-      const fallback = getCourseBySlug(slug) || CATALOG_COURSES[0];
-      try {
-        const { data: dbCourse } = await supabase
-          .from("courses")
-          .select("*")
-          .eq("slug", slug)
-          .eq("published", true)
-          .maybeSingle();
-
-        if (!dbCourse) return fallback;
-
-        const { data: dbLessons } = await supabase
-          .from("lessons")
-          .select("*")
-          .eq("course_id", dbCourse.id)
-          .eq("published", true)
-          .order("sort_order", { ascending: true });
-
-        if (dbLessons && dbLessons.length > 0) {
-          return {
-            ...fallback,
-            title: dbCourse.title || fallback.title,
-            description: dbCourse.description || fallback.description,
-            lessons: dbLessons.map((l: any) => ({
-              id: l.id,
-              slug: l.slug,
-              title: l.title,
-              lesson_type: l.lesson_type || "notes",
-              video_url: l.video_url,
-              duration_minutes: 20,
-              xp_reward: l.xp_reward || 25,
-              sort_order: l.sort_order || 1,
-              content: l.content || "",
-            })),
-          };
-        }
-        return fallback;
-      } catch {
-        return fallback;
-      }
+      return getCourseBySlug(slug) || CATALOG_COURSES[0];
     },
   });
 

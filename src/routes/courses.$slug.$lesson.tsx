@@ -1,6 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/lib/AuthContext";
 import { getCourseBySlug, CATALOG_COURSES } from "@/lib/courses-catalog-data";
 import { Logo } from "@/components/Logo";
@@ -74,40 +73,7 @@ function LessonPage() {
   const { data: lessonData } = useQuery({
     queryKey: ["public-lesson-view", slug, lessonSlug],
     queryFn: async () => {
-      const catalogLesson =
-        courseMeta.lessons.find((l) => l.slug === lessonSlug) || courseMeta.lessons[0];
-      try {
-        const { data: dbCourse } = await supabase
-          .from("courses")
-          .select("id")
-          .eq("slug", slug)
-          .maybeSingle();
-        if (dbCourse) {
-          const { data: dbL } = await supabase
-            .from("lessons")
-            .select("*")
-            .eq("course_id", dbCourse.id)
-            .eq("slug", lessonSlug)
-            .maybeSingle();
-
-          if (dbL) {
-            return {
-              ...catalogLesson,
-              id: dbL.id,
-              title: dbL.title || catalogLesson.title,
-              content: dbL.content || catalogLesson.content,
-              video_url: dbL.video_url || catalogLesson.video_url,
-              xp_reward: dbL.xp_reward || catalogLesson.xp_reward,
-              lesson_type:
-                (dbL.lesson_type as "video" | "notes" | "lab" | "quiz") ||
-                catalogLesson.lesson_type,
-            };
-          }
-        }
-        return catalogLesson;
-      } catch {
-        return catalogLesson;
-      }
+      return courseMeta.lessons.find((l) => l.slug === lessonSlug) || courseMeta.lessons[0];
     },
   });
 
