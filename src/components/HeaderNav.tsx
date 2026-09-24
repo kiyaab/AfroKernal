@@ -32,7 +32,7 @@ import { GlobalSearchModal } from "@/components/GlobalSearchModal";
 const LOGO_URL = "/afrokernel-logo.png";
 
 export function HeaderNav() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, learnerProfile } = useAuth();
   const location = useLocation();
   const isHomePage = location.pathname === "/" || location.pathname === "";
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -363,7 +363,16 @@ export function HeaderNav() {
                   to="/profile"
                   className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-3.5 py-1.5 text-xs font-bold text-primary-foreground shadow-[var(--shadow-glow)] transition hover:brightness-110"
                 >
-                  <User className="h-3.5 w-3.5" /> Profile
+                  {learnerProfile?.avatarUrl ? (
+                    <img
+                      src={learnerProfile.avatarUrl}
+                      alt={learnerProfile.displayName}
+                      className="h-4 w-4 rounded-full object-cover border border-primary-foreground/30 shrink-0"
+                    />
+                  ) : (
+                    <User className="h-3.5 w-3.5" />
+                  )}
+                  <span>Profile</span>
                 </Link>
                 <button
                   onClick={() => signOut()}

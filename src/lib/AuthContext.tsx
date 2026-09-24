@@ -43,6 +43,8 @@ export interface LearnerRecord {
   enrolledCourses: string[]; // slugs
   completedLessons: string[]; // lesson ids
   examSubmissions: PracticeExamSubmission[];
+  emailVerified?: boolean;
+  authProvider?: "email" | "google";
   createdAt: string;
   updatedAt: string;
   lastActive: string;
@@ -57,6 +59,7 @@ interface AuthContextType {
   examSubmissions: PracticeExamSubmission[];
   learnerProfile: LearnerRecord | null;
   signOut: () => Promise<void>;
+  signInWithGoogle: (redirectTo?: string) => Promise<{ error: Error | null }>;
   setLocalSessionUser: (user: User) => void;
   updateLearnerProfile: (data: Partial<LearnerRecord>) => void;
   enrollCourse: (courseSlug: string) => void;
@@ -81,6 +84,7 @@ const AuthContext = createContext<AuthContextType>({
   examSubmissions: [],
   learnerProfile: null,
   signOut: async () => {},
+  signInWithGoogle: async () => ({ error: null }),
   setLocalSessionUser: () => {},
   updateLearnerProfile: () => {},
   enrollCourse: () => {},
@@ -136,6 +140,8 @@ export function upsertLearnerRecord(
       enrolledCourses: record.enrolledCourses || ["linux"],
       completedLessons: record.completedLessons || [],
       examSubmissions: record.examSubmissions || [],
+      emailVerified: record.emailVerified ?? false,
+      authProvider: record.authProvider || "email",
       createdAt: record.createdAt || now,
       updatedAt: now,
       lastActive: now,
@@ -163,6 +169,11 @@ export function upsertLearnerRecord(
         xp: record.xp !== undefined ? record.xp : list[existingIdx].xp,
         level: record.level !== undefined ? record.level : list[existingIdx].level,
         streak: record.streak !== undefined ? record.streak : list[existingIdx].streak,
+        emailVerified:
+          record.emailVerified !== undefined
+            ? record.emailVerified
+            : list[existingIdx].emailVerified,
+        authProvider: record.authProvider || list[existingIdx].authProvider,
         updatedAt: now,
         lastActive: now,
       };
@@ -196,14 +207,40 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [learnerProfile, setLearnerProfile] = useState<LearnerRecord | null>(null);
 
   // Load user data from local storage or remote
-  const loadUserDataForId = async (userId: string, userEmail?: string) => {
+  const loadUserDataForId = async (
+    userId: string,
+    userEmail?: string,
+    userMetadata?: Record<string, any>,
+  ) => {
     try {
       const allLearners = getAllLearnerRecords();
       const match = allLearners.find(
         (l) => l.id === userId || (userEmail && l.email.toLowerCase() === userEmail.toLowerCase()),
       );
 
+      const email = userEmail || "learner@afrokernel.com";
+      const metaName =
+        userMetadata?.full_name ||
+        userMetadata?.name ||
+        userMetadata?.display_name;
+      const metaAvatar =
+        userMetadata?.avatar_url ||
+        userMetadata?.picture;
+
       if (match) {
+        let hasUpdates = false;
+        if (!match.avatarUrl && metaAvatar) {
+          match.avatarUrl = metaAvatar;
+          hasUpdates = true;
+        }
+        if (metaName && (!match.displayName || match.displayName === match.email.split("@")[0])) {
+          match.displayName = metaName;
+          hasUpdates = true;
+        }
+        if (hasUpdates) {
+          upsertLearnerRecord(match);
+        }
+
         setStats({ xp: match.xp, level: match.level, streak_days: match.streak || 1 });
         setEnrolledCourses(match.enrolledCourses || ["linux"]);
         setCompletedLessons(match.completedLessons || []);
@@ -211,13 +248,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setLearnerProfile(match);
       } else {
         // Init default record
-        const email = userEmail || "learner@afrokernel.com";
         const newRecord: LearnerRecord = {
           id: userId,
-          displayName: email.split("@")[0],
+          displayName: metaName || email.split("@")[0],
           email,
           bio: "Linux sysadmin & cloud architect in training.",
-          avatarUrl: "",
+          avatarUrl: metaAvatar || "",
           location: "Global / Remote",
           website: "",
           githubUrl: "",
@@ -267,7 +303,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // 1. If stored local user, initialize data immediately
     const localUser = getStoredLocalUser();
     if (localUser) {
-      loadUserDataForId(localUser.id, localUser.email);
+      loadUserDataForId(localUser.id, localUser.email, localUser.user_metadata);
     }
 
     // 2. Check Supabase session with network error safety
@@ -278,7 +314,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (u) {
           setUser(u);
           localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(u));
-          loadUserDataForId(u.id, u.email);
+          loadUserDataForId(u.id, u.email, u.user_metadata);
         }
       })
       .catch((err) => {
@@ -295,7 +331,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (u) {
           setUser(u);
           localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(u));
-          loadUserDataForId(u.id, u.email);
+          loadUserDataForId(u.id, u.email, u.user_metadata);
         }
         setLoading(false);
       });
@@ -311,7 +347,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const setLocalSessionUser = (localUser: User) => {
     setUser(localUser);
     localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(localUser));
-    loadUserDataForId(localUser.id, localUser.email);
+    loadUserDataForId(localUser.id, localUser.email, localUser.user_metadata);
   };
 
   const updateLearnerProfile = (data: Partial<LearnerRecord>) => {
@@ -472,6 +508,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  const signInWithGoogle = async (redirectTo?: string) => {
+    try {
+      const redirectUrl =
+        redirectTo ||
+        (typeof window !== "undefined"
+          ? `${window.location.origin}/auth`
+          : undefined);
+
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: redirectUrl,
+          queryParams: {
+            access_type: "offline",
+            prompt: "consent",
+          },
+        },
+      });
+
+      if (error) {
+        return { error };
+      }
+      return { error: null };
+    } catch (err: any) {
+      return { error: err instanceof Error ? err : new Error(String(err)) };
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -483,6 +547,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         examSubmissions,
         learnerProfile,
         signOut,
+        signInWithGoogle,
         setLocalSessionUser,
         updateLearnerProfile,
         enrollCourse,
