@@ -7,13 +7,14 @@
     "node": ">=20.x"
   },
   "scripts": {
-    "dev": "vite dev",
+    "dev": "node ./scripts/ensure-db.mjs && vite dev",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
     "test": "node ./scripts/test-functionality.mjs",
     "test:db": "node ./scripts/test-db.mjs",
+    "seed:admin": "tsx prisma/seed-admin.ts",
     "db:push": "prisma db push",
     "audit:routes": "node ./scripts/audit-routes.mjs",
     "lint": "eslint .",
@@ -93,6 +94,7 @@
     "nitro": "3.0.260603-beta",
     "prettier": "^3.7.3",
     "prisma": "^5.22.0",
+    "tsx": "^4.19.3",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.56.1",
     "vite": "^8.0.16"
