@@ -149,6 +149,7 @@ model Lesson {
   course          Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
   progress        LessonProgress[]
   challenge       Challenge?
+  quiz            Quiz?
 
   @@unique([courseId, slug])
   @@map("lessons")
@@ -272,6 +273,7 @@ model Quiz {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
+  lesson       Lesson         @relation(fields: [lessonId], references: [id], onDelete: Cascade)
   questions    QuizQuestion[]
 
   @@map("quizzes")
