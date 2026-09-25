@@ -13,6 +13,8 @@
     "preview": "vite preview",
     "start": "node .output/server/index.mjs",
     "test": "node ./scripts/test-functionality.mjs",
+    "test:db": "node ./scripts/test-db.mjs",
+    "db:push": "prisma db push",
     "audit:routes": "node ./scripts/audit-routes.mjs",
     "lint": "eslint .",
     "format": "prettier --write .",
