@@ -16,14 +16,13 @@ async function verifyDatabase() {
     console.log(`  ✅ [CONNECT] Connected to PostgreSQL in ${latency}ms`);
 
     // 2. Query table counts
-    const [userCount, courseCount, quizCount, sessionCount, roleCount] =
-      await Promise.all([
-        prisma.user.count(),
-        prisma.course.count(),
-        prisma.quiz.count(),
-        prisma.session.count(),
-        prisma.userRole.count(),
-      ]);
+    const [userCount, courseCount, quizCount, sessionCount, roleCount] = await Promise.all([
+      prisma.user.count(),
+      prisma.course.count(),
+      prisma.quiz.count(),
+      prisma.session.count(),
+      prisma.userRole.count(),
+    ]);
 
     console.log(`  ✅ [USERS] Total registered users: ${userCount}`);
     console.log(`  ✅ [COURSES] Total curriculum courses: ${courseCount}`);

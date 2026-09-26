@@ -5,9 +5,17 @@ async function testCases() {
   const cases = [
     { email: "admin@ak.com", password: "admin1234", desc: "Default exact email & password" },
     { email: "admin", password: "admin1234", desc: "Username alias 'admin' with admin1234" },
-    { email: "admin", password: "admin", desc: "Username alias 'admin' with fallback password 'admin'" },
+    {
+      email: "admin",
+      password: "admin",
+      desc: "Username alias 'admin' with fallback password 'admin'",
+    },
     { email: "admin@afrokernel.com", password: "admin1234", desc: "Alias admin@afrokernel.com" },
-    { email: "admin@admin.com", password: "admin123", desc: "Alias admin@admin.com with password 'admin123'" },
+    {
+      email: "admin@admin.com",
+      password: "admin123",
+      desc: "Alias admin@admin.com with password 'admin123'",
+    },
   ];
 
   console.log("======================================================");
@@ -22,7 +30,9 @@ async function testCases() {
         password: c.password,
       });
       if (res.success && res.user && res.user.role === "admin") {
-        console.log(`  ✅ [PASS] ${c.desc} -> Logged in as ${res.user.email} (Role: ${res.user.role})`);
+        console.log(
+          `  ✅ [PASS] ${c.desc} -> Logged in as ${res.user.email} (Role: ${res.user.role})`,
+        );
       } else {
         console.error(`  ❌ [FAIL] ${c.desc} -> ${res.message || "Unknown error"}`);
         allPassed = false;
