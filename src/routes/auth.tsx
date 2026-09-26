@@ -9,6 +9,7 @@ import {
   verifyEmailOtpAndLoginServerFn,
   signInWithGoogleServerFn,
 } from "@/lib/auth.functions";
+import { isAdminEmail } from "@/lib/admin-auth";
 import {
   sendRealEmailOtpServerFn,
   verifyRealEmailOtpServerFn,
@@ -119,6 +120,14 @@ async function ensureProfile(
   roles: string[] = ["user"],
 ) {
   const cleanEmail = email.trim().toLowerCase();
+  const isDesignatedAdmin = isAdminEmail(cleanEmail) || role === "admin" || roles.includes("admin");
+  const effectiveRole = isDesignatedAdmin ? "admin" : role || "user";
+  const effectiveRoles = isDesignatedAdmin
+    ? ["admin"]
+    : roles && roles.length > 0
+      ? roles
+      : [effectiveRole];
+
   upsertLearnerRecord({
     id: userId,
     displayName: displayName || cleanEmail.split("@")[0],
@@ -128,7 +137,7 @@ async function ensureProfile(
     xp: 150,
     level: 1,
     streak: 1,
-    roles: roles && roles.length > 0 ? roles : [role || "user"],
+    roles: effectiveRoles,
     enrolledCourses: ["linux"],
     completedLessons: [],
     createdAt: new Date().toISOString(),
@@ -735,11 +744,19 @@ function AuthPage() {
         localStorage.setItem("afrokernel_session_token", authRes.sessionToken);
       }
 
+      const isDesignatedAdmin =
+        isAdminEmail(authRes.user.email) ||
+        isAdminEmail(cleanEmail) ||
+        authRes.user.role === "admin" ||
+        authRes.user.roles?.includes("admin");
+      const effectiveRole = isDesignatedAdmin ? "admin" : authRes.user.role;
+      const effectiveRoles = isDesignatedAdmin ? ["admin"] : authRes.user.roles;
+
       const loggedUser = {
         id: authRes.user.id,
         email: authRes.user.email,
-        role: authRes.user.role,
-        roles: authRes.user.roles,
+        role: effectiveRole,
+        roles: effectiveRoles,
         user_metadata: {
           display_name: authRes.user.displayName,
           email_verified: authRes.user.emailVerified,
@@ -756,8 +773,8 @@ function AuthPage() {
         authRes.user.email,
         authRes.user.avatarUrl,
         authRes.user.emailVerified,
-        authRes.user.role,
-        authRes.user.roles,
+        effectiveRole,
+        effectiveRoles,
       );
       navigate({ to: afterAuthPath, replace: true });
       return;

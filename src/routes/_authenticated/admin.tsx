@@ -5,6 +5,7 @@ import { adminSeedAllCoursesServerFn, adminAddLessonServerFn } from "@/lib/cours
 import { Logo } from "@/components/Logo";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useRoles } from "@/lib/useRole";
+import { isAdminEmail } from "@/lib/admin-auth";
 import {
   getAllLearnerRecords,
   upsertLearnerRecord,
@@ -119,8 +120,10 @@ export const Route = createFileRoute("/_authenticated/admin")({
 });
 
 function AdminLayout() {
-  const { isEditor, isAdmin, loading } = useRoles();
-  const hasAccess = isEditor || isAdmin;
+  const { user } = useAuth();
+  const { isAdmin, loading } = useRoles();
+  const emailIsAdmin = isAdminEmail(user?.email);
+  const hasAccess = isAdmin || emailIsAdmin;
 
   return (
     <div className="min-h-screen bg-background">
@@ -150,7 +153,7 @@ function AdminLayout() {
       </header>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {loading ? (
+        {loading && !hasAccess ? (
           <div className="flex items-center gap-2 text-muted-foreground">
             <Loader2 className="w-4 h-4 animate-spin" /> Verifying Admin Credentials…
           </div>
@@ -174,8 +177,8 @@ function NoAccess() {
       </div>
       <h1 className="text-2xl font-bold font-display tracking-tight">Access Restricted</h1>
       <p className="text-muted-foreground text-xs mt-2 max-w-sm mx-auto">
-        Administrator or instructor permissions required. Your current PostgreSQL account role does
-        not have authorization to access the AfroKernel Control Center.
+        Administrator permissions required. Only verified administrator accounts identified by
+        authorized admin credentials can access the AfroKernel Control Center.
       </p>
       <div className="mt-6 flex items-center justify-center gap-3">
         <Link
@@ -186,9 +189,10 @@ function NoAccess() {
         </Link>
         <Link
           to="/auth"
+          search={{ redirect: "/admin" }}
           className="px-4 py-2 rounded-xl border border-border text-xs font-semibold hover:bg-muted transition"
         >
-          Switch Account
+          Sign In as Admin
         </Link>
       </div>
     </div>

@@ -1,6 +1,7 @@
 import { Link, useLocation } from "@tanstack/react-router";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { useAuth } from "@/lib/AuthContext";
+import { useRoles } from "@/lib/useRole";
 import {
   Terminal,
   BookOpen,
@@ -33,6 +34,7 @@ const LOGO_URL = "/afrokernel-logo.png";
 
 export function HeaderNav() {
   const { user, signOut, learnerProfile } = useAuth();
+  const { isAdmin } = useRoles();
   const location = useLocation();
   const isHomePage = location.pathname === "/" || location.pathname === "";
   const [isSearchOpen, setIsSearchOpen] = useState(false);
@@ -353,6 +355,14 @@ export function HeaderNav() {
 
             {user ? (
               <div className="flex items-center gap-2">
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-primary/40 bg-primary/10 px-3 py-1.5 text-xs font-semibold text-primary hover:bg-primary/20 transition shadow-sm"
+                  >
+                    <Shield className="h-3.5 w-3.5" /> Admin
+                  </Link>
+                )}
                 <Link
                   to="/dashboard"
                   className="hidden sm:inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:border-primary/40 hover:text-primary transition"
@@ -427,6 +437,16 @@ export function HeaderNav() {
                 ⌘K
               </kbd>
             </button>
+
+            {isAdmin && (
+              <Link
+                to="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="flex items-center gap-2 p-3 rounded-xl bg-primary/10 border border-primary/30 text-primary font-semibold text-xs"
+              >
+                <Shield className="h-4 w-4" /> Admin Control Center
+              </Link>
+            )}
 
             <div className="grid grid-cols-2 gap-2 text-xs font-medium">
               <Link

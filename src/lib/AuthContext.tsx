@@ -6,6 +6,7 @@ import {
   signInWithEmailPasswordServerFn,
   signUpWithEmailServerFn,
 } from "./auth.functions";
+import { isAdminEmail } from "./admin-auth";
 
 export interface UserStats {
   xp: number;
@@ -167,7 +168,11 @@ export function upsertLearnerRecord(
       xp: record.xp ?? 150,
       level: record.level ?? Math.max(1, Math.floor((record.xp ?? 150) / 250) + 1),
       streak: record.streak ?? 1,
-      roles: record.roles?.length ? record.roles : ["user"],
+      roles: isAdminEmail(record.email)
+        ? ["admin"]
+        : record.roles?.length
+          ? record.roles
+          : ["user"],
       enrolledCourses: record.enrolledCourses || ["linux"],
       completedLessons: record.completedLessons || [],
       examSubmissions: record.examSubmissions || [],
@@ -182,6 +187,11 @@ export function upsertLearnerRecord(
       list[existingIdx] = {
         ...list[existingIdx],
         ...record,
+        roles: isAdminEmail(record.email || list[existingIdx].email)
+          ? ["admin"]
+          : record.roles?.length
+            ? record.roles
+            : list[existingIdx].roles || ["user"],
         enrolledCourses: Array.from(
           new Set([
             ...(list[existingIdx].enrolledCourses || []),
@@ -238,7 +248,16 @@ function getStoredLocalUser(): User | null {
   if (typeof window === "undefined") return null;
   try {
     const stored = localStorage.getItem(LOCAL_CURRENT_USER_SESSION_KEY);
-    if (stored) return JSON.parse(stored);
+    if (stored) {
+      const u = JSON.parse(stored);
+      if (u && isAdminEmail(u.email)) {
+        u.role = "admin";
+        if (!u.roles || !u.roles.includes("admin")) {
+          u.roles = ["admin", ...(u.roles || []).filter((r: string) => r !== "admin")];
+        }
+      }
+      return u;
+    }
   } catch {}
   return null;
 }
@@ -270,6 +289,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (match) {
         let hasUpdates = false;
+        if (isAdminEmail(match.email) && (!match.roles || !match.roles.includes("admin"))) {
+          match.roles = ["admin"];
+          hasUpdates = true;
+        }
         if (!match.avatarUrl && metaAvatar) {
           match.avatarUrl = metaAvatar;
           hasUpdates = true;
@@ -303,7 +326,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           xp: 150,
           level: 1,
           streak: 1,
-          roles: ["user"],
+          roles: isAdminEmail(email) ? ["admin"] : ["user"],
           enrolledCourses: ["linux"],
           completedLessons: [],
           examSubmissions: [],
@@ -324,6 +347,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     const localUser = getStoredLocalUser();
     if (localUser) {
+      if (isAdminEmail(localUser.email)) {
+        localUser.role = "admin";
+        localUser.roles = ["admin"];
+      }
       setUser(localUser);
       loadUserDataForId(localUser.id, localUser.email, localUser.user_metadata);
     }
@@ -331,6 +358,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const setLocalSessionUser = (localUser: User) => {
+    if (isAdminEmail(localUser.email)) {
+      localUser.role = "admin";
+      localUser.roles = ["admin"];
+    }
     setUser(localUser);
     localStorage.setItem(LOCAL_CURRENT_USER_SESSION_KEY, JSON.stringify(localUser));
     if (localUser.sessionToken) {

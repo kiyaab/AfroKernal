@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { prisma, isDatabaseAvailable } from "./prisma.server";
 import { hashPassword, verifyPassword, createPrismaSession } from "./auth.server";
 import { verifyStoredOtp } from "./email-otp.server";
+import { isAdminEmail } from "./admin-auth";
 
 export interface AuthResponse {
   success: boolean;
@@ -70,13 +71,14 @@ export const signUpWithEmailServerFn = createServerFn({ method: "POST" })
       }
 
       const passwordHash = password ? hashPassword(password) : null;
+      const assignedRole = isAdminEmail(email) ? "admin" : "user";
 
       const user = await prisma.user.create({
         data: {
           email,
           passwordHash,
           displayName,
-          role: "user",
+          role: assignedRole,
           emailVerified: false,
           authProvider: "email",
           profile: {
@@ -89,7 +91,7 @@ export const signUpWithEmailServerFn = createServerFn({ method: "POST" })
           },
           userRoles: {
             create: {
-              role: "user",
+              role: assignedRole,
             },
           },
           userStats: {
@@ -258,8 +260,27 @@ export async function signInWithEmailPasswordCore(data: {
       };
     }
 
-    const resolvedRoles =
-      user.userRoles && user.userRoles.length > 0
+    const isDesignatedAdmin = isAdminEmail(user.email) || isAdminEmail(rawEmail);
+    if (isDesignatedAdmin && user.role !== "admin") {
+      try {
+        await prisma.user.update({
+          where: { id: user.id },
+          data: { role: "admin" },
+        });
+        await prisma.userRole.upsert({
+          where: { userId_role: { userId: user.id, role: "admin" } },
+          update: {},
+          create: { userId: user.id, role: "admin" },
+        });
+        user.role = "admin";
+      } catch (err) {
+        console.warn("Could not sync admin role to database:", err);
+      }
+    }
+
+    const resolvedRoles = isDesignatedAdmin
+      ? ["admin"]
+      : user.userRoles && user.userRoles.length > 0
         ? user.userRoles.map((r) => r.role)
         : [user.role || "user"];
 
@@ -272,7 +293,7 @@ export async function signInWithEmailPasswordCore(data: {
         email: user.email,
         displayName: user.displayName || user.profile?.displayName || user.email.split("@")[0],
         avatarUrl: user.avatarUrl || user.profile?.avatarUrl || undefined,
-        role: user.role,
+        role: isDesignatedAdmin ? "admin" : user.role,
         roles: resolvedRoles,
         emailVerified: user.emailVerified,
         authProvider: user.authProvider,
@@ -339,12 +360,15 @@ export const verifyEmailOtpAndLoginServerFn = createServerFn({ method: "POST" })
         include: { profile: true, userRoles: true, userStats: true },
       });
 
+      const isDesignatedAdmin = isAdminEmail(email);
+      const assignedRole = isDesignatedAdmin ? "admin" : "user";
+
       if (!user) {
         user = await prisma.user.create({
           data: {
             email,
             displayName,
-            role: "user",
+            role: assignedRole,
             emailVerified: true,
             authProvider: "email",
             profile: {
@@ -356,7 +380,7 @@ export const verifyEmailOtpAndLoginServerFn = createServerFn({ method: "POST" })
               },
             },
             userRoles: {
-              create: { role: "user" },
+              create: { role: assignedRole },
             },
             userStats: {
               create: {
@@ -369,12 +393,24 @@ export const verifyEmailOtpAndLoginServerFn = createServerFn({ method: "POST" })
           include: { profile: true, userRoles: true, userStats: true },
         });
       } else {
-        // Mark email as verified, preserving all existing roles in database
+        // Mark email as verified and ensure admin role if designated admin
         user = await prisma.user.update({
           where: { id: user.id },
-          data: { emailVerified: true },
+          data: {
+            emailVerified: true,
+            ...(isDesignatedAdmin ? { role: "admin" } : {}),
+          },
           include: { profile: true, userRoles: true, userStats: true },
         });
+        if (isDesignatedAdmin) {
+          try {
+            await prisma.userRole.upsert({
+              where: { userId_role: { userId: user.id, role: "admin" } },
+              update: {},
+              create: { userId: user.id, role: "admin" },
+            });
+          } catch {}
+        }
       }
 
       const session = await createPrismaSession(user.id);
@@ -385,8 +421,9 @@ export const verifyEmailOtpAndLoginServerFn = createServerFn({ method: "POST" })
         };
       }
 
-      const resolvedRoles =
-        user.userRoles && user.userRoles.length > 0
+      const resolvedRoles = isDesignatedAdmin
+        ? ["admin"]
+        : user.userRoles && user.userRoles.length > 0
           ? user.userRoles.map((r) => r.role)
           : [user.role || "user"];
 
@@ -450,13 +487,16 @@ export const signInWithGoogleServerFn = createServerFn({ method: "POST" })
         include: { profile: true, userRoles: true, userStats: true },
       });
 
+      const isDesignatedAdmin = isAdminEmail(email);
+      const assignedRole = isDesignatedAdmin ? "admin" : "user";
+
       if (!user) {
         user = await prisma.user.create({
           data: {
             email,
             displayName,
             avatarUrl,
-            role: "user",
+            role: assignedRole,
             emailVerified: true,
             authProvider: "google",
             profile: {
@@ -469,7 +509,7 @@ export const signInWithGoogleServerFn = createServerFn({ method: "POST" })
               },
             },
             userRoles: {
-              create: { role: "user" },
+              create: { role: assignedRole },
             },
             userStats: {
               create: {
@@ -488,9 +528,19 @@ export const signInWithGoogleServerFn = createServerFn({ method: "POST" })
             emailVerified: true,
             avatarUrl: avatarUrl || user.avatarUrl,
             displayName: displayName || user.displayName,
+            ...(isDesignatedAdmin ? { role: "admin" } : {}),
           },
           include: { profile: true, userRoles: true, userStats: true },
         });
+        if (isDesignatedAdmin) {
+          try {
+            await prisma.userRole.upsert({
+              where: { userId_role: { userId: user.id, role: "admin" } },
+              update: {},
+              create: { userId: user.id, role: "admin" },
+            });
+          } catch {}
+        }
       }
 
       const session = await createPrismaSession(user.id);
@@ -501,8 +551,9 @@ export const signInWithGoogleServerFn = createServerFn({ method: "POST" })
         };
       }
 
-      const resolvedRoles =
-        user.userRoles && user.userRoles.length > 0
+      const resolvedRoles = isDesignatedAdmin
+        ? ["admin"]
+        : user.userRoles && user.userRoles.length > 0
           ? user.userRoles.map((r) => r.role)
           : [user.role || "user"];
 

@@ -52,7 +52,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
 function Dashboard() {
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const { isEditor } = useRoles();
+  const { isAdmin } = useRoles();
   const {
     user,
     stats,
@@ -124,7 +124,7 @@ function Dashboard() {
             >
               <User className="w-3.5 h-3.5" /> Profile
             </Link>
-            {isEditor && (
+            {isAdmin && (
               <Link
                 to="/admin"
                 className="text-xs font-bold text-primary hover:opacity-80 inline-flex items-center gap-1"
