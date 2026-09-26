@@ -2,38 +2,40 @@ import { prisma } from "../src/lib/prisma.server.ts";
 import { hashPassword } from "../src/lib/auth.server.ts";
 
 async function main() {
-  const email = "admin@ak.com";
+  const adminEmails = ["admin@ak.com", "admin@afrokernel.com", "admin@admin.com"];
   const password = "admin1234";
   const passwordHash = hashPassword(password);
 
-  await prisma.user.upsert({
-    where: { email },
-    update: {
-      passwordHash,
-      role: "admin",
-    },
-    create: {
-      email,
-      passwordHash,
-      displayName: "Admin",
-      role: "admin",
-      emailVerified: true,
-      authProvider: "email",
-      profile: {
-        create: {
-          displayName: "Admin",
-          xp: 0,
-          level: 1,
-          streakDays: 0,
-        },
+  for (const email of adminEmails) {
+    await prisma.user.upsert({
+      where: { email },
+      update: {
+        passwordHash,
+        role: "admin",
       },
-      userRoles: { create: [{ role: "admin" }] },
-      userStats: { create: {} },
-    },
-    include: { profile: true, userRoles: true },
-  });
+      create: {
+        email,
+        passwordHash,
+        displayName: "Admin",
+        role: "admin",
+        emailVerified: true,
+        authProvider: "email",
+        profile: {
+          create: {
+            displayName: "Admin",
+            xp: 0,
+            level: 1,
+            streakDays: 0,
+          },
+        },
+        userRoles: { create: [{ role: "admin" }] },
+        userStats: { create: {} },
+      },
+      include: { profile: true, userRoles: true },
+    });
+  }
 
-  console.log("✅ Admin user seeded");
+  console.log("✅ Admin users seeded (admin@ak.com, admin@afrokernel.com, admin@admin.com)");
 }
 
 main()

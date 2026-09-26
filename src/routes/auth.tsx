@@ -768,15 +768,17 @@ function AuthPage() {
     }
   }
 
-  const redirectContext = redirect?.startsWith("/courses")
-    ? "Sign in or register to start your course and save your progress"
-    : redirect?.startsWith("/exam")
-      ? "Sign in or register to take the Practice Exam and save your test score"
-      : redirect?.startsWith("/certification")
-        ? "Sign in to take official certification exams and earn credentials"
-        : redirect?.startsWith("/lab")
-          ? "Sign in to launch your interactive cloud Linux terminal sandbox"
-          : null;
+  const redirectContext = redirect?.startsWith("/admin")
+    ? "Administrator sign-in required to access the AfroKernel Control Center"
+    : redirect?.startsWith("/courses")
+      ? "Sign in or register to start your course and save your progress"
+      : redirect?.startsWith("/exam")
+        ? "Sign in or register to take the Practice Exam and save your test score"
+        : redirect?.startsWith("/certification")
+          ? "Sign in to take official certification exams and earn credentials"
+          : redirect?.startsWith("/lab")
+            ? "Sign in to launch your interactive cloud Linux terminal sandbox"
+            : null;
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row bg-background">
@@ -1180,17 +1182,47 @@ function AuthPage() {
                   </div>
                 )}
 
+                {/* Admin Quick Fill Banner when in signin mode */}
+                {mode === "signin" && (
+                  <div className="rounded-xl border border-primary/25 bg-primary/10 p-3 flex items-center justify-between gap-3 text-xs animate-in fade-in">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-primary/15 flex items-center justify-center text-primary shrink-0">
+                        <Shield className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <span className="font-bold text-foreground block text-xs truncate">
+                          Admin Portal Access
+                        </span>
+                        <span className="text-[11px] text-muted-foreground font-mono block truncate">
+                          admin@ak.com / admin1234
+                        </span>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEmail("admin@ak.com");
+                        setPassword("admin1234");
+                        setError(null);
+                      }}
+                      className="px-2.5 py-1.5 rounded-lg bg-primary text-primary-foreground font-bold text-xs hover:brightness-110 transition shadow-sm shrink-0 cursor-pointer"
+                    >
+                      Auto-fill
+                    </button>
+                  </div>
+                )}
+
                 <div>
                   <label className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                    Email Address
+                    {mode === "signup" ? "Email Address" : "Email Address or Username"}
                   </label>
                   <div className="relative">
                     <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <input
-                      type="email"
+                      type={mode === "signup" ? "email" : "text"}
                       required
-                      autoComplete="email"
-                      placeholder="alex@example.com"
+                      autoComplete={mode === "signup" ? "email" : "username"}
+                      placeholder={mode === "signup" ? "alex@example.com" : "admin@ak.com or 'admin'"}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       className="w-full rounded-xl border border-border bg-card py-2.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"

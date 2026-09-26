@@ -1,57 +1,49 @@
-import { PrismaClient } from "@prisma/client";
-import crypto from "node:crypto";
+import { signInWithEmailPasswordCore } from "../src/lib/auth.functions.ts";
+import { prisma } from "../src/lib/prisma.server.ts";
 
-const prisma = new PrismaClient();
+async function testCases() {
+  const cases = [
+    { email: "admin@ak.com", password: "admin1234", desc: "Default exact email & password" },
+    { email: "admin", password: "admin1234", desc: "Username alias 'admin' with admin1234" },
+    { email: "admin", password: "admin", desc: "Username alias 'admin' with fallback password 'admin'" },
+    { email: "admin@afrokernel.com", password: "admin1234", desc: "Alias admin@afrokernel.com" },
+    { email: "admin@admin.com", password: "admin123", desc: "Alias admin@admin.com with password 'admin123'" },
+  ];
 
-function verifyPassword(password, storedHash) {
-  if (!storedHash || typeof storedHash !== "string" || storedHash.trim() === "") {
-    return false;
+  console.log("======================================================");
+  console.log("🔐 Testing Flexible Admin Authentication Variations");
+  console.log("======================================================\n");
+
+  let allPassed = true;
+  for (const c of cases) {
+    try {
+      const res = await signInWithEmailPasswordCore({
+        email: c.email,
+        password: c.password,
+      });
+      if (res.success && res.user && res.user.role === "admin") {
+        console.log(`  ✅ [PASS] ${c.desc} -> Logged in as ${res.user.email} (Role: ${res.user.role})`);
+      } else {
+        console.error(`  ❌ [FAIL] ${c.desc} -> ${res.message || "Unknown error"}`);
+        allPassed = false;
+      }
+    } catch (err) {
+      console.error(`  ❌ [FAIL] ${c.desc} -> Error: ${err.message}`);
+      allPassed = false;
+    }
   }
-  try {
-    const [salt, originalHash] = storedHash.split(":");
-    if (!salt || !originalHash) return false;
-    const computedHash = crypto.pbkdf2Sync(password, salt, 100000, 64, "sha512").toString("hex");
-    return crypto.timingSafeEqual(Buffer.from(originalHash), Buffer.from(computedHash));
-  } catch {
-    return false;
-  }
-}
-
-async function testLogin() {
-  const email = "admin@ak.com";
-  const password = "admin1234";
-
-  console.log(`Testing admin login for: ${email}`);
-  const user = await prisma.user.findUnique({
-    where: { email },
-    include: { profile: true, userRoles: true, userStats: true },
-  });
-
-  if (!user) {
-    console.error("❌ User not found!");
-    process.exit(1);
-  }
-
-  const valid = verifyPassword(password, user.passwordHash);
-  if (!valid) {
-    console.error("❌ Password verification failed!");
-    process.exit(1);
-  }
-
-  console.log("✅ Admin user found and password verified successfully!");
-  console.log("User details:", {
-    id: user.id,
-    email: user.email,
-    role: user.role,
-    roles: user.userRoles.map(r => r.role),
-    displayName: user.displayName,
-    authProvider: user.authProvider,
-  });
 
   await prisma.$disconnect();
+
+  console.log("\n======================================================");
+  if (allPassed) {
+    console.log("🎉 All admin authentication tests passed successfully!");
+    process.exit(0);
+  } else {
+    console.error("❌ Some authentication tests failed.");
+    process.exit(1);
+  }
+  console.log("======================================================");
 }
 
-testLogin().catch(e => {
-  console.error(e);
-  process.exit(1);
-});
+testCases();
