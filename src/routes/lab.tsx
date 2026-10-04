@@ -79,7 +79,7 @@ const DISTRO_META: Record<
     hostname: "afrokernel-rhel",
     os_release:
       'NAME="Red Hat Enterprise Linux"\nVERSION="9.4 (Plow) — AfroKernel Simulated"\nID="rhel"\nID_LIKE="fedora"\nVERSION_ID="9.4"\nPLATFORM_ID="platform:el9"\nPRETTY_NAME="Red Hat Enterprise Linux 9.4 (Plow)"\nANSI_COLOR="0;31"\nCPE_NAME="cpe:/o:redhat:enterprise_linux:9::baseos"\nHOME_URL="https://www.redhat.com/"\n',
-    label: "Red Hat Enterprise Linux (RHEL 9)",
+    label: "Red Hat Enterprise Linux",
     kernel: "Linux afrokernel-rhel 5.14.0-427.el9.x86_64 #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux",
   },
 };

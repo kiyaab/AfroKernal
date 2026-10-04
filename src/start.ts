@@ -11,7 +11,8 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
       throw error;
     }
     console.error(error);
-    return new Response(renderErrorPage(), {
+    const detail = error instanceof Error ? error.stack || error.message : String(error);
+    return new Response(renderErrorPage(process.env.NODE_ENV !== "production" ? detail : undefined), {
       status: 500,
       headers: { "content-type": "text/html; charset=utf-8" },
     });

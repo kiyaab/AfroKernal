@@ -87,7 +87,7 @@ export function HeaderNav() {
                       <span className="text-xl p-1.5 rounded-lg bg-primary/10">🐧</span>
                       <div>
                         <div className="font-semibold text-xs text-foreground group-hover:text-primary">
-                          Linux Fundamentals 2026
+                          Linux Fundamentals
                         </div>
                         <div className="text-[11px] text-muted-foreground">
                           38 tutorials · Core system admin
@@ -119,7 +119,7 @@ export function HeaderNav() {
                       <span className="text-xl p-1.5 rounded-lg bg-primary/10">🎩</span>
                       <div>
                         <div className="font-semibold text-xs text-foreground group-hover:text-primary">
-                          Red Hat Linux (RHEL 9)
+                          Red Hat Enterprise Linux
                         </div>
                         <div className="text-[11px] text-muted-foreground">
                           Enterprise sysadmin, SELinux & storage

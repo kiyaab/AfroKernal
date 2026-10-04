@@ -31,7 +31,7 @@ interface LearningPath {
 const LEARNING_PATHS: LearningPath[] = [
   {
     slug: "linux",
-    name: "Linux Fundamentals 2026",
+    name: "Linux Fundamentals",
     description:
       "Core command line essentials, Unix filesystem navigation, file permissions, users and groups, systemd service management, and process architecture.",
     icon: "🐧",
@@ -49,7 +49,7 @@ const LEARNING_PATHS: LearningPath[] = [
   },
   {
     slug: "rhel",
-    name: "Red Hat Enterprise Linux (RHEL 9) & RHCSA",
+    name: "Red Hat Enterprise Linux",
     description:
       "Enterprise system administration, DNF/RPM package architecture, SELinux enforcement, LVM storage, Firewalld zones, and Cockpit web console.",
     icon: "🎩",

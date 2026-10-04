@@ -11,9 +11,12 @@ let serverEntryPromise: Promise<ServerEntry> | undefined;
 
 async function getServerEntry(): Promise<ServerEntry> {
   if (!serverEntryPromise) {
-    serverEntryPromise = import("@tanstack/react-start/server-entry").then(
-      (m) => (m.default ?? m) as ServerEntry,
-    );
+    serverEntryPromise = import("@tanstack/react-start/server-entry")
+      .then((m) => (m.default ?? m) as ServerEntry)
+      .catch((err) => {
+        serverEntryPromise = undefined;
+        throw err;
+      });
   }
   return serverEntryPromise;
 }
@@ -28,8 +31,10 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
   const body = await response.clone().text();
   if (!isH3SwallowedErrorBody(body)) return response;
 
-  console.error(consumeLastCapturedError() ?? new Error(`h3 swallowed SSR error: ${body}`));
-  return new Response(renderErrorPage(), {
+  const lastErr = consumeLastCapturedError();
+  console.error(lastErr ?? new Error(`h3 swallowed SSR error: ${body}`));
+  const detail = lastErr instanceof Error ? lastErr.stack || lastErr.message : String(lastErr || `h3 error: ${body}`);
+  return new Response(renderErrorPage(process.env.NODE_ENV !== "production" ? detail : undefined), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
   });
@@ -52,7 +57,8 @@ export default {
       return await normalizeCatastrophicSsrResponse(response);
     } catch (error) {
       console.error(error);
-      return new Response(renderErrorPage(), {
+      const detail = error instanceof Error ? error.stack || error.message : String(error);
+      return new Response(renderErrorPage(process.env.NODE_ENV !== "production" ? detail : undefined), {
         status: 500,
         headers: { "content-type": "text/html; charset=utf-8" },
       });

@@ -40,7 +40,7 @@ export const CATALOG_COURSES: CourseData[] = [
   {
     id: "course-linux-fundamentals",
     slug: "linux",
-    title: "Linux Fundamentals & System Administration",
+    title: "Linux Fundamentals",
     subtitle:
       "Master the Linux command line, filesystem hierarchy, permissions, process management, and systemd services.",
     description:
@@ -723,7 +723,7 @@ sudo iptables -t nat -A PREROUTING -p tcp --dport 8080 -j REDIRECT --to-port 80
   {
     id: "course-red-hat-enterprise-linux",
     slug: "rhel",
-    title: "Red Hat Enterprise Linux (RHEL) & RHCSA Administration",
+    title: "Red Hat Enterprise Linux",
     subtitle:
       "Master enterprise RHEL 9 administration, DNF/RPM package architecture, SELinux enforcement, LVM storage, Firewalld, and Cockpit.",
     description:

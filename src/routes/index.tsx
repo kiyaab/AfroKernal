@@ -79,7 +79,7 @@ const CORE_COURSES = [
   {
     slug: "rhel",
     icon: "🎩",
-    title: "Red Hat Enterprise Linux (RHEL 9)",
+    title: "Red Hat Enterprise Linux",
     category: "Enterprise",
     lessons: "8 Lessons",
     duration: "6.0 Hours",

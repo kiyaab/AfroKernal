@@ -2,8 +2,10 @@ import { PrismaClient } from "@prisma/client";
 import fs from "node:fs";
 import path from "node:path";
 
+const isBrowser = typeof window !== "undefined";
+
 // Ensure DATABASE_URL is populated from .env if needed
-if (!process.env.DATABASE_URL) {
+if (!isBrowser && typeof process !== "undefined" && !process.env.DATABASE_URL) {
   try {
     const envPath = path.resolve(process.cwd(), ".env");
     if (fs.existsSync(envPath)) {
@@ -25,16 +27,24 @@ declare global {
 function createPrismaClient(): PrismaClient {
   return new PrismaClient({
     log:
-      process.env.NODE_ENV === "development" && process.env.PRISMA_LOG === "true"
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV === "development" &&
+      process.env.PRISMA_LOG === "true"
         ? ["query", "error", "warn"]
         : ["error"],
   });
 }
 
-export const prisma: PrismaClient = global.__prismaClient ?? createPrismaClient();
+const globalForPrisma = globalThis as unknown as {
+  __prismaClient?: PrismaClient;
+};
 
-if (process.env.NODE_ENV !== "production") {
-  global.__prismaClient = prisma;
+export const prisma: PrismaClient = isBrowser
+  ? ({} as unknown as PrismaClient)
+  : (globalForPrisma.__prismaClient ?? createPrismaClient());
+
+if (!isBrowser && typeof process !== "undefined" && process.env.NODE_ENV !== "production") {
+  globalForPrisma.__prismaClient = prisma;
 }
 
 let _dbConnectedCache: boolean | null = null;
@@ -45,6 +55,8 @@ let _lastCheckTime = 0;
  * Cached for 10 seconds to avoid repeating checks on every request.
  */
 export async function isDatabaseAvailable(): Promise<boolean> {
+  if (isBrowser) return false;
+
   const now = Date.now();
   if (_dbConnectedCache !== null && now - _lastCheckTime < 10000) {
     return _dbConnectedCache;
