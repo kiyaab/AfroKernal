@@ -33,7 +33,10 @@ async function normalizeCatastrophicSsrResponse(response: Response): Promise<Res
 
   const lastErr = consumeLastCapturedError();
   console.error(lastErr ?? new Error(`h3 swallowed SSR error: ${body}`));
-  const detail = lastErr instanceof Error ? lastErr.stack || lastErr.message : String(lastErr || `h3 error: ${body}`);
+  const detail =
+    lastErr instanceof Error
+      ? lastErr.stack || lastErr.message
+      : String(lastErr || `h3 error: ${body}`);
   return new Response(renderErrorPage(process.env.NODE_ENV !== "production" ? detail : undefined), {
     status: 500,
     headers: { "content-type": "text/html; charset=utf-8" },
@@ -58,10 +61,13 @@ export default {
     } catch (error) {
       console.error(error);
       const detail = error instanceof Error ? error.stack || error.message : String(error);
-      return new Response(renderErrorPage(process.env.NODE_ENV !== "production" ? detail : undefined), {
-        status: 500,
-        headers: { "content-type": "text/html; charset=utf-8" },
-      });
+      return new Response(
+        renderErrorPage(process.env.NODE_ENV !== "production" ? detail : undefined),
+        {
+          status: 500,
+          headers: { "content-type": "text/html; charset=utf-8" },
+        },
+      );
     }
   },
 };
